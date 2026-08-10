@@ -1,0 +1,9 @@
+.golangci.yaml
+linters:
+  enable:
+    - gofumpt  # 启用 gofumpt 检查
+    - govet
+    - staticcheck
+linters-settings:
+  gofumpt:
+    extra-rules: true  # 启用更严格的规则
