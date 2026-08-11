@@ -1,38 +1,11 @@
 package main
 
 import (
-	"log"
-	"net/http"
-
-	"go-net/src/view"
-
-	"github.com/gin-gonic/gin"
+	httpServer "go-net/im/src/http"
 )
 
-func testGin() {
-	r := gin.Default()
-
-	// Define a simple GET endpoint
-	r.GET("/ping", func(c *gin.Context) {
-		// Return JSON response
-		c.JSON(http.StatusOK, gin.H{
-			"path:":   c.Request.URL.Path,
-			"metthod": c.Request.Method,
-			"data":    []int{1, 2, 3},
-			"message": "pong",
-		})
-	})
-
-	r.Static("/src", "./src")
-
-	// Start server on port 8080 (default)
-	// Server will listen on 0.0.0.0:8080 (localhost:8080 on Windows)
-	if err := r.Run(); err != nil {
-		log.Fatalf("failed to run server: %v", err)
-	}
-}
-
 func main() {
-	view.Test()
+	httpServer.Start()
+	// view.Test()
 	// Create a Gin router with default middleware (logger and recovery)
 }
