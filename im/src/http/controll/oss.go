@@ -35,3 +35,7 @@ func Upload(c *gin.Context) *KResponse {
 
 	return MakeResponse(result)
 }
+
+func GetFile(c *gin.Context) *KResponse {
+	return MakeResponse("whx")
+}
