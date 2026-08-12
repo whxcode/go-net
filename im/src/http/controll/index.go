@@ -13,7 +13,7 @@ const (
 	KRegister    RouterPath = "/register"
 	KUpload                 = "/upload"
 	KGetfile                = "/getfile"
-	KDowloadfile            = "/download/:hash"
+	KDowloadfile            = "/file/download/:hash"
 )
 
 type KResponseHandle = func(c *gin.Context) *KResponse

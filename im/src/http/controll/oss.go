@@ -2,7 +2,6 @@ package controll
 
 import (
 	"strconv"
-	"strings"
 	"time"
 
 	config "go-net/im/src"
@@ -75,13 +74,6 @@ func GetFile(c *gin.Context) *KResponse {
 
 func DownloadMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		path := c.Request.URL.Path
-
-		if !strings.HasPrefix(path, "/file/download/") {
-			c.Next()
-			return
-		}
-
 		expred := c.Query("expred")
 		expredInt, err := strconv.ParseInt(expred, 10, 64)
 		if err != nil {
