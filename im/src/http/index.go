@@ -1,19 +1,20 @@
 package httpServer
 
 import (
-	"io"
 	"log"
 	"mime/multipart"
 	"net/http"
-	"os"
-	"time"
 
+	config "go-net/im/src"
 	"go-net/im/src/http/controll"
+	"go-net/im/src/logs"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 )
+
+func init() {
+}
 
 // 自定义响应中间件
 func responseMiddleware() gin.HandlerFunc {
@@ -159,37 +160,6 @@ func getRequestParams(r *gin.Engine) {
 	})
 }
 
-func configLog() io.Writer {
-	logrus.SetFormatter(&logrus.JSONFormatter{})
-
-	// 以追加的方式
-	// 以追加的方式
-	f, _ := os.OpenFile("./log/gin.json", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
-
-	logrus.SetOutput(io.MultiWriter(f, os.Stdout))
-
-	return logrus.StandardLogger().Out
-}
-
-func LoggerMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		start := time.Now()
-		c.Next()
-		latency := time.Since(start)
-
-		// 记录到 logrus（自动 JSON）
-		logrus.WithFields(logrus.Fields{
-			"time":      start.Format("2006-01-02 15:04:05"),
-			"method":    c.Request.Method,
-			"path":      c.Request.URL.Path,
-			"status":    c.Writer.Status(),
-			"latency":   latency.String(),
-			"clientIP":  c.ClientIP(),
-			"userAgent": c.Request.UserAgent(),
-		}).Info("HTTP Request")
-	}
-}
-
 func group(_r *gin.Engine) {
 	r := _r.Group("/user")
 	{
@@ -209,13 +179,13 @@ func groupControll(_r *gin.Engine) {
 }
 
 func Start() {
-	configLog()
-	// gin.DefaultWriter = configLog()
+	config.ConfigData.Dump()
+
 	r := gin.New()
-	r.Use(LoggerMiddleware()) // 自定义日志中间件
+	r.Use(logs.LoggerMiddleware()) // 自定义日志中间件
 	r.Use(gin.Recovery())
 
-	r.LoadHTMLGlob("/home/whx/study/go-net/im/pages/*.html")
+	r.LoadHTMLGlob(config.ConfigData.Server.TemplatePath)
 	// 使用默认CORS中间件，允许所有跨域请求
 	r.Use(cors.Default())
 
@@ -248,7 +218,7 @@ func Start() {
 
 	// Start server on port 8080 (default)
 	// Server will listen on 0.0.0.0:8080 (localhost:8080 on Windows)
-	if err := r.Run(":8080"); err != nil {
+	if err := r.Run(config.ConfigData.Server.Port); err != nil {
 		log.Fatalf("failed to run server: %v", err)
 	}
 }

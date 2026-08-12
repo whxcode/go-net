@@ -1,0 +1,10 @@
+{
+  "server": {
+    "port": ":8080",
+    "templatePath": "/Users/mac/study/go-net/im/pages/*.html"
+  },
+  "log": {
+    "pathDir": "/Users/mac/study/go-net/log",
+    "level": 3
+  }
+}
