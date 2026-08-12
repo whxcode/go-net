@@ -2,26 +2,26 @@
 package oss
 
 import (
+	"crypto/hmac"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"io"
 	"mime/multipart"
 	"os"
+	"strconv"
+	"time"
 
 	config "go-net/im/src"
-	"go-net/im/src/utils"
 )
 
 func Init() {
 }
 
 func makeFile(filename string) (*os.File, error) {
-	dir := fmt.Sprintf("%s/%s", config.ConfigData.Server.FileOss, utils.GetToday())
-
-	os.MkdirAll(dir, 0o755)
-
-	return os.Create(fmt.Sprintf("%s/%s", dir, filename))
+	file := fmt.Sprintf("%s/%s", config.ConfigData.Server.FileOss, filename)
+	return os.Create(file)
 }
 
 func HashBytes(data []byte) string {
@@ -65,4 +65,33 @@ func StorageFile(f *multipart.FileHeader) string {
 	io.Copy(file, fd)
 
 	return filename
+}
+
+const tsecretKey = "your_secret_key_here"
+
+func GetFile(file string) (*os.File, error) {
+	return os.Open(fmt.Sprintf("%s/%s", config.ConfigData.Server.FileOss, file))
+}
+
+func Signature(message string) string {
+	h := hmac.New(sha256.New, []byte(tsecretKey))
+	h.Write([]byte(message))
+
+	return base64.URLEncoding.EncodeToString(h.Sum(nil))
+}
+
+// 根据 hash 生成一个临时的url 地址
+func GenerateSignedURL(hash string, expred time.Duration) string {
+	expredAt := time.Now().Add(expred).Unix()
+	expredAtStr := strconv.FormatInt(expredAt, 10)
+
+	message := fmt.Sprintf("%s:%s", hash, expredAtStr)
+
+	signature := Signature(message)
+
+	baseURL := "http://localhost:8080/file/download"
+
+	signatureURL := fmt.Sprintf("%s/%s?expred=%s&signature=%s", baseURL, hash, expredAtStr, signature)
+
+	return signatureURL
 }

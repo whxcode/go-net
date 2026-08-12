@@ -7,20 +7,13 @@ const (
 	kPOST = "POST"
 )
 
+type RouterPath string
+
 const (
-	kRegister = "/register"
-	kUpload   = "/upload"
-	kGetfile  = "/getfile"
+	KRegister    RouterPath = "/register"
+	KUpload                 = "/upload"
+	KGetfile                = "/getfile"
+	KDowloadfile            = "/download/:hash"
 )
 
 type KResponseHandle = func(c *gin.Context) *KResponse
-
-var GetControllMap map[string]KResponseHandle = map[string]KResponseHandle{
-	kRegister: Register,
-}
-
-var PostControllMap map[string]KResponseHandle = map[string]KResponseHandle{
-	kRegister: Register,
-	kUpload:   Upload,
-	kGetfile:  GetFile,
-}

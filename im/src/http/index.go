@@ -42,6 +42,13 @@ func responseMiddleware() gin.HandlerFunc {
 	}
 }
 
+func execute(handle controll.KResponseHandle) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		result := handle(c)
+		c.Set("response", result)
+	}
+}
+
 func Start() {
 	config.ConfigData.Dump()
 	oss.Init()
@@ -56,23 +63,12 @@ func Start() {
 
 	r.Use(responseMiddleware()) // 使用自定义响应中间件
 
-	for k, v := range controll.GetControllMap {
-		r.GET(k, func(c *gin.Context) {
-			// 调用 handler 并获取返回值
-			result := v(c)
-			// 将返回值设置到上下文中
-			c.Set("response", result)
-		})
-	}
+	fileRouter := r.Group("/file")
+	fileRouter.Use(controll.DownloadMiddleware()) // 使用自定义响应中间件
 
-	for k, v := range controll.PostControllMap {
-		r.POST(k, func(c *gin.Context) {
-			// 调用 handler 并获取返回值
-			result := v(c)
-			// 将返回值设置到上下文中
-			c.Set("response", result)
-		})
-	}
+	fileRouter.POST(controll.KUpload, execute(controll.Upload))
+	fileRouter.POST(controll.KGetfile, execute(controll.GetFile))
+	fileRouter.GET(controll.KDowloadfile, controll.DowloadFile)
 
 	r.Static("/asset", "/home/whx/study/go-net/im/pages/asset/")
 
