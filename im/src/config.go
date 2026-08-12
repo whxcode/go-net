@@ -19,6 +19,7 @@ type Config struct {
 	Server struct {
 		Port         string `json:"port"`         // 端口
 		TemplatePath string `json:"templatePath"` // 前端模版路径
+		FileOss      string `json:"fileOss"`      // 文件oss路径
 	} `json:"server"`
 
 	Log struct {
@@ -31,6 +32,8 @@ func (c *Config) Dump() {
 	fmt.Println("============ config ==================")
 	fmt.Printf("Server Port: %s\n", c.Server.Port)
 	fmt.Printf("Server Template Path: %s\n", c.Server.TemplatePath)
+	fmt.Printf("Server FileOss Path: %s\n", c.Server.FileOss)
+
 	fmt.Printf("Log PathDir: %s\n", c.Log.PathDir)
 	fmt.Printf("Log Level: %d\n", c.Log.Level)
 	fmt.Println("============ config ==================")

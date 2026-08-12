@@ -9,6 +9,7 @@ const (
 
 const (
 	kRegister = "/register"
+	kUpload   = "/upload"
 )
 
 type KResponseHandle = func(c *gin.Context) *KResponse
@@ -19,4 +20,5 @@ var GetControllMap map[string]KResponseHandle = map[string]KResponseHandle{
 
 var PostControllMap map[string]KResponseHandle = map[string]KResponseHandle{
 	kRegister: Register,
+	kUpload:   Upload,
 }

@@ -3,8 +3,8 @@ package controll
 import "go-net/im/src/http/consts"
 
 type KResponse struct {
-	Data any
-	Code consts.Status
+	Data any           `json:"data"`
+	Code consts.Status `json:"code"`
 }
 
 func MakeResponse(data any) *KResponse {

@@ -1,7 +1,8 @@
 {
   "server": {
     "port": ":8080",
-    "templatePath": "/Users/mac/study/go-net/im/pages/*.html"
+    "templatePath": "/Users/mac/study/go-net/im/pages/*.html",
+    "fileOss": "/Users/mac/study/go-net/fileStoragePath"
   },
   "log": {
     "pathDir": "/Users/mac/study/go-net/log",
