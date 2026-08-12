@@ -6,6 +6,7 @@ import (
 
 	config "go-net/im/src"
 	"go-net/im/src/http/controll"
+	"go-net/im/src/http/middleware"
 	"go-net/im/src/logs"
 	"go-net/im/src/oss"
 
@@ -63,16 +64,21 @@ func Start() {
 
 	r.Use(responseMiddleware()) // 使用自定义响应中间件
 
+	r.Static("/asset", "/home/whx/study/go-net/im/pages/asset/")
+
+	// 文件上传和下载路由
 	fileRouter := r.Group("/file")
 
-	fileRouter.POST(controll.KUpload, execute(controll.Upload))
-	fileRouter.POST(controll.KGetfile, execute(controll.GetFile))
+	fileRouter.POST(controll.KUpload, execute(controll.FileController.Upload))
+	fileRouter.POST(controll.KGetfile, execute(controll.FileController.GetFile))
 
 	fileDowloadRouter := r.Group(controll.KDowloadfile)
-	fileDowloadRouter.Use(controll.DownloadMiddleware()) // 使用自定义响应中间件
-	fileDowloadRouter.GET("", controll.DowloadFile)
+	fileDowloadRouter.Use(controll.FileController.DownloadMiddleware()) // 使用自定义响应中间件
+	fileDowloadRouter.GET("", controll.FileController.DowloadFile)
 
-	r.Static("/asset", "/home/whx/study/go-net/im/pages/asset/")
+	userRouter := r.Group("/user")
+	userRouter.Use(middleware.AuthorizationMiddleware())
+	userRouter.GET(controll.K_User_GetUser, execute(controll.UserControll.GetUser))
 
 	// Start server on port 8080 (default)
 	// Server will listen on 0.0.0.0:8080 (localhost:8080 on Windows)

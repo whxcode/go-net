@@ -14,6 +14,8 @@ const (
 	KUpload                 = "/upload"
 	KGetfile                = "/getfile"
 	KDowloadfile            = "/file/download/:hash"
+
+	K_User_GetUser = "/get"
 )
 
 type KResponseHandle = func(c *gin.Context) *KResponse

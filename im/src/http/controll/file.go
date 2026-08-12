@@ -10,10 +10,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type fileController struct{}
+
+var FileController = &fileController{}
+
 /**
-* 保存用户上传的文件
+* @beif 保存用户上传的文件
+* @parma files os.File 文件列表
+* @return []
 * **/
-func Upload(c *gin.Context) *KResponse {
+func (*fileController) Upload(c *gin.Context) *KResponse {
 	form, err := c.MultipartForm()
 	if err != nil {
 		panic(err)
@@ -40,7 +46,7 @@ func Upload(c *gin.Context) *KResponse {
 	return MakeResponse(result)
 }
 
-func GetFile(c *gin.Context) *KResponse {
+func (*fileController) GetFile(c *gin.Context) *KResponse {
 	type P struct {
 		Files []string `json:"files"`
 	}
@@ -72,7 +78,7 @@ func GetFile(c *gin.Context) *KResponse {
 	return MakeResponse(result)
 }
 
-func DownloadMiddleware() gin.HandlerFunc {
+func (*fileController) DownloadMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		expred := c.Query("expred")
 		expredInt, err := strconv.ParseInt(expred, 10, 64)
@@ -98,7 +104,7 @@ func DownloadMiddleware() gin.HandlerFunc {
 	}
 }
 
-func DowloadFile(c *gin.Context) {
+func (*fileController) DowloadFile(c *gin.Context) {
 	hash := c.Param("hash")
 
 	c.File(config.ConfigData.Server.FileOss + "/" + hash)
