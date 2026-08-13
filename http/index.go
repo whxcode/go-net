@@ -1,13 +1,12 @@
 package httpServer
 
 import (
-	"fmt"
 	"log"
 
 	"go-net/config"
 	"go-net/http/controll"
-	"go-net/http/middleware"
 	"go-net/logs"
+	"go-net/middleware"
 	"go-net/oss"
 
 	"github.com/gin-contrib/cors"
@@ -15,32 +14,6 @@ import (
 )
 
 func init() {
-}
-
-// 自定义响应中间件
-func responseMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Next() // 执行后续 handler
-
-		// 获取 handler 返回的数据（通过 c.Set 传递）
-		data, exists := c.Get("response")
-		if !exists {
-			return
-		}
-
-		s, ok := data.(*controll.KResponse)
-
-		if ok {
-			fmt.Println(s) // hello
-		}
-
-		// 统一格式化
-		c.JSON(200, gin.H{
-			"code": s.Code,
-			"msg":  "success",
-			"data": s.Data,
-		})
-	}
 }
 
 func execute(handle controll.KResponseHandle) gin.HandlerFunc {
@@ -62,7 +35,7 @@ func Start() {
 	// 使用默认CORS中间件，允许所有跨域请求
 	r.Use(cors.Default())
 
-	r.Use(responseMiddleware()) // 使用自定义响应中间件
+	r.Use(middleware.ResponseMiddleware()) // 使用自定义响应中间件
 
 	// r.Static("/asset", "/home/whx/study/go-net/im/pages/asset/")
 
@@ -76,9 +49,17 @@ func Start() {
 	fileDowloadRouter.Use(controll.FileController.DownloadMiddleware()) // 使用自定义响应中间件
 	fileDowloadRouter.GET("", controll.FileController.DowloadFile)
 
-	userRouter := r.Group("/user")
-	userRouter.Use(middleware.AuthorizationMiddleware())
-	userRouter.GET(controll.K_User_GetUser, execute(controll.UserControll.GetUser))
+	{
+
+		userRouterPrivate := r.Group("/user")
+		userRouterPrivate.Use(middleware.AuthorizationMiddleware())
+		userRouterPrivate.GET(controll.K_User_GetUser, execute(controll.UserControll.GetUser))
+		userRouterPrivate.GET(controll.K_User_Logout, execute(controll.UserControll.Logout))
+
+		userRouterPublic := r.Group("/user")
+		userRouterPublic.POST(controll.K_User_Register, execute(controll.UserControll.Register))
+		userRouterPublic.POST(controll.K_User_Login, execute(controll.UserControll.Login))
+	}
 
 	// Start server on port 8080 (default)
 	// Server will listen on 0.0.0.0:8080 (localhost:8080 on Windows)

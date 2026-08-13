@@ -6,6 +6,7 @@ import (
 
 	"go-net/config"
 	"go-net/oss"
+	"go-net/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,7 +20,7 @@ var FileController = &fileController{}
 * @parma files os.File 文件列表
 * @return []
 * **/
-func (*fileController) Upload(c *gin.Context) *KResponse {
+func (*fileController) Upload(c *gin.Context) *utils.KResponse {
 	form, err := c.MultipartForm()
 	if err != nil {
 		panic(err)
@@ -43,10 +44,10 @@ func (*fileController) Upload(c *gin.Context) *KResponse {
 		})
 	}
 
-	return MakeResponse(result)
+	return utils.MakeResponse(result)
 }
 
-func (*fileController) GetFile(c *gin.Context) *KResponse {
+func (*fileController) GetFile(c *gin.Context) *utils.KResponse {
 	type P struct {
 		Files []string `json:"files"`
 	}
@@ -75,7 +76,7 @@ func (*fileController) GetFile(c *gin.Context) *KResponse {
 
 	}
 
-	return MakeResponse(result)
+	return utils.MakeResponse(result)
 }
 
 func (*fileController) DownloadMiddleware() gin.HandlerFunc {
