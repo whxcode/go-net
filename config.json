@@ -1,11 +1,11 @@
 {
   "server": {
     "port": ":8080",
-    "templatePath": "/home/whx/study/go-net/im/pages/*.html",
-    "fileOss": "/home/whx/study/go-net/fileStoragePath"
+    "templatePath": "./pages/*.html",
+    "fileOss": "./fileStoragePath"
   },
   "log": {
-    "pathDir": "/home/whx/study/go-net/log",
+    "pathDir": "./log",
     "level": 3
   }
 }
