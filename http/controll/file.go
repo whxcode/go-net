@@ -4,8 +4,8 @@ import (
 	"strconv"
 	"time"
 
-	config "go-net/im/src"
-	"go-net/im/src/oss"
+	"go-net/config"
+	"go-net/oss"
 
 	"github.com/gin-gonic/gin"
 )

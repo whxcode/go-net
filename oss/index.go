@@ -13,7 +13,7 @@ import (
 	"strconv"
 	"time"
 
-	config "go-net/im/src"
+	"go-net/config"
 )
 
 func Init() {

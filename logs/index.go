@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	config "go-net/im/src"
+	"go-net/config"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"

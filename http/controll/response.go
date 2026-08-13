@@ -1,6 +1,6 @@
 package controll
 
-import "go-net/im/src/http/consts"
+import "go-net/http/consts"
 
 type KResponse struct {
 	Data any           `json:"data"`

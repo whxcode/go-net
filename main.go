@@ -1,8 +1,6 @@
 package main
 
-import (
-	httpServer "go-net/im/src/http"
-)
+import httpServer "go-net/http"
 
 func main() {
 	httpServer.Start()

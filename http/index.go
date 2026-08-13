@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"log"
 
-	config "go-net/im/src"
-	"go-net/im/src/http/controll"
-	"go-net/im/src/http/middleware"
-	"go-net/im/src/logs"
-	"go-net/im/src/oss"
+	"go-net/config"
+	"go-net/http/controll"
+	"go-net/http/middleware"
+	"go-net/logs"
+	"go-net/oss"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -64,7 +64,7 @@ func Start() {
 
 	r.Use(responseMiddleware()) // 使用自定义响应中间件
 
-	r.Static("/asset", "/home/whx/study/go-net/im/pages/asset/")
+	// r.Static("/asset", "/home/whx/study/go-net/im/pages/asset/")
 
 	// 文件上传和下载路由
 	fileRouter := r.Group("/file")
