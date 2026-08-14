@@ -9,6 +9,7 @@ import (
 
 	"go-net/middleware"
 	"go-net/model"
+	"go-net/model/redis"
 	"go-net/pool"
 )
 
@@ -45,6 +46,14 @@ func RequestWsHandle(c *gin.Context) middleware.CloseHandle {
 
 	pool.UserPool.AddUser(userID, conn)
 
+	messages, _ := redis.GetOfflineMessage(userID)
+
+	if messages != nil {
+		for _, msg := range messages {
+			conn.WriteMessage(websocket.TextMessage, msg)
+		}
+	}
+
 	return close
 }
 
@@ -56,6 +65,7 @@ func ChannelHandle(conn *websocket.Conn, p []byte, message *model.Message) bool 
 
 	if senderConn == nil {
 		conn.WriteMessage(websocket.TextMessage, []byte("当前好友不在线"))
+		redis.SaveOfflineMessage(message.ReceiverID, p)
 		return true
 	}
 

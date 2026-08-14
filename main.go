@@ -3,6 +3,7 @@ package main
 import (
 	httpServer "go-net/http"
 	"go-net/model"
+	"go-net/model/redis"
 	"go-net/utils"
 )
 
@@ -13,7 +14,7 @@ func main() {
 	}
 
 	model.InitDB()
-	model.InitRedis()
+	redis.InitRedis()
 
 	httpServer.Start()
 	// view.Test()

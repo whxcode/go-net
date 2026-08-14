@@ -1,5 +1,5 @@
 // model/redis.go
-package model
+package redis
 
 import (
 	"context"

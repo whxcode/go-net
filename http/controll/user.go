@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"go-net/model"
+	"go-net/model/redis"
 	"go-net/utils"
 
 	"github.com/gin-gonic/gin"
@@ -80,7 +81,7 @@ func (*userControll) Login(c *gin.Context) *utils.KResponse {
 		return utils.MakeResponseWidthCode("生成token失败", http.StatusInternalServerError)
 	}
 
-	err = model.RedisClient.Set(model.Ctx, token, user.ID, 10*time.Minute).Err()
+	err = redis.RedisClient.Set(redis.Ctx, token, user.ID, 10*time.Minute).Err()
 	if err != nil {
 		return utils.MakeResponseWidthCode("保存token失败", http.StatusInternalServerError)
 	}
@@ -95,7 +96,7 @@ func (*userControll) Login(c *gin.Context) *utils.KResponse {
 func (*userControll) Logout(c *gin.Context) *utils.KResponse {
 	token, _ := c.Get("token")
 
-	err := model.RedisClient.Del(model.Ctx, token.(string)).Err()
+	err := redis.RedisClient.Del(redis.Ctx, token.(string)).Err()
 	if err != nil {
 		return utils.MakeResponseWidthCode("退出失败", http.StatusInternalServerError)
 	}
