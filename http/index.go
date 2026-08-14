@@ -62,7 +62,11 @@ func Start() {
 		userRouterPublic.POST(controll.K_User_Login, execute(controll.UserControll.Login))
 	}
 
-	r.GET("/im", wss.HandleWSS) // WebSocket路由
+	{
+		wssRouter := r.Group("/ws")
+		wssRouter.Use(middleware.BeatMiddleware())
+		wssRouter.GET("/im", wss.HandleWSS) // WebSocket路由
+	}
 
 	// Start server on port 8080 (default)
 	// Server will listen on 0.0.0.0:8080 (localhost:8080 on Windows)

@@ -2,26 +2,32 @@ package wss
 
 import (
 	"encoding/json"
-	"net/http"
+	"fmt"
 	"strconv"
+	"time"
+
+	"github.com/gorilla/websocket"
 
 	"go-net/model"
 	"go-net/pool"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
 )
 
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
-
 func HandleWSS(c *gin.Context) {
-	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
-	if err != nil {
-		panic(err)
+	wsConn, ok := c.Get("wsConn")
+
+	//conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+	if !ok {
+		fmt.Println("wsConn not found in context")
+		return
+	}
+
+	conn, o := wsConn.(*websocket.Conn)
+
+	if !o {
+		fmt.Println("wsConn is not of type *websocket.Conn")
+		return
 	}
 
 	var userID uint = 0
@@ -36,6 +42,8 @@ func HandleWSS(c *gin.Context) {
 		conn.Close()
 	}()
 
+	timeout := 5 * time.Second
+
 	// 客户端首次链接
 
 	userIDStr := c.Query("userID")
@@ -44,6 +52,23 @@ func HandleWSS(c *gin.Context) {
 	userID = uint(userIDUint)
 
 	pool.UserPool.AddUser(userID, conn)
+
+	conn.SetReadDeadline(time.Now().Add(timeout))
+
+	conn.SetPingHandler(func(appData string) error {
+		conn.SetReadDeadline(time.Now().Add(timeout))
+
+		return conn.WriteControl(websocket.PongMessage, []byte(appData), time.Now().Add(timeout))
+	})
+
+	conn.SetPongHandler(func(appData string) error {
+		conn.SetReadDeadline(time.Now().Add(timeout))
+		return nil
+	})
+
+	conn.SetCloseHandler(func(code int, text string) error {
+		return nil
+	})
 
 	for {
 		msgType, msg, err := conn.ReadMessage()

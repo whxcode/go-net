@@ -1,10 +1,20 @@
 package pool
 
 import (
+	"net/http"
 	"sync"
 
 	"github.com/gorilla/websocket"
 )
+
+var Upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+	// 读写缓冲区大小
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
 
 // 在线用户管理
 
