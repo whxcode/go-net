@@ -8,6 +8,7 @@ import (
 	"go-net/logs"
 	"go-net/middleware"
 	"go-net/oss"
+	"go-net/wss"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -60,6 +61,8 @@ func Start() {
 		userRouterPublic.POST(controll.K_User_Register, execute(controll.UserControll.Register))
 		userRouterPublic.POST(controll.K_User_Login, execute(controll.UserControll.Login))
 	}
+
+	r.GET("/im", wss.HandleWSS) // WebSocket路由
 
 	// Start server on port 8080 (default)
 	// Server will listen on 0.0.0.0:8080 (localhost:8080 on Windows)
