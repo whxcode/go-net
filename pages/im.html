@@ -126,6 +126,26 @@
         margin: 4px 0;
       }
 
+      .chat-panel .messages .msg-ping {
+        background: transparent;
+        color: #4caf50;
+        font-size: 11px;
+        text-align: center;
+        max-width: 100%;
+        margin: 2px 0;
+        font-style: italic;
+      }
+
+      .chat-panel .messages .msg-pong {
+        background: transparent;
+        color: #ff9800;
+        font-size: 11px;
+        text-align: center;
+        max-width: 100%;
+        margin: 2px 0;
+        font-style: italic;
+      }
+
       .chat-panel .input-area {
         display: flex;
         gap: 8px;
@@ -205,17 +225,27 @@
         color: #666;
         font-size: 13px;
       }
+
+      .ping-info {
+        font-size: 11px;
+        color: #999;
+        margin-left: 8px;
+        font-weight: 400;
+      }
     </style>
   </head>
 
   <body>
-    <h2>💬 WebSocket 双向聊天测试</h2>
+    <h2>💬 WebSocket 双向聊天测试（带客户端 Ping）</h2>
 
     <div class="chat-container">
       <!-- 用户1 -->
       <div class="chat-panel user1" id="panel1">
         <div class="header">
-          <span>👤 用户 <span class="user-id-label">(ID: 1)</span></span>
+          <span
+            >👤 用户 <span class="user-id-label">(ID: 1)</span>
+            <span class="ping-info" id="pingInfo1">⏱️ 等待连接</span>
+          </span>
           <span class="status-badge" id="status1">⚪ 未连接</span>
         </div>
         <div class="messages" id="messages1"></div>
@@ -230,7 +260,10 @@
       <!-- 用户2 -->
       <div class="chat-panel user2" id="panel2">
         <div class="header">
-          <span>👤 用户 <span class="user-id-label">(ID: 2)</span></span>
+          <span
+            >👤 用户 <span class="user-id-label">(ID: 2)</span>
+            <span class="ping-info" id="pingInfo2">⏱️ 等待连接</span>
+          </span>
           <span class="status-badge" id="status2">⚪ 未连接</span>
         </div>
         <div class="messages" id="messages2"></div>
@@ -245,28 +278,48 @@
 
     <script>
       // 每个用户独立 WebSocket 连接
+      const PING_INTERVAL = 10 * 1000; // 25秒发一次 Ping
+
       const users = {
         1: {
           ws: null,
           connected: false,
+          pingTimer: null,
+          pingCount: 0,
+          pongCount: 0,
           messagesEl: document.getElementById("messages1"),
           inputEl: document.getElementById("input1"),
           statusEl: document.getElementById("status1"),
           connectBtn: document.getElementById("connect1"),
           disconnectBtn: document.getElementById("disconnect1"),
           sendBtn: document.getElementById("send1"),
+          pingInfoEl: document.getElementById("pingInfo1"),
         },
         2: {
           ws: null,
           connected: false,
+          pingTimer: null,
+          pingCount: 0,
+          pongCount: 0,
           messagesEl: document.getElementById("messages2"),
           inputEl: document.getElementById("input2"),
           statusEl: document.getElementById("status2"),
           connectBtn: document.getElementById("connect2"),
           disconnectBtn: document.getElementById("disconnect2"),
           sendBtn: document.getElementById("send2"),
+          pingInfoEl: document.getElementById("pingInfo2"),
         },
       };
+
+      function updatePingInfo(userId) {
+        const user = users[userId];
+        if (!user) return;
+        if (!user.connected) {
+          user.pingInfoEl.textContent = "⏱️ 等待连接";
+          return;
+        }
+        user.pingInfoEl.textContent = `📤 ${user.pingCount} | 📥 ${user.pongCount}`;
+      }
 
       function appendMessage(userId, text, type = "received") {
         const user = users[userId];
@@ -285,6 +338,49 @@
         user.statusEl.className = "status-badge" + (isOnline ? " online" : "");
       }
 
+      // 发送 Ping（JSON 模拟 Ping）
+      function sendPing(userId) {
+        const user = users[userId];
+        if (!user.connected || !user.ws) return;
+
+        const payload = {
+          type: 1, // PING = 1
+          timestamp: Date.now(),
+        };
+
+        user.ws.send(JSON.stringify(payload));
+        user.pingCount++;
+        updatePingInfo(userId);
+        appendMessage(userId, `📤 发送 Ping (${user.pingCount})`, "ping");
+      }
+
+      function startPingLoop(userId) {
+        const user = users[userId];
+        if (user.pingTimer) {
+          clearInterval(user.pingTimer);
+          user.pingTimer = null;
+        }
+
+        // 立即发一次 Ping
+        sendPing(userId);
+
+        // 定时发 Ping
+        user.pingTimer = setInterval(() => {
+          sendPing(userId);
+        }, PING_INTERVAL);
+      }
+
+      function stopPingLoop(userId) {
+        const user = users[userId];
+        if (user.pingTimer) {
+          clearInterval(user.pingTimer);
+          user.pingTimer = null;
+        }
+        user.pingCount = 0;
+        user.pongCount = 0;
+        updatePingInfo(userId);
+      }
+
       function connect(userId) {
         const user = users[userId];
         if (user.connected) return;
@@ -295,6 +391,8 @@
         ws.onopen = function () {
           user.connected = true;
           user.ws = ws;
+          user.pingCount = 0;
+          user.pongCount = 0;
           setStatus(userId, "✅ 在线", true);
           appendMessage(userId, "系统: 连接成功", "system");
           user.connectBtn.disabled = true;
@@ -302,12 +400,26 @@
           user.sendBtn.disabled = false;
           user.inputEl.disabled = false;
           user.inputEl.focus();
+
+          // 开始发送 Ping
+          startPingLoop(userId);
+          updatePingInfo(userId);
         };
 
         ws.onmessage = function (event) {
           try {
             const data = JSON.parse(event.data);
-            // 解析消息内容
+
+            // 检查是否是 Pong 响应
+            if (data.type === 2) {
+              // PONG = 2
+              user.pongCount++;
+              updatePingInfo(userId);
+              appendMessage(userId, `📥 收到 Pong (${user.pongCount})`, "pong");
+              return;
+            }
+
+            // 普通消息 (NORMAL = 0)
             let text = "";
             if (data.elements && data.elements.length > 0) {
               text = data.elements.map((el) => el.content || "").join(" ");
@@ -318,6 +430,7 @@
               data.senderId === userId ? "我" : `用户${data.senderId}`;
             appendMessage(userId, `${sender}: ${text}`, "received");
           } catch (e) {
+            // 非 JSON 数据，直接显示
             appendMessage(userId, `收到: ${event.data}`, "received");
           }
         };
@@ -325,12 +438,14 @@
         ws.onclose = function () {
           user.connected = false;
           user.ws = null;
+          stopPingLoop(userId);
           setStatus(userId, "❌ 已断开", false);
           appendMessage(userId, "系统: 连接已断开", "system");
           user.connectBtn.disabled = false;
           user.disconnectBtn.disabled = true;
           user.sendBtn.disabled = true;
           user.inputEl.disabled = true;
+          updatePingInfo(userId);
         };
 
         ws.onerror = function (error) {
@@ -347,12 +462,14 @@
           user.ws = null;
         }
         user.connected = false;
+        stopPingLoop(userId);
         setStatus(userId, "⚪ 已断开", false);
         user.connectBtn.disabled = false;
         user.disconnectBtn.disabled = true;
         user.sendBtn.disabled = true;
         user.inputEl.disabled = true;
         appendMessage(userId, "系统: 手动断开", "system");
+        updatePingInfo(userId);
       }
 
       function sendMessage(userId) {
@@ -370,6 +487,7 @@
 
         const receiverId = userId === 1 ? 2 : 1;
         const payload = {
+          type: 0, // NORMAL = 0
           senderId: userId,
           receiverId: receiverId,
           elements: [{ type: 1, content: content }],
@@ -429,6 +547,7 @@
         user.inputEl.disabled = true;
         user.inputEl.placeholder = "请先连接";
         appendMessage(id, "系统: 点击「连接」按钮建立连接", "system");
+        updatePingInfo(id);
       });
     </script>
   </body>

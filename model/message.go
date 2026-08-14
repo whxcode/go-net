@@ -15,14 +15,22 @@ type Element struct {
 	Hash    string      `json:"hash,omitempty"`
 }
 
+type ChannelType uint8
+
+const (
+	ChannelTypeNORMAL ChannelType = iota
+	ChannelTypePING
+)
+
 type Message struct {
-	ID         uint      `gorm:"primarykey" json:"id"`
-	MsgID      string    `gorm:"column:msg_id;uniqueIndex;size:36" json:"msgId"`
-	SenderID   uint      `gorm:"column:sender_id" json:"senderId"`
-	ReceiverID uint      `gorm:"column:receiver_id" json:"receiverId"`
-	Elements   []Element `gorm:"type:json" json:"elements"`
-	Status     int       `gorm:"column:status;default:0" json:"status"`
-	CreatedAt  time.Time `gorm:"column:created_at" json:"createdAt"`
+	Type       ChannelType `json:"type"`
+	ID         uint        `gorm:"primarykey" json:"id"`
+	MsgID      string      `gorm:"column:msg_id;uniqueIndex;size:36" json:"msgId"`
+	SenderID   uint        `gorm:"column:sender_id" json:"senderId"`
+	ReceiverID uint        `gorm:"column:receiver_id" json:"receiverId"`
+	Elements   []Element   `gorm:"type:json" json:"elements"`
+	Status     int         `gorm:"column:status;default:0" json:"status"`
+	CreatedAt  time.Time   `gorm:"column:created_at" json:"createdAt"`
 }
 
 func (Message) TableName() string {

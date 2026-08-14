@@ -1,6 +1,7 @@
 package pool
 
 import (
+	"fmt"
 	"net/http"
 	"sync"
 
@@ -45,6 +46,8 @@ func (p *userPool) RemoveUser(userID uint) {
 		conn.Close()
 		delete(p.users, userID)
 	}
+
+	fmt.Println("userPool RemoveUser", userID, "online users:", len(p.users))
 }
 
 func (p *userPool) GetUserConn(userID uint) *websocket.Conn {
