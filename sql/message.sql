@@ -10,5 +10,8 @@ CREATE TABLE `messages` (
     `status` tinyint(1) DEFAULT '0' COMMENT '0-未读, 1-已读',
     `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `idx_msg_id` (`msg_id`)
+    UNIQUE KEY `idx_msg_id` (`msg_id`),
+    KEY `idx_sender_id` (`sender_id`),
+    KEY `idx_receiver_id` (`receiver_id`),
+    KEY `idx_created_at` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='消息表';

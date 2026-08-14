@@ -51,6 +51,9 @@ func RequestWsHandle(c *gin.Context) middleware.CloseHandle {
 func ChannelHandle(conn *websocket.Conn, p []byte, message *model.Message) bool {
 	senderConn := pool.UserPool.GetUserConn(message.ReceiverID)
 
+	// 保存数据
+	go func() { model.MessageDB.Save(message) }()
+
 	if senderConn == nil {
 		conn.WriteMessage(websocket.TextMessage, []byte("当前好友不在线"))
 		return true

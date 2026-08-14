@@ -7,6 +7,7 @@ import (
 
 	"go-net/model"
 	"go-net/pool"
+	"go-net/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -93,6 +94,8 @@ func BeatExecute(
 				conn.WriteMessage(websocket.TextMessage, []byte(`{"type":2}`)) // PONG
 				continue
 			}
+
+			message.MsgID = utils.GenerateSnowflakeID()
 
 			if channelHandle(conn, msg, message) {
 			} else {
