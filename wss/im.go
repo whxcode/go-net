@@ -46,6 +46,7 @@ func RequestWsHandle(c *gin.Context) middleware.CloseHandle {
 
 	pool.UserPool.AddUser(userID, conn)
 
+	// 每当用户上上线后；推送离线信息
 	messages, _ := redis.GetOfflineMessage(userID)
 
 	if messages != nil {
@@ -63,6 +64,7 @@ func ChannelHandle(conn *websocket.Conn, p []byte, message *model.Message) bool 
 	// 保存数据
 	go func() { model.MessageDB.Save(message) }()
 
+	// 将离线信息存入 redis 7 天时间。
 	if senderConn == nil {
 		conn.WriteMessage(websocket.TextMessage, []byte("当前好友不在线"))
 		redis.SaveOfflineMessage(message.ReceiverID, p)

@@ -76,7 +76,7 @@ func (*userControll) Login(c *gin.Context) *utils.KResponse {
 		return utils.MakeResponseWidthCode("密码错误", http.StatusBadRequest)
 	}
 
-	token, err := utils.GenerateToken(user.ID)
+	token, err := utils.GenerateToken(uint(user.ID))
 	if err != nil {
 		return utils.MakeResponseWidthCode("生成token失败", http.StatusInternalServerError)
 	}
