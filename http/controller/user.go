@@ -39,6 +39,20 @@ func (*userControll) GetUser(c *gin.Context) *utils.KResponse {
 	})
 }
 
+func (*userControll) GetUsers(c *gin.Context) *utils.KResponse {
+	search := c.Query("search")
+
+	fmt.Println("search-->", search)
+
+	users := model.UserDb.GetUsers(search)
+
+	if users == nil {
+		return utils.MakeResponseWidthCode("获取用户信息失败", http.StatusInternalServerError)
+	}
+
+	return utils.MakeResponse(users)
+}
+
 func (*userControll) Register(c *gin.Context) *utils.KResponse {
 	user := &model.User{}
 
@@ -82,7 +96,7 @@ func (*userControll) Login(c *gin.Context) *utils.KResponse {
 		return utils.MakeResponseWidthCode("生成token失败", http.StatusInternalServerError)
 	}
 
-	err = redis.RedisClient.Set(redis.Ctx, token, uint(user.ID), 10*time.Minute).Err()
+	err = redis.RedisClient.Set(redis.Ctx, token, uint(user.ID), 7*24*time.Hour).Err()
 	if err != nil {
 		fmt.Println(err)
 		return utils.MakeResponseWidthCode("保存token失败", http.StatusInternalServerError)

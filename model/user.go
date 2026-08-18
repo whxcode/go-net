@@ -55,3 +55,16 @@ func (db *userDb) UserExists(username string) bool {
 
 	return result.Error == nil
 }
+
+/*
+* 模糊匹配用户名称
+*
+* */
+func (db *userDb) GetUsers(username string) (result []*User) {
+	err := DB.Where("username LIKE ?", "%"+username+"%").Find(&result).Error
+	if err != nil {
+		panic(err)
+	}
+
+	return
+}

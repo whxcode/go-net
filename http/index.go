@@ -57,6 +57,7 @@ func Start() {
 		userRouterPrivate.Use(middleware.AuthorizationMiddleware())
 		userRouterPrivate.GET(controller.K_User_GetUser, execute(controller.UserControll.GetUser))
 		userRouterPrivate.GET(controller.K_User_Logout, execute(controller.UserControll.Logout))
+		userRouterPrivate.GET(controller.K_User_GetUsers, execute(controller.UserControll.GetUsers))
 
 		userRouterPublic := api.Group("/user")
 		userRouterPublic.POST(controller.K_User_Register, execute(controller.UserControll.Register))

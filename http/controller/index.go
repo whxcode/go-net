@@ -23,6 +23,7 @@ const (
 	K_User_Logout   = "/logout"
 	K_User_Register = "/register"
 	K_User_Login    = "/login"
+	K_User_GetUsers = "/users"
 )
 
 type KResponseHandle = func(c *gin.Context) *utils.KResponse
