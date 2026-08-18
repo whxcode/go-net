@@ -1,8 +1,25 @@
 package model
 
 import (
+	"fmt"
 	"time"
 )
+
+/***
+* 好友管理DB
+* 数据表设计的是存 2 份数据
+*   user_id,friend_id
+* - 获取好友列表
+* 	select * from friends where user_id = userID and status = FriendStatusAccepted
+* - 获取好用申请列表
+* 	select * from friends where user_id = userID and status != FriendStatusAccepted and status !=  FriendStatusDeleted
+*
+* - 发起添加好友申请
+* - 同意好友申请
+* - 拒绝好友申请
+* - 删除好友
+*
+ */
 
 type RequestFriendStatus = uint8
 
@@ -45,10 +62,31 @@ func (*friendDB) GetFirends(userId UserID) []*Friend {
 		panic(err)
 	}
 
+	fmt.Println(result)
+
 	return result
 }
 
-// 根据用户 id；添加好友
+/**
+* 获取好友申请列表
+* */
+
+func (*friendDB) GetFriendRequests(userId UserID) (result []*Friend) {
+	err := DB.Table("friends").Where("user_id = ? AND status IN (?)", userId, []RequestFriendStatus{FriendStatusPending, FriendStatusRejected}).Find(&result).Error
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(result)
+	return
+}
+
+/*
+* 好友申请
+* user_id -> 我
+* friendId -> 对方
+*
+* */
 func (*friendDB) Requesets(userId, friendId UserID, remark string) *Friend {
 	f := &Friend{
 		UserID:   userId,
@@ -57,14 +95,62 @@ func (*friendDB) Requesets(userId, friendId UserID, remark string) *Friend {
 		Remark:   remark,
 	}
 
-	DB.Create(f)
+	err := DB.Create(f).Error
+	if err != nil {
+		panic(err)
+	}
+
+	return f
+}
+
+/**
+* 同意好友申请
+* user_id -> 我
+* friendId -> 对方
+*
+* */
+func (*friendDB) AcceptRequeset(userId, friendId UserID) *Friend {
+	// 查询时;需要交互一下 查询条件条件
+	err := DB.Table("friends").Where("user_id = ? AND friend_id = ?", friendId, userId).
+		Update("status", FriendStatusAccepted).Error
+	if err != nil {
+		panic(err)
+	}
+
+	f := &Friend{
+		UserID:   userId,
+		FriendID: friendId,
+		Status:   FriendStatusAccepted,
+	}
+
+	err = DB.Create(f).Error
+	if err != nil {
+		panic(err)
+	}
 
 	return nil
 }
 
-// 同意
-func (*friendDB) AcceptRequest(userID, friendID UserID) error {
-	DB.Model(&Friend{}).Where("user_id = ? AND friend_id = ?", userID, friendID).Update("status", FriendStatusAccepted)
+/**
+* 拒绝好友申请
+*
+* */
+func (*friendDB) RejectedRequeset(userId, friendId UserID) error {
+	return DB.Table("friends").
+		Where("user_id = ? AND friend_id = ?", friendId, userId).
+		Update("status", FriendStatusRejected).Error
+}
+
+/**
+* 删除好友
+* */
+func (*friendDB) DeleteFriend(userId, friendId UserID) error {
+	err := DB.Table("friends").
+		Where("(user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)", userId, friendId, friendId, userId).
+		Update("status", FriendStatusDeleted).Error
+	if err != nil {
+		panic(err)
+	}
 
 	return nil
 }
