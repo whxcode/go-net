@@ -1,6 +1,7 @@
-package controll
+package controller
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -81,8 +82,9 @@ func (*userControll) Login(c *gin.Context) *utils.KResponse {
 		return utils.MakeResponseWidthCode("生成token失败", http.StatusInternalServerError)
 	}
 
-	err = redis.RedisClient.Set(redis.Ctx, token, user.ID, 10*time.Minute).Err()
+	err = redis.RedisClient.Set(redis.Ctx, token, uint(user.ID), 10*time.Minute).Err()
 	if err != nil {
+		fmt.Println(err)
 		return utils.MakeResponseWidthCode("保存token失败", http.StatusInternalServerError)
 	}
 

@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"go-net/config"
-	"go-net/http/controll"
+	"go-net/http/controller"
 	"go-net/logs"
 	"go-net/middleware"
 	"go-net/oss"
@@ -17,7 +17,7 @@ import (
 func init() {
 }
 
-func execute(handle controll.KResponseHandle) gin.HandlerFunc {
+func execute(handle controller.KResponseHandle) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		result := handle(c)
 		c.Set("response", result)
@@ -29,41 +29,42 @@ func Start() {
 	oss.Init()
 
 	r := gin.New()
-	r.Use(logs.LoggerMiddleware()) // 自定义日志中间件
-	r.Use(gin.Recovery())
-
 	r.LoadHTMLGlob(config.ConfigData.Server.TemplatePath)
-	// 使用默认CORS中间件，允许所有跨域请求
-	r.Use(cors.Default())
 
-	r.Use(middleware.ResponseMiddleware()) // 使用自定义响应中间件
+	api := r.Group("/api")
+	api.Use(logs.LoggerMiddleware()) // 自定义日志中间件
+	api.Use(gin.Recovery())
+	// 使用默认CORS中间件，允许所有跨域请求
+	api.Use(cors.Default())
+
+	api.Use(middleware.ResponseMiddleware()) // 使用自定义响应中间件
 
 	// r.Static("/asset", "/home/whx/study/go-net/im/pages/asset/")
 
 	// 文件上传和下载路由
-	fileRouter := r.Group("/file")
+	fileRouter := api.Group("/file")
 
-	fileRouter.POST(controll.KUpload, execute(controll.FileController.Upload))
-	fileRouter.POST(controll.KGetfile, execute(controll.FileController.GetFile))
+	fileRouter.POST(controller.KUpload, execute(controller.FileController.Upload))
+	fileRouter.POST(controller.KGetfile, execute(controller.FileController.GetFile))
 
-	fileDowloadRouter := r.Group(controll.KDowloadfile)
-	fileDowloadRouter.Use(controll.FileController.DownloadMiddleware()) // 使用自定义响应中间件
-	fileDowloadRouter.GET("", controll.FileController.DowloadFile)
+	fileDowloadRouter := api.Group(controller.KDowloadfile)
+	fileDowloadRouter.Use(controller.FileController.DownloadMiddleware()) // 使用自定义响应中间件
+	fileDowloadRouter.GET("", controller.FileController.DowloadFile)
 
 	{
 
-		userRouterPrivate := r.Group("/user")
+		userRouterPrivate := api.Group("/user")
 		userRouterPrivate.Use(middleware.AuthorizationMiddleware())
-		userRouterPrivate.GET(controll.K_User_GetUser, execute(controll.UserControll.GetUser))
-		userRouterPrivate.GET(controll.K_User_Logout, execute(controll.UserControll.Logout))
+		userRouterPrivate.GET(controller.K_User_GetUser, execute(controller.UserControll.GetUser))
+		userRouterPrivate.GET(controller.K_User_Logout, execute(controller.UserControll.Logout))
 
-		userRouterPublic := r.Group("/user")
-		userRouterPublic.POST(controll.K_User_Register, execute(controll.UserControll.Register))
-		userRouterPublic.POST(controll.K_User_Login, execute(controll.UserControll.Login))
+		userRouterPublic := api.Group("/user")
+		userRouterPublic.POST(controller.K_User_Register, execute(controller.UserControll.Register))
+		userRouterPublic.POST(controller.K_User_Login, execute(controller.UserControll.Login))
 	}
 
 	{
-		wssRouter := r.Group("/ws")
+		wssRouter := api.Group("/ws")
 		wssRouter.Use(middleware.BeatMiddleware())
 		wssRouter.GET("/im", middleware.BeatExecute(wss.RequestWsHandle, wss.ChannelHandle)) // WebSocket路由
 	}

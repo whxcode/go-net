@@ -7,6 +7,10 @@ import (
 
 type UserID uint
 
+func (id UserID) String() string {
+	return string(id)
+}
+
 type User struct {
 	ID        UserID    `gorm:"primarykey" json:"id"`
 	Username  string    `gorm:"uniqueIndex;size:50" json:"username"`

@@ -1,6 +1,7 @@
 package main
 
 import (
+	httpServer "go-net/http"
 	"go-net/model"
 	"go-net/model/redis"
 	"go-net/utils"
@@ -15,9 +16,9 @@ func main() {
 	model.InitDB()
 	redis.InitRedis()
 
-	model.FriendDB.GetFirends(1)
+	// 	model.FriendDB.GetFirends(1)
 
-	// httpServer.Start()
+	httpServer.Start()
 	// view.Test()
 	// Create a Gin router with default middleware (logger and recovery)
 }

@@ -1,4 +1,4 @@
-package controll
+package controller
 
 type firendsControll struct{}
 
