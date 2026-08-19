@@ -18,7 +18,7 @@ type userControll struct{}
 var UserControll = &userControll{}
 
 func (*userControll) GetUser(c *gin.Context) *utils.KResponse {
-	userId, _ := c.Get("userId")
+	userId, _ := c.Get("userID")
 	token, _ := c.Get("token")
 
 	u, o := userId.(uint)
@@ -41,8 +41,6 @@ func (*userControll) GetUser(c *gin.Context) *utils.KResponse {
 
 func (*userControll) GetUsers(c *gin.Context) *utils.KResponse {
 	search := c.Query("search")
-
-	fmt.Println("search-->", search)
 
 	users := model.UserDb.GetUsers(search)
 

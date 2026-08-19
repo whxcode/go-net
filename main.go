@@ -1,5 +1,14 @@
 package main
 
+/**
+*application/json	c.ShouldBindJSON(&req)	解析 JSON body
+application/x-www-form-urlencoded	c.ShouldBind(&req) 或 c.PostForm("key")	表单格式
+multipart/form-data	c.ShouldBind(&req) 或 c.FormFile("file")	文件上传
+text/plain	c.GetRawData()	原始 body
+XML	c.ShouldBindXML(&req)	XML body
+GraphQL	c.GetRawData()	解析 query 字段
+* */
+
 import (
 	httpServer "go-net/http"
 	"go-net/model"

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"go-net/model"
 	"go-net/model/redis"
 	"go-net/utils"
 
@@ -31,7 +32,7 @@ func AuthorizationMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("userId", uint(userId))
+		utils.SetUserID(c, model.UserID(userId))
 		c.Set("token", token)
 
 		c.Next()

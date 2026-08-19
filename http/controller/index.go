@@ -19,11 +19,16 @@ const (
 	KGetfile                = "/getfile"
 	KDowloadfile            = "/file/download/:hash"
 
-	K_User_GetUser  = "/get"
-	K_User_Logout   = "/logout"
-	K_User_Register = "/register"
-	K_User_Login    = "/login"
-	K_User_GetUsers = "/users"
+	KUserGetUser  = "/get"
+	KUserLogout   = "/logout"
+	KUserRegister = "/register"
+	KUserLogin    = "/login"
+	KUserGetUsers = "/users"
+
+	KFriends          = "/friends"
+	KFriendRequest    = "/request"
+	KFriendRequests   = "/requests"
+	KFriendPutRequest = "/request/:id"
 )
 
 type KResponseHandle = func(c *gin.Context) *utils.KResponse

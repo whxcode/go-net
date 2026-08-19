@@ -1,0 +1,186 @@
+========================================
+SQL 单表 CURD 标准操作
+========================================
+
+一、插入数据（Create）
+========================================
+
+-- 插入单条
+INSERT INTO users (username, password, nickname) VALUES ('zhangsan', '123456', '张三');
+
+-- 插入多条
+INSERT INTO users (username, password, nickname) VALUES 
+    ('lisi', '123456', '李四'),
+    ('wangwu', '123456', '王五');
+
+
+二、查询数据（Read）
+========================================
+
+-- 查所有
+SELECT * FROM users;
+
+-- 查指定字段
+SELECT id, username, nickname FROM users;
+
+-- 条件查询
+SELECT * FROM users WHERE id = 1;
+SELECT * FROM users WHERE username = 'zhangsan';
+
+-- 模糊查询
+SELECT * FROM users WHERE username LIKE '%zhang%';
+
+-- 多条件（AND / OR）
+SELECT * FROM users WHERE username = 'zhangsan' AND password = '123456';
+SELECT * FROM users WHERE username = 'zhangsan' OR username = 'lisi';
+
+-- 排序
+SELECT * FROM users ORDER BY created_at DESC;  -- 倒序
+SELECT * FROM users ORDER BY created_at ASC;   -- 正序
+
+-- 分页
+SELECT * FROM users LIMIT 10 OFFSET 0;   -- 第1页
+SELECT * FROM users LIMIT 10 OFFSET 10;  -- 第2页
+
+-- 统计
+SELECT COUNT(*) FROM users;
+SELECT COUNT(*) FROM users WHERE username LIKE '%zhang%';
+
+-- 去重
+SELECT DISTINCT username FROM users;
+
+-- 查询不为空
+SELECT * FROM users WHERE nickname IS NOT NULL;
+
+-- IN 查询
+SELECT * FROM users WHERE id IN (1, 2, 3);
+SELECT * FROM users WHERE id NOT IN (1, 2, 3);
+
+
+三、更新数据（Update）
+========================================
+
+-- 更新单个字段
+UPDATE users SET nickname = '小明' WHERE id = 1;
+
+-- 更新多个字段
+UPDATE users SET nickname = '小明', password = '654321' WHERE id = 1;
+
+-- 全表更新（危险）
+UPDATE users SET status = 1;
+
+-- 带条件更新
+UPDATE users SET nickname = '小张' WHERE username LIKE '%zhang%';
+
+
+四、删除数据（Delete）
+========================================
+
+-- 删除指定记录
+DELETE FROM users WHERE id = 5;
+
+-- 删除全部数据（保留表结构）
+DELETE FROM users;
+
+-- 清空表（重置自增ID）
+TRUNCATE TABLE users;
+
+
+五、表结构操作
+========================================
+
+-- 添加字段
+ALTER TABLE users ADD COLUMN avatar VARCHAR(255);
+ALTER TABLE users ADD COLUMN status TINYINT DEFAULT 1;
+
+-- 修改字段类型
+ALTER TABLE users MODIFY COLUMN nickname VARCHAR(100);
+
+-- 修改字段名（同时改类型）
+ALTER TABLE users CHANGE COLUMN nickname nick VARCHAR(50);
+
+-- 删除字段
+ALTER TABLE users DROP COLUMN avatar;
+
+-- 查看表结构
+DESC users;
+SHOW CREATE TABLE users;
+
+-- 删除表
+DROP TABLE users;
+
+
+六、索引操作
+========================================
+
+-- 创建普通索引
+CREATE INDEX idx_username ON users(username);
+
+-- 创建唯一索引
+CREATE UNIQUE INDEX idx_username ON users(username);
+
+-- 删除索引
+DROP INDEX idx_username ON users;
+
+
+七、条件操作符速查
+========================================
+
+操作符     | 说明
+-----------+------------------
+=          | 等于
+!= / <>    | 不等于
+>          | 大于
+<          | 小于
+>=         | 大于等于
+<=         | 小于等于
+LIKE       | 模糊匹配（% 通配符）
+IN         | 在集合中
+NOT IN     | 不在集合中
+IS NULL    | 为空
+IS NOT NULL| 不为空
+AND        | 与
+OR         | 或
+BETWEEN    | 范围
+LIMIT      | 限制条数
+ORDER BY   | 排序
+GROUP BY   | 分组
+HAVING     | 分组后筛选
+
+
+八、常用综合示例
+========================================
+
+-- 分页查询用户列表，按创建时间倒序
+SELECT id, username, nickname, created_at 
+FROM users 
+WHERE status = 1 
+ORDER BY created_at DESC 
+LIMIT 20 OFFSET 0;
+
+-- 搜索用户（模糊匹配）
+SELECT * FROM users 
+WHERE username LIKE '%张三%' OR nickname LIKE '%张三%';
+
+-- 统计今日注册用户数
+SELECT COUNT(*) FROM users 
+WHERE DATE(created_at) = CURDATE();
+
+
+九、查看数据库信息
+========================================
+
+-- 查看所有数据库
+SHOW DATABASES;
+
+-- 切换数据库
+USE go-net;
+
+-- 查看所有表
+SHOW TABLES;
+
+-- 查看表结构
+DESC users;
+
+-- 查看建表语句
+SHOW CREATE TABLE users;

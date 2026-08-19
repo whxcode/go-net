@@ -7,6 +7,8 @@ import (
 
 type UserID uint
 
+const InvalidUserID UserID = 0
+
 func (id UserID) String() string {
 	return string(id)
 }

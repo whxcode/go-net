@@ -33,7 +33,20 @@ func Start() {
 
 	api := r.Group("/api")
 	api.Use(logs.LoggerMiddleware()) // 自定义日志中间件
-	api.Use(gin.Recovery())
+	// ✅ 自定义 Recovery 中间件
+	api.Use(func(c *gin.Context) {
+		defer func() {
+			if err := recover(); err != nil {
+				// 记录日志
+				// 返回统一格式
+				c.AbortWithStatusJSON(500, gin.H{
+					"code":    500,
+					"message": err,
+				})
+			}
+		}()
+		c.Next()
+	})
 	// 使用默认CORS中间件，允许所有跨域请求
 	api.Use(cors.Default())
 
@@ -55,13 +68,24 @@ func Start() {
 
 		userRouterPrivate := api.Group("/user")
 		userRouterPrivate.Use(middleware.AuthorizationMiddleware())
-		userRouterPrivate.GET(controller.K_User_GetUser, execute(controller.UserControll.GetUser))
-		userRouterPrivate.GET(controller.K_User_Logout, execute(controller.UserControll.Logout))
-		userRouterPrivate.GET(controller.K_User_GetUsers, execute(controller.UserControll.GetUsers))
+		userRouterPrivate.GET(controller.KUserGetUser, execute(controller.UserControll.GetUser))
+		userRouterPrivate.GET(controller.KUserLogout, execute(controller.UserControll.Logout))
+		userRouterPrivate.GET(controller.KUserGetUsers, execute(controller.UserControll.GetUsers))
 
 		userRouterPublic := api.Group("/user")
-		userRouterPublic.POST(controller.K_User_Register, execute(controller.UserControll.Register))
-		userRouterPublic.POST(controller.K_User_Login, execute(controller.UserControll.Login))
+		userRouterPublic.POST(controller.KUserRegister, execute(controller.UserControll.Register))
+		userRouterPublic.POST(controller.KUserLogin, execute(controller.UserControll.Login))
+	}
+
+	{
+
+		friendRouterPrivate := api.Group("/friend")
+		friendRouterPrivate.Use(middleware.AuthorizationMiddleware())
+		friendRouterPrivate.GET(controller.KFriends, execute(controller.FriendController.Firends))
+		friendRouterPrivate.POST(controller.KFriendRequest, execute(controller.FriendController.Request))
+		friendRouterPrivate.GET(controller.KFriendRequests, execute(controller.FriendController.Requests))
+		friendRouterPrivate.PUT(controller.KFriendPutRequest, execute(controller.FriendController.PutRequesetRequest))
+
 	}
 
 	{

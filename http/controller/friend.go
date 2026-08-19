@@ -20,7 +20,13 @@ import (
 
 type firendsControll struct{}
 
-var FirendsControll *firendsControll = &firendsControll{}
+var FriendController *firendsControll = &firendsControll{}
+
+func (*firendsControll) Firends(c *gin.Context) *utils.KResponse {
+	u := utils.GetUserID(c)
+
+	return utils.MakeResponse(model.FriendDB.Firends(u))
+}
 
 func (*firendsControll) Request(c *gin.Context) *utils.KResponse {
 	type Param struct {
@@ -34,5 +40,30 @@ func (*firendsControll) Request(c *gin.Context) *utils.KResponse {
 		return utils.MakeResponseWidthCode(err, http.StatusInternalServerError)
 	}
 
-	return nil
+	model.FriendDB.Request(param.UserID, param.FriendID, param.Remark)
+
+	return utils.MakeResponse(param)
+}
+
+func (*firendsControll) Requests(c *gin.Context) *utils.KResponse {
+	u := utils.GetUserID(c)
+
+	return utils.MakeResponse(model.FriendDB.Requests(u))
+}
+
+func (*firendsControll) PutRequesetRequest(c *gin.Context) *utils.KResponse {
+	var req struct {
+		FirendID model.UserID              `json:"friendID"`
+		Status   model.RequestFriendStatus `json:"status"`
+	}
+
+	u := utils.GetUserID(c)
+
+	friendTableID := c.Param("id")
+
+	if err := c.ShouldBindBodyWithJSON(&req); err != nil {
+		panic(err)
+	}
+
+	return utils.MakeResponseWidthCode([]any{friendTableID, u, req}, http.StatusOK)
 }

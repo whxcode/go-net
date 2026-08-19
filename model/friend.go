@@ -50,7 +50,7 @@ type friendDB struct{}
 var FriendDB = &friendDB{}
 
 // 根据用户id 查询好用列表
-func (*friendDB) GetFirends(userId UserID) []*Friend {
+func (*friendDB) Firends(userId UserID) []*Friend {
 	var result []*Friend
 
 	err := DB.Table("friends"). //
@@ -71,13 +71,14 @@ func (*friendDB) GetFirends(userId UserID) []*Friend {
 * 获取好友申请列表
 * */
 
-func (*friendDB) GetFriendRequests(userId UserID) (result []*Friend) {
-	err := DB.Table("friends").Where("user_id = ? AND status IN (?)", userId, []RequestFriendStatus{FriendStatusPending, FriendStatusRejected}).Find(&result).Error
+func (*friendDB) Requests(userID UserID) (result []*Friend) {
+	// 我主动发起的申请
+	// 其他人向我发起的申请
+	err := DB.Table("friends").Where("(user_id = ? AND status IN (?)) OR (friend_id = ? AND status IN (?))", userID, []RequestFriendStatus{FriendStatusPending, FriendStatusRejected}, userID, []RequestFriendStatus{FriendStatusPending, FriendStatusRejected}).Find(&result).Error
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(result)
 	return
 }
 
@@ -87,7 +88,7 @@ func (*friendDB) GetFriendRequests(userId UserID) (result []*Friend) {
 * friendId -> 对方
 *
 * */
-func (*friendDB) Requesets(userId, friendId UserID, remark string) *Friend {
+func (*friendDB) Request(userId, friendId UserID, remark string) *Friend {
 	f := &Friend{
 		UserID:   userId,
 		FriendID: friendId,
