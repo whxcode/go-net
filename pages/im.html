@@ -385,7 +385,7 @@
         const user = users[userId];
         if (user.connected) return;
 
-        const wsUrl = `ws://localhost:8080/ws/im?userID=${userId}`;
+        const wsUrl = `ws://localhost:8080/api/ws/im?userID=${userId}`;
         const ws = new WebSocket(wsUrl);
 
         ws.onopen = function () {

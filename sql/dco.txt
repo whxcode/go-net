@@ -184,3 +184,15 @@ DESC users;
 
 -- 查看建表语句
 SHOW CREATE TABLE users;
+
+
+-- 多表查询
+-- LEFT JOIN：friends 是主表 (全部返回；)
+SELECT *
+FROM friends f
+LEFT JOIN users u(没有就显示 NULL) ON u.id = f.friend_id;
+
+-- RIGHT JOIN：users 是主表
+SELECT *
+FROM friends f
+RIGHT JOIN users u ON u.id = f.friend_id;

@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -54,15 +53,11 @@ func (*friendDB) Firends(userId UserID) []*Friend {
 	var result []*Friend
 
 	err := DB.Table("friends"). //
-					Select("friends.friend_id as user_id,users.username,friends.remark").
-					Joins("left join users ON users.id = friends.friend_id").
-					Where("friends.user_id = ? AND friends.status = ?", userId, 1).
+					Where("user_id = ? AND status = ?", userId, FriendStatusAccepted).
 					Find(&result).Error
 	if err != nil {
 		panic(err)
 	}
-
-	fmt.Println(result)
 
 	return result
 }
