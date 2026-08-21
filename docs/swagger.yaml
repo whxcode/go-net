@@ -1,0 +1,105 @@
+basePath: /api
+definitions:
+  model.User:
+    properties:
+      createAt:
+        type: string
+      id:
+        $ref: '#/definitions/model.UserID'
+      updateAt:
+        type: string
+      username:
+        type: string
+    type: object
+  model.UserID:
+    enum:
+    - 0
+    type: integer
+    x-enum-varnames:
+    - InvalidUserID
+  model.UserResponse:
+    properties:
+      createAt:
+        type: string
+      id:
+        $ref: '#/definitions/model.UserID'
+      token:
+        type: string
+      updateAt:
+        type: string
+      username:
+        type: string
+    type: object
+  utils.KResponse:
+    properties:
+      code:
+        type: integer
+      data: {}
+      message:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: 一个  IM 服务器
+  title: go-net
+  version: "1.0"
+paths:
+  /user/get:
+    get:
+      description: 返回当前登录用户的个人信息
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.UserResponse'
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取用户信息
+      tags:
+      - 用户
+  /user/users:
+    get:
+      description: 返回当前登录用户的个人信息
+      parameters:
+      - default: '""'
+        description: 搜索关键字
+        in: query
+        name: search
+        type: string
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.User'
+                  type: array
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: 根据 search 关键字 获取用户列表
+      tags:
+      - 用户
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: token
+    type: apiKey
+swagger: "2.0"

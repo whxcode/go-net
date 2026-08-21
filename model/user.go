@@ -21,6 +21,11 @@ type User struct {
 	UpdatedAt time.Time `gorm:"column:updated_at" json:"updateAt"`
 }
 
+type UserResponse struct {
+	User
+	Token string `json:"token"`
+}
+
 type userDb struct {
 	users []*User
 	mutex sync.Mutex
@@ -42,7 +47,7 @@ func (db *userDb) GetUserByUsername(username string) (*User, error) {
 	return user, nil
 }
 
-func (db *userDb) GetUserByUserID(userID uint) (*User, error) {
+func (db *userDb) GetUserByUserID(userID UserID) (*User, error) {
 	user := &User{}
 	err := DB.Where("id = ?", userID).First(user).Error
 	if err != nil {

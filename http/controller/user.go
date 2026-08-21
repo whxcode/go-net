@@ -17,28 +17,39 @@ type userControll struct{}
 
 var UserControll = &userControll{}
 
+// controller/user.go
+// GetUser 获取当前用户信息
+// @Summary 获取用户信息
+// @Description 返回当前登录用户的个人信息
+// @Tags 用户
+// @Success 200 {object} utils.KResponse{data=model.UserResponse} "成功"
+// @Failure 500 {object} utils.KResponse "服务器错误"
+// @Router /user/get [get]
+// @Security ApiKeyAuth
 func (*userControll) GetUser(c *gin.Context) *utils.KResponse {
-	userId, _ := c.Get("userID")
-	token, _ := c.Get("token")
-
-	u, o := userId.(uint)
-
-	if !o {
-		return utils.MakeResponseWidthCode("获取用户信息失败", http.StatusInternalServerError)
-	}
+	token := utils.GetToken(c)
+	u := utils.GetUserID(c)
 
 	user, err := model.UserDb.GetUserByUserID(u)
 	if err != nil {
 		return utils.MakeResponseWidthCode("获取用户信息失败", http.StatusInternalServerError)
 	}
 
-	return utils.MakeResponse(gin.H{
-		"id":       user.ID,
-		"username": user.Username,
-		"token":    token,
+	return utils.MakeResponse(&model.UserResponse{
+		User:  *user,
+		Token: token,
 	})
 }
 
+// controller/user.go
+// @Summary 根据 search 关键字 获取用户列表
+// @Description 返回当前登录用户的个人信息
+// @Tags 用户
+// @Param search query string false "搜索关键字" default("")
+// @Success 200 {object} utils.KResponse{data=[]model.User} "成功"
+// @Failure 500 {object} utils.KResponse "服务器错误"
+// @Router /user/users [get]
+// @Security ApiKeyAuth
 func (*userControll) GetUsers(c *gin.Context) *utils.KResponse {
 	search := c.Query("search")
 

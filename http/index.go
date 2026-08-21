@@ -10,8 +10,13 @@ import (
 	"go-net/oss"
 	"go-net/wss"
 
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+
+	_ "go-net/docs" // ✅ 打开这行，你的项目名替换成 go.mod 里的 module 名
 )
 
 func init() {
@@ -30,6 +35,9 @@ func Start() {
 
 	r := gin.New()
 	r.LoadHTMLGlob(config.ConfigData.Server.TemplatePath)
+
+	// Swagger 路由
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	api := r.Group("/api")
 	api.Use(logs.LoggerMiddleware()) // 自定义日志中间件
