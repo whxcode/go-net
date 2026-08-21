@@ -1,5 +1,15 @@
 basePath: /api
 definitions:
+  controller.RegisterRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
   model.User:
     properties:
       createAt:
@@ -45,9 +55,14 @@ info:
   title: go-net
   version: "1.0"
 paths:
-  /user/get:
+  /users/:id:
     get:
-      description: 返回当前登录用户的个人信息
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: integer
       responses:
         "200":
           description: 成功
@@ -62,14 +77,30 @@ paths:
           description: 服务器错误
           schema:
             $ref: '#/definitions/utils.KResponse'
-      security:
-      - ApiKeyAuth: []
+      summary: 根据用户ID获取用户信息
+      tags:
+      - 用户
+  /users/get:
+    get:
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.UserResponse'
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
       summary: 获取用户信息
       tags:
       - 用户
-  /user/users:
+  /users/list:
     get:
-      description: 返回当前登录用户的个人信息
       parameters:
       - default: '""'
         description: 搜索关键字
@@ -92,14 +123,82 @@ paths:
           description: 服务器错误
           schema:
             $ref: '#/definitions/utils.KResponse'
-      security:
-      - ApiKeyAuth: []
       summary: 根据 search 关键字 获取用户列表
       tags:
       - 用户
-securityDefinitions:
-  ApiKeyAuth:
-    in: header
-    name: token
-    type: apiKey
+  /users/login:
+    post:
+      parameters:
+      - description: 登录请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.RegisterRequest'
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.UserResponse'
+                  type: array
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 用户登录
+      tags:
+      - 用户
+  /users/logout:
+    get:
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 退出登录
+      tags:
+      - 用户
+  /users/register:
+    post:
+      parameters:
+      - description: 注册请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.RegisterRequest'
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.User'
+                  type: array
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 用户注册
+      tags:
+      - 用户
 swagger: "2.0"

@@ -45,23 +45,7 @@ func GetUserID(c *gin.Context) model.UserID {
 }
 
 func GetToken(c *gin.Context) string {
-	userID, exists := c.Get("token")
-
-	if !exists {
-		return ""
-	}
-
-	id, ok := userID.(string)
-
-	if !ok {
-		return ""
-	}
-
-	return id
-}
-
-func SetToken(c *gin.Context, token string) {
-	c.Set("token", token)
+	return c.Request.Header.Get("token")
 }
 
 func SetUserID(c *gin.Context, userID model.UserID) {

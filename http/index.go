@@ -74,13 +74,14 @@ func Start() {
 
 	{
 
-		userRouterPrivate := api.Group("/user")
+		userRouterPrivate := api.Group("/users")
 		userRouterPrivate.Use(middleware.AuthorizationMiddleware())
 		userRouterPrivate.GET(controller.KUserGetUser, execute(controller.UserControll.GetUser))
+		userRouterPrivate.GET(controller.KUserGetUserByID, execute(controller.UserControll.GetUserByID))
 		userRouterPrivate.GET(controller.KUserLogout, execute(controller.UserControll.Logout))
 		userRouterPrivate.GET(controller.KUserGetUsers, execute(controller.UserControll.GetUsers))
 
-		userRouterPublic := api.Group("/user")
+		userRouterPublic := api.Group("/users")
 		userRouterPublic.POST(controller.KUserRegister, execute(controller.UserControll.Register))
 		userRouterPublic.POST(controller.KUserLogin, execute(controller.UserControll.Login))
 	}

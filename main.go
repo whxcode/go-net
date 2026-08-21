@@ -14,9 +14,6 @@ GraphQL	c.GetRawData()	解析 query 字段
 // @description 一个  IM 服务器
 // @host localhost:8080
 // @BasePath /api
-// @securityDefinitions.apikey ApiKeyAuth
-// @in header
-// @name token
 import (
 	httpServer "go-net/http"
 	"go-net/model"

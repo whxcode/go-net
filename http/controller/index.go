@@ -19,11 +19,12 @@ const (
 	KGetfile                = "/getfile"
 	KDowloadfile            = "/file/download/:hash"
 
-	KUserGetUser  = "/get"
-	KUserLogout   = "/logout"
-	KUserRegister = "/register"
-	KUserLogin    = "/login"
-	KUserGetUsers = "/users"
+	KUserGetUser     = "/get"
+	KUserGetUserByID = "/:id"
+	KUserLogout      = "/logout"
+	KUserRegister    = "/register"
+	KUserLogin       = "/login"
+	KUserGetUsers    = "/list"
 
 	KFriends          = "/friends"
 	KFriendRequest    = "/request"

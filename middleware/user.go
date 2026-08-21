@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -13,7 +14,7 @@ import (
 
 func AuthorizationMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token := c.Request.Header.Get("token")
+		token := utils.GetToken(c)
 
 		if token == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, utils.MakeResponseWidthCode("未登录", http.StatusUnauthorized))
@@ -21,6 +22,9 @@ func AuthorizationMiddleware() gin.HandlerFunc {
 		}
 
 		userIdStr, err := redis.RedisClient.Get(c, token).Result()
+
+		fmt.Println("userIdStr:", userIdStr, err, "toekn:--->", token, "<--")
+
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, utils.MakeResponseWidthCode("登录已过期", http.StatusUnauthorized))
 			return

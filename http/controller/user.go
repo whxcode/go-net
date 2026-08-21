@@ -17,15 +17,11 @@ type userControll struct{}
 
 var UserControll = &userControll{}
 
-// controller/user.go
-// GetUser 获取当前用户信息
 // @Summary 获取用户信息
-// @Description 返回当前登录用户的个人信息
 // @Tags 用户
 // @Success 200 {object} utils.KResponse{data=model.UserResponse} "成功"
 // @Failure 500 {object} utils.KResponse "服务器错误"
-// @Router /user/get [get]
-// @Security ApiKeyAuth
+// @Router /users/get [get]
 func (*userControll) GetUser(c *gin.Context) *utils.KResponse {
 	token := utils.GetToken(c)
 	u := utils.GetUserID(c)
@@ -41,15 +37,33 @@ func (*userControll) GetUser(c *gin.Context) *utils.KResponse {
 	})
 }
 
-// controller/user.go
+// @Summary  根据用户ID获取用户信息
+// @Tags 用户
+// @Param id path int true "用户ID"
+// @Success 200 {object} utils.KResponse{data=model.UserResponse} "成功"
+// @Failure 500 {object} utils.KResponse "服务器错误"
+// @Router /users/:id [get]
+func (*userControll) GetUserByID(c *gin.Context) *utils.KResponse {
+	token := utils.GetToken(c)
+	u := utils.GetUserID(c)
+
+	user, err := model.UserDb.GetUserByUserID(u)
+	if err != nil {
+		return utils.MakeResponseWidthCode("获取用户信息失败", http.StatusInternalServerError)
+	}
+
+	return utils.MakeResponse(&model.UserResponse{
+		User:  *user,
+		Token: token,
+	})
+}
+
 // @Summary 根据 search 关键字 获取用户列表
-// @Description 返回当前登录用户的个人信息
 // @Tags 用户
 // @Param search query string false "搜索关键字" default("")
 // @Success 200 {object} utils.KResponse{data=[]model.User} "成功"
 // @Failure 500 {object} utils.KResponse "服务器错误"
-// @Router /user/users [get]
-// @Security ApiKeyAuth
+// @Router /users/list [get]
 func (*userControll) GetUsers(c *gin.Context) *utils.KResponse {
 	search := c.Query("search")
 
@@ -62,6 +76,17 @@ func (*userControll) GetUsers(c *gin.Context) *utils.KResponse {
 	return utils.MakeResponse(users)
 }
 
+type RegisterRequest struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+// @Summary 用户注册
+// @Tags 用户
+// @Param request body RegisterRequest true "注册请求"
+// @Success 200 {object} utils.KResponse{data=[]model.User} "成功"
+// @Failure 500 {object} utils.KResponse "服务器错误"
+// @Router /users/register [post]
 func (*userControll) Register(c *gin.Context) *utils.KResponse {
 	user := &model.User{}
 
@@ -83,6 +108,12 @@ func (*userControll) Register(c *gin.Context) *utils.KResponse {
 	return utils.MakeResponse(user)
 }
 
+// @Summary 用户登录
+// @Tags 用户
+// @Param request body RegisterRequest true "登录请求"
+// @Success 200 {object} utils.KResponse{data=[]model.UserResponse} "成功"
+// @Failure 500 {object} utils.KResponse "服务器错误"
+// @Router /users/login [post]
 func (*userControll) Login(c *gin.Context) *utils.KResponse {
 	reqUser := &model.User{}
 
@@ -111,13 +142,17 @@ func (*userControll) Login(c *gin.Context) *utils.KResponse {
 		return utils.MakeResponseWidthCode("保存token失败", http.StatusInternalServerError)
 	}
 
-	return utils.MakeResponse(gin.H{
-		"id":       user.ID,
-		"username": user.Username,
-		"token":    token,
+	return utils.MakeResponse(&model.UserResponse{
+		User:  *user,
+		Token: token,
 	})
 }
 
+// @Summary 退出登录
+// @Tags 用户
+// @Success 200 {object} utils.KResponse{data=string} "成功"
+// @Failure 500 {object} utils.KResponse "服务器错误"
+// @Router /users/logout [get]
 func (*userControll) Logout(c *gin.Context) *utils.KResponse {
 	token, _ := c.Get("token")
 
