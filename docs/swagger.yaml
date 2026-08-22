@@ -333,6 +333,7 @@ paths:
       - 文件
   /friends/{id}:
     put:
+      description: 如果将好友移除；同时也会移除对方的好友关系
       parameters:
       - description: 修改好友申请状态;好友列表（表的 ID）
         in: path
@@ -385,6 +386,10 @@ paths:
       - 好友模块
   /friends/request:
     post:
+      description: |-
+        好友表没有关系则新增一条记录 status = 0
+        好友表中已经存在；且 status != 1 或 != 0时；则重新更新 status = 0 和 remark(如果有传递)
+        好友表中已经存在；且 status == 1 或 = 0时；不会有任何变化；返回成功
       parameters:
       - description: 发起好友申请
         in: body

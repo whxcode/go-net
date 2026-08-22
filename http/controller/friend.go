@@ -18,7 +18,6 @@ import (
 好友列表	GET	/api/friends	✅ 已有
 *
 *
-*
 * 好友接口
 | GET | /api/friends/friends | 数组 `[{id, userId, friendId, status, remark}]`（前端取 friendId 当好友 id） | ✅ |
 | GET | /api/friends | 数组 `[{id, username, nickname, avatar, is_online, auto_delete}]`（前端 store 的 Friend 结构，多个页面在用） | ⬜ |
@@ -91,6 +90,7 @@ type PutRequesetRequestResponse struct {
 }
 
 // @Summary 修改好友申请状态,可用于 同意(1),拒绝(2)、删除(3)
+// @Description 如果将好友移除；同时也会移除对方的好友关系
 // @Tags 好友模块
 // @Param id path int true "修改好友申请状态;好友列表（表的 ID）"
 // @Param request body PutRequesetRequestResponse true "修改好友申请状态"
