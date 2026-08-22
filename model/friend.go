@@ -24,20 +24,41 @@ type RequestFriendStatus = uint8
 
 // `status` tinyint(1) DEFAULT '0' COMMENT '0-待确认, 1-已确认, 2-已拒绝, 3-已删除',
 const (
-	FriendStatusPending  RequestFriendStatus = iota // 待确认
-	FriendStatusAccepted                            // 已确认
-	FriendStatusRejected                            // 已拒绝
-	FriendStatusDeleted                             // 已删除
+	// 待确认
+	FriendStatusPending RequestFriendStatus = iota // 待确认
+	// 已确认
+	FriendStatusAccepted // 已确认
+	// 已拒绝
+	FriendStatusRejected // 已拒绝
+	// 已删除
+	FriendStatusDeleted // 已删除
 )
 
 type Friend struct {
-	ID        uint                `gorm:"primarykey" json:"id"`
-	UserID    UserID              `gorm:"column:user_id;index;uniqueIndex:uk_user_friend" json:"userId"`
-	FriendID  UserID              `gorm:"column:friend_id;index;uniqueIndex:uk_user_friend" json:"friendId"`
-	Status    RequestFriendStatus `gorm:"column:status;default:0" json:"status"`
-	Remark    string              `gorm:"column:remark;size:50" json:"remark"`
-	CreatedAt time.Time           `gorm:"column:created_at" json:"createdAt"`
-	UpdatedAt time.Time           `gorm:"column:updated_at" json:"updatedAt"`
+	// 唯一 ID
+	ID uint `gorm:"primarykey" json:"id"`
+	// 自身的 ID 和当前登录的 用户 ID 一直。 (类型 uint)
+	UserID UserID `gorm:"column:user_id;index;uniqueIndex:uk_user_friend" json:"userId" swaggertype:"integer"`
+	// 好友的 用户ID (类型 uint)
+	FriendID UserID `gorm:"column:friend_id;index;uniqueIndex:uk_user_friend" json:"friendId" swaggertype:"integer"`
+	// 状态:  `status` tinyint(1) DEFAULT '0' COMMENT '0-待确认, 1-已确认, 2-已拒绝, 3-已删除',
+	Status RequestFriendStatus `gorm:"column:status;default:0" json:"status"`
+	// 发起好友申请时备注时的备注
+	Remark    string    `gorm:"column:remark;size:50" json:"remark"`
+	CreatedAt time.Time `gorm:"column:created_at" json:"createdAt"`
+	UpdatedAt time.Time `gorm:"column:updated_at" json:"updatedAt"`
+}
+
+type FriendResponse struct {
+	*Friend
+	// 用户账号
+	Username string `gorm:"column:username" json:"username"`
+	// 用户中文名称
+	Nickname string `gorm:"column:nickname" json:"nickname"`
+	// 用户头像
+	Avatar string `gorm:"column:avatar" json:"avatar"`
+	// 在线状态
+	IsOnline bool `gorm:"column:is_online" json:"isOnline"`
 }
 
 func (*Friend) TableName() string {
@@ -49,12 +70,25 @@ type friendDB struct{}
 var FriendDB = &friendDB{}
 
 // 根据用户id 查询好用列表
-func (*friendDB) Firends(userId UserID) []*Friend {
-	var result []*Friend
+func (*friendDB) firends(userId UserID, status []RequestFriendStatus, extar string) []*FriendResponse {
+	var result []*FriendResponse
+	var err error
 
-	err := DB.Table("friends"). //
-					Where("user_id = ? AND status = ?", userId, FriendStatusAccepted).
-					Find(&result).Error
+	if extar == "" {
+		err = DB. //
+				Table("friends f").
+				Select("f.*,u.username,u.nickname,u.avatar").
+				Joins("left join users u on u.id = f.friend_id").
+				Where("(user_id = ? AND status IN (?))", userId, status).
+				Find(&result).Error
+	} else {
+		err = DB.Table("friends f").
+			Select("f.*,u.username,u.nickname,u.avatar").
+			Joins("left join users u on u.id = f.friend_id").
+			Where("(user_id = ? AND status IN (?))"+extar, userId, status, userId, status).
+			Find(&result).Error
+	}
+
 	if err != nil {
 		panic(err)
 	}
@@ -62,19 +96,13 @@ func (*friendDB) Firends(userId UserID) []*Friend {
 	return result
 }
 
-/**
-* 获取好友申请列表
-* */
+// 根据用户id 查询好用列表
+func (f *friendDB) Firends(userId UserID) []*FriendResponse {
+	return f.firends(userId, []RequestFriendStatus{FriendStatusAccepted}, "")
+}
 
-func (*friendDB) Requests(userID UserID) (result []*Friend) {
-	// 我主动发起的申请
-	// 其他人向我发起的申请
-	err := DB.Table("friends").Where("(user_id = ? AND status IN (?)) OR (friend_id = ? AND status IN (?))", userID, []RequestFriendStatus{FriendStatusPending, FriendStatusRejected}, userID, []RequestFriendStatus{FriendStatusPending, FriendStatusRejected}).Find(&result).Error
-	if err != nil {
-		panic(err)
-	}
-
-	return
+func (f *friendDB) Requests(userID UserID) (result []*FriendResponse) {
+	return f.firends(userID, []RequestFriendStatus{FriendStatusPending, FriendStatusRejected}, "OR (friend_id = ? AND status IN (?))")
 }
 
 /*
@@ -99,54 +127,11 @@ func (*friendDB) Request(userId, friendId UserID, remark string) *Friend {
 	return f
 }
 
-/**
-* 同意好友申请
-* user_id -> 我
-* friendId -> 对方
-*
-* */
-func (*friendDB) AcceptRequeset(userId, friendId UserID) *Friend {
+func (*friendDB) PutRequestFriendStatus(id uint, status RequestFriendStatus) {
 	// 查询时;需要交互一下 查询条件条件
-	err := DB.Table("friends").Where("user_id = ? AND friend_id = ?", friendId, userId).
-		Update("status", FriendStatusAccepted).Error
+	err := DB.Table("friends").Where("id = ?", id).
+		Update("status", status).Error
 	if err != nil {
 		panic(err)
 	}
-
-	f := &Friend{
-		UserID:   userId,
-		FriendID: friendId,
-		Status:   FriendStatusAccepted,
-	}
-
-	err = DB.Create(f).Error
-	if err != nil {
-		panic(err)
-	}
-
-	return nil
-}
-
-/**
-* 拒绝好友申请
-*
-* */
-func (*friendDB) RejectedRequeset(userId, friendId UserID) error {
-	return DB.Table("friends").
-		Where("user_id = ? AND friend_id = ?", friendId, userId).
-		Update("status", FriendStatusRejected).Error
-}
-
-/**
-* 删除好友
-* */
-func (*friendDB) DeleteFriend(userId, friendId UserID) error {
-	err := DB.Table("friends").
-		Where("(user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)", userId, friendId, friendId, userId).
-		Update("status", FriendStatusDeleted).Error
-	if err != nil {
-		panic(err)
-	}
-
-	return nil
 }

@@ -14,6 +14,13 @@ definitions:
       url:
         type: string
     type: object
+  controller.PutRequesetRequestResponse:
+    properties:
+      status:
+        description: 状态 `status` tinyint(1) DEFAULT '0' COMMENT '0-待确认, 1-已确认, 2-已拒绝,
+          3-已删除',
+        type: integer
+    type: object
   controller.RegisterRequest:
     properties:
       password:
@@ -23,6 +30,15 @@ definitions:
     required:
     - password
     - username
+    type: object
+  controller.RequestResponse:
+    properties:
+      friendID:
+        description: 好友的 用户ID (类型 uint)
+        type: integer
+      remark:
+        description: 备注信息
+        type: string
     type: object
   controller.UploadResponse:
     properties:
@@ -60,6 +76,65 @@ definitions:
     - newPassword
     - oldPassword
     type: object
+  model.FriendResponse:
+    properties:
+      avatar:
+        description: 用户头像
+        type: string
+      createdAt:
+        type: string
+      friendId:
+        description: 好友的 用户ID (类型 uint)
+        type: integer
+      id:
+        description: 唯一 ID
+        type: integer
+      isOnline:
+        description: 在线状态
+        type: boolean
+      nickname:
+        description: 用户中文名称
+        type: string
+      remark:
+        description: 发起好友申请时备注时的备注
+        type: string
+      status:
+        allOf:
+        - $ref: '#/definitions/model.RequestFriendStatus'
+        description: '状态:  `status` tinyint(1) DEFAULT ''0'' COMMENT ''0-待确认, 1-已确认,
+          2-已拒绝, 3-已删除'','
+      updatedAt:
+        type: string
+      userId:
+        description: 自身的 ID 和当前登录的 用户 ID 一直。 (类型 uint)
+        type: integer
+      username:
+        description: 用户账号
+        type: string
+    type: object
+  model.RequestFriendStatus:
+    enum:
+    - 0
+    - 1
+    - 2
+    - 3
+    format: int32
+    type: integer
+    x-enum-comments:
+      FriendStatusAccepted: 已确认
+      FriendStatusDeleted: 已删除
+      FriendStatusPending: 待确认
+      FriendStatusRejected: 已拒绝
+    x-enum-descriptions:
+    - 待确认
+    - 已确认
+    - 已拒绝
+    - 已删除
+    x-enum-varnames:
+    - FriendStatusPending
+    - FriendStatusAccepted
+    - FriendStatusRejected
+    - FriendStatusDeleted
   model.User:
     properties:
       avatar:
@@ -256,6 +331,106 @@ paths:
       summary: 保存用户上传的文件
       tags:
       - 文件
+  /friends/{id}:
+    put:
+      parameters:
+      - description: 修改好友申请状态;好友列表（表的 ID）
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 修改好友申请状态
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.PutRequesetRequestResponse'
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/controller.PutRequesetRequestResponse'
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 修改好友申请状态,可用于 同意(1),拒绝(2)、删除(3)
+      tags:
+      - 好友模块
+  /friends/friends:
+    get:
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.FriendResponse'
+                  type: array
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 获取好友列表
+      tags:
+      - 好友模块
+  /friends/request:
+    post:
+      parameters:
+      - description: 发起好友申请
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.RequestResponse'
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/controller.RequestResponse'
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 发起好友申请
+      tags:
+      - 好友模块
+  /friends/requests:
+    get:
+      description: user_id = 当前登录的代表主动发起申请(等待别人反馈)；否则；是其他用户(friend_id)向当前用户发起生气 [同意，拒绝]
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.FriendResponse'
+                  type: array
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 获取申请列表
+      tags:
+      - 好友模块
   /users/:id:
     get:
       parameters:

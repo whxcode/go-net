@@ -152,11 +152,11 @@ func Start() {
 
 	{
 
-		friendRouterPrivate := api.Group("/friend")
+		friendRouterPrivate := api.Group("/friends")
 		friendRouterPrivate.Use(middleware.AuthorizationMiddleware())
 		friendRouterPrivate.GET(controller.KFriends, execute(controller.FriendController.Firends))
-		friendRouterPrivate.POST(controller.KFriendRequest, execute(controller.FriendController.Request))
 		friendRouterPrivate.GET(controller.KFriendRequests, execute(controller.FriendController.Requests))
+		friendRouterPrivate.POST(controller.KFriendRequest, execute(controller.FriendController.Request))
 		friendRouterPrivate.PUT(controller.KFriendPutRequest, execute(controller.FriendController.PutRequesetRequest))
 
 	}

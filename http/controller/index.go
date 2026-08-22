@@ -33,7 +33,7 @@ const (
 	KFriends          = "/friends"
 	KFriendRequest    = "/request"
 	KFriendRequests   = "/requests"
-	KFriendPutRequest = "/request/:id"
+	KFriendPutRequest = "/:id"
 )
 
 type KResponseHandle = func(c *gin.Context) *utils.KResponse

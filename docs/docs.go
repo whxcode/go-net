@@ -208,6 +208,178 @@ const docTemplate = `{
                 }
             }
         },
+        "/friends/friends": {
+            "get": {
+                "tags": [
+                    "好友模块"
+                ],
+                "summary": "获取好友列表",
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.KResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.FriendResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/friends/request": {
+            "post": {
+                "tags": [
+                    "好友模块"
+                ],
+                "summary": "发起好友申请",
+                "parameters": [
+                    {
+                        "description": "发起好友申请",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.RequestResponse"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.KResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/controller.RequestResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/friends/requests": {
+            "get": {
+                "description": "user_id = 当前登录的代表主动发起申请(等待别人反馈)；否则；是其他用户(friend_id)向当前用户发起生气 [同意，拒绝]",
+                "tags": [
+                    "好友模块"
+                ],
+                "summary": "获取申请列表",
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.KResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.FriendResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/friends/{id}": {
+            "put": {
+                "tags": [
+                    "好友模块"
+                ],
+                "summary": "修改好友申请状态,可用于 同意(1),拒绝(2)、删除(3)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "修改好友申请状态;好友列表（表的 ID）",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "修改好友申请状态",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.PutRequesetRequestResponse"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.KResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/controller.PutRequesetRequestResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/users/:id": {
             "get": {
                 "tags": [
@@ -621,6 +793,15 @@ const docTemplate = `{
                 }
             }
         },
+        "controller.PutRequesetRequestResponse": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "description": "状态 ` + "`" + `status` + "`" + ` tinyint(1) DEFAULT '0' COMMENT '0-待确认, 1-已确认, 2-已拒绝, 3-已删除',",
+                    "type": "integer"
+                }
+            }
+        },
         "controller.RegisterRequest": {
             "type": "object",
             "required": [
@@ -632,6 +813,19 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.RequestResponse": {
+            "type": "object",
+            "properties": {
+                "friendID": {
+                    "description": "好友的 用户ID (类型 uint)",
+                    "type": "integer"
+                },
+                "remark": {
+                    "description": "备注信息",
                     "type": "string"
                 }
             }
@@ -689,6 +883,85 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "model.FriendResponse": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "description": "用户头像",
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "friendId": {
+                    "description": "好友的 用户ID (类型 uint)",
+                    "type": "integer"
+                },
+                "id": {
+                    "description": "唯一 ID",
+                    "type": "integer"
+                },
+                "isOnline": {
+                    "description": "在线状态",
+                    "type": "boolean"
+                },
+                "nickname": {
+                    "description": "用户中文名称",
+                    "type": "string"
+                },
+                "remark": {
+                    "description": "发起好友申请时备注时的备注",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "状态:  ` + "`" + `status` + "`" + ` tinyint(1) DEFAULT '0' COMMENT '0-待确认, 1-已确认, 2-已拒绝, 3-已删除',",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.RequestFriendStatus"
+                        }
+                    ]
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userId": {
+                    "description": "自身的 ID 和当前登录的 用户 ID 一直。 (类型 uint)",
+                    "type": "integer"
+                },
+                "username": {
+                    "description": "用户账号",
+                    "type": "string"
+                }
+            }
+        },
+        "model.RequestFriendStatus": {
+            "type": "integer",
+            "format": "int32",
+            "enum": [
+                0,
+                1,
+                2,
+                3
+            ],
+            "x-enum-comments": {
+                "FriendStatusAccepted": "已确认",
+                "FriendStatusDeleted": "已删除",
+                "FriendStatusPending": "待确认",
+                "FriendStatusRejected": "已拒绝"
+            },
+            "x-enum-descriptions": [
+                "待确认",
+                "已确认",
+                "已拒绝",
+                "已删除"
+            ],
+            "x-enum-varnames": [
+                "FriendStatusPending",
+                "FriendStatusAccepted",
+                "FriendStatusRejected",
+                "FriendStatusDeleted"
+            ]
         },
         "model.User": {
             "type": "object",
