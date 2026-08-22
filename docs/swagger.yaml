@@ -10,6 +10,13 @@ definitions:
     - password
     - username
     type: object
+  controller.UserPutAvatarRequest:
+    properties:
+      avatar:
+        type: string
+    required:
+    - avatar
+    type: object
   controller.UserPutPasswordRequest:
     properties:
       newPassword:
@@ -24,6 +31,7 @@ definitions:
     properties:
       avatar:
         description: 用户头像、创建时；为空字符串
+        example: ''''''
         type: string
       createAt:
         type: string
@@ -42,6 +50,7 @@ definitions:
         example: whx
         type: string
     required:
+    - avatar
     - id
     - username
     type: object
@@ -55,6 +64,7 @@ definitions:
     properties:
       avatar:
         description: 用户头像、创建时；为空字符串
+        example: ''''''
         type: string
       createAt:
         type: string
@@ -76,6 +86,7 @@ definitions:
         example: whx
         type: string
     required:
+    - avatar
     - id
     - token
     - username
@@ -118,6 +129,32 @@ paths:
           schema:
             $ref: '#/definitions/utils.KResponse'
       summary: 根据用户ID获取用户信息
+      tags:
+      - 用户
+  /users/avatar:
+    put:
+      parameters:
+      - description: 修改头像请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.UserPutAvatarRequest'
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 用改用户头像;
       tags:
       - 用户
   /users/get:

@@ -51,3 +51,13 @@ func GetToken(c *gin.Context) string {
 func SetUserID(c *gin.Context, userID model.UserID) {
 	c.Set("userID", model.UserID(userID))
 }
+
+func ShouldBindBodyWithJSON[T any](c *gin.Context) T {
+	var data T
+
+	if err := c.ShouldBindBodyWithJSON(&data); err != nil {
+		panic(err)
+	}
+
+	return data
+}

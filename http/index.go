@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"runtime"
 
 	"go-net/config"
 	"go-net/http/controller"
@@ -78,6 +79,24 @@ func Start() {
 		defer func() {
 			if r := recover(); r != nil {
 				var errMsg string
+				var funcName string
+				var file string
+				var line int
+
+				// 获取调用栈信息（跳过 runtime 和框架）
+				pc, file, line, ok := runtime.Caller(3) // 跳过 defer、recover、中间件
+				if ok {
+					fn := runtime.FuncForPC(pc)
+					funcName = fn.Name()
+					// 只保留文件名
+					for i := len(file) - 1; i >= 0; i-- {
+						if file[i] == '/' {
+							file = file[i+1:]
+							break
+						}
+					}
+				}
+
 				switch v := r.(type) {
 				case error:
 					errMsg = v.Error()
@@ -89,8 +108,8 @@ func Start() {
 
 				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 					"code":    http.StatusInternalServerError,
-					"message": errMsg,
-					"type":    "panic-recovery",
+					"message": fmt.Sprintf("[%s:%d] %s", file, line, errMsg),
+					"func":    funcName,
 				})
 			}
 		}()
@@ -122,6 +141,7 @@ func Start() {
 		userRouterPrivate.GET(controller.KUserLogout, execute(controller.UserControll.Logout))
 		userRouterPrivate.GET(controller.KUserGetUsers, execute(controller.UserControll.GetUsers))
 		userRouterPrivate.PUT(controller.UserPassword, execute(controller.UserControll.UserPutPassword))
+		userRouterPrivate.PUT(controller.UserAvatar, execute(controller.UserControll.UserPutAvatar))
 
 		userRouterPublic := api.Group("/users")
 		userRouterPublic.POST(controller.KUserRegister, execute(controller.UserControll.Register))

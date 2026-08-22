@@ -59,14 +59,14 @@ func (db *userDb) GetUserByUsername(username string) (*User, error) {
 	return user, nil
 }
 
-func (db *userDb) GetUserByUserID(userID UserID) (*User, error) {
+func (db *userDb) GetUserByUserID(userID UserID) *User {
 	user := &User{}
 	err := DB.Where("id = ?", userID).First(user).Error
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
-	return user, nil
+	return user
 }
 
 func (db *userDb) UserExists(username string) bool {
@@ -86,4 +86,24 @@ func (db *userDb) GetUsers(username string) (result []*User) {
 	}
 
 	return
+}
+
+func (db *userDb) UpdateUser(user *User) error {
+	err := DB.Table("users").Updates(user).Where("id = ?", user.ID).Error
+	if err != nil {
+		panic(err)
+	}
+
+	return nil
+}
+
+func (db *userDb) UpdateUserAvatar(userID UserID, avatar string) error {
+	err := DB.Table("users").Where("id = ?", userID).
+		Update("avatar", avatar).
+		Error
+	if err != nil {
+		panic(err)
+	}
+
+	return nil
 }

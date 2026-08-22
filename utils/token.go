@@ -25,6 +25,12 @@ func GenerateFromPasswordString(p string) string {
 	return string(hashed)
 }
 
+func CompareHashAndPassword(p string, pp string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(p), []byte(pp))
+
+	return err == nil
+}
+
 func GenerateFromPasswordByte(p string) []byte {
 	hashed, _ := bcrypt.GenerateFromPassword([]byte(p), bcrypt.DefaultCost)
 

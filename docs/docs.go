@@ -58,6 +58,51 @@ const docTemplate = `{
                 }
             }
         },
+        "/users/avatar": {
+            "put": {
+                "tags": [
+                    "用户"
+                ],
+                "summary": "用改用户头像;",
+                "parameters": [
+                    {
+                        "description": "修改头像请求",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.UserPutAvatarRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.KResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/users/get": {
             "get": {
                 "tags": [
@@ -331,6 +376,17 @@ const docTemplate = `{
                 }
             }
         },
+        "controller.UserPutAvatarRequest": {
+            "type": "object",
+            "required": [
+                "avatar"
+            ],
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                }
+            }
+        },
         "controller.UserPutPasswordRequest": {
             "type": "object",
             "required": [
@@ -349,13 +405,15 @@ const docTemplate = `{
         "model.User": {
             "type": "object",
             "required": [
+                "avatar",
                 "id",
                 "username"
             ],
             "properties": {
                 "avatar": {
                     "description": "用户头像、创建时；为空字符串",
-                    "type": "string"
+                    "type": "string",
+                    "example": "''"
                 },
                 "createAt": {
                     "type": "string"
@@ -395,6 +453,7 @@ const docTemplate = `{
         "model.UserResponse": {
             "type": "object",
             "required": [
+                "avatar",
                 "id",
                 "token",
                 "username"
@@ -402,7 +461,8 @@ const docTemplate = `{
             "properties": {
                 "avatar": {
                     "description": "用户头像、创建时；为空字符串",
-                    "type": "string"
+                    "type": "string",
+                    "example": "''"
                 },
                 "createAt": {
                     "type": "string"

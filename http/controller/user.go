@@ -2,7 +2,6 @@ package controller
 
 import (
 	"net/http"
-	"strconv"
 
 	"go-net/model"
 	"go-net/redis"
@@ -25,10 +24,7 @@ func (*userControll) GetUser(c *gin.Context) *utils.KResponse {
 	token := utils.GetToken(c)
 	u := utils.GetUserID(c)
 
-	user, err := model.UserDb.GetUserByUserID(u)
-	if err != nil {
-		return utils.MakeResponseWidthCode("获取用户信息失败", http.StatusInternalServerError)
-	}
+	user := model.UserDb.GetUserByUserID(u)
 
 	return utils.MakeResponse(&model.UserResponse{
 		User:  *user,
@@ -46,10 +42,7 @@ func (*userControll) GetUserByID(c *gin.Context) *utils.KResponse {
 	token := utils.GetToken(c)
 	u := utils.GetUserID(c)
 
-	user, err := model.UserDb.GetUserByUserID(u)
-	if err != nil {
-		return utils.MakeResponseWidthCode("获取用户信息失败", http.StatusInternalServerError)
-	}
+	user := model.UserDb.GetUserByUserID(u)
 
 	return utils.MakeResponse(&model.UserResponse{
 		User:  *user,
@@ -174,7 +167,6 @@ type UserPutPasswordRequest struct {
 // @Failure 500 {object} utils.KResponse "服务器错误"
 // @Router /users/password [put]
 func (*userControll) UserPutPassword(c *gin.Context) *utils.KResponse {
-	token := utils.GetToken(c)
 	userID := utils.GetUserID(c)
 
 	data := &UserPutPasswordRequest{}
@@ -183,32 +175,38 @@ func (*userControll) UserPutPassword(c *gin.Context) *utils.KResponse {
 		return utils.MakeResponseWidthCode("无效的参数", http.StatusBadRequest)
 	}
 
-	user, err := model.UserDb.GetUserByUserID(userID)
-	if err != nil {
-		return utils.MakeResponseWidthCode("用户不存在", http.StatusBadRequest)
+	user := model.UserDb.GetUserByUserID(userID)
+
+	if !utils.CompareHashAndPassword(user.Password, data.OldPassword) {
+		return utils.MakeResponseWidthCode("旧密码错误", http.StatusBadRequest)
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data.OldPassword))
-	if err != nil {
-		return utils.MakeResponseWidthCode(gin.H{
-			"data": data,
-			"err":  err,
-			"user": user,
-		}, http.StatusBadRequest)
-	}
+	user.Password = utils.GenerateFromPasswordString(data.NewPassword)
+	user.Nickname = "修改 passwowrd"
 
-	newPassword := utils.GenerateFromPasswordString(data.NewPassword)
+	model.UserDb.UpdateUser(user)
 
-	/*
-		err := redis.RedisClient.Del(redis.Ctx, token.(string)).Err()
-		if err != nil {
-			return utils.MakeResponseWidthCode("退出失败", http.StatusInternalServerError)
-		}
-	*/
+	return utils.MakeResponse(user)
+}
 
-	return utils.MakeResponse(gin.H{
-		"msg":         "修改成功" + token + ":" + strconv.Itoa(int(userID)),
-		"data":        data,
-		"newPassword": newPassword,
-	})
+type UserPutAvatarRequest struct {
+	Avatar string `json:"avatar" binding:"required"`
+}
+
+// @Summary 用改用户头像;
+// @Tags 用户
+// @Param request body UserPutAvatarRequest true "修改头像请求"
+// @Success 200 {object} utils.KResponse{data=string} "成功"
+// @Failure 500 {object} utils.KResponse "服务器错误"
+// @Router /users/avatar [put]
+func (*userControll) UserPutAvatar(c *gin.Context) *utils.KResponse {
+	userID := utils.GetUserID(c)
+	data := utils.ShouldBindBodyWithJSON[*UserPutAvatarRequest](c)
+	user := model.UserDb.GetUserByUserID(userID)
+
+	model.UserDb.UpdateUserAvatar(userID, data.Avatar)
+
+	user.Avatar = data.Avatar
+
+	return utils.MakeResponse(user)
 }
