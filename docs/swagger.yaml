@@ -43,6 +43,13 @@ definitions:
     required:
     - avatar
     type: object
+  controller.UserPutNicknameRequest:
+    properties:
+      nickname:
+        type: string
+    required:
+    - nickname
+    type: object
   controller.UserPutPasswordRequest:
     properties:
       newPassword:
@@ -56,16 +63,14 @@ definitions:
   model.User:
     properties:
       avatar:
-        description: 用户头像、创建时；为空字符串
+        description: 用户头像、创建时；为空字符串;注意只是保存 文件的hash 地址；而不是 URL 地址
         example: ''''''
         type: string
       createAt:
         type: string
       id:
-        allOf:
-        - $ref: '#/definitions/model.UserID'
-        description: 用户 ID
-        example: 1
+        description: 用户 ID;其类型是一个 uint 类型
+        type: integer
       nickname:
         description: 用户中文名称，默认为 ‘’，可后期通过修改用户信息设置
         type: string
@@ -80,25 +85,17 @@ definitions:
     - id
     - username
     type: object
-  model.UserID:
-    enum:
-    - 0
-    type: integer
-    x-enum-varnames:
-    - InvalidUserID
   model.UserResponse:
     properties:
       avatar:
-        description: 用户头像、创建时；为空字符串
+        description: 用户头像、创建时；为空字符串;注意只是保存 文件的hash 地址；而不是 URL 地址
         example: ''''''
         type: string
       createAt:
         type: string
       id:
-        allOf:
-        - $ref: '#/definitions/model.UserID'
-        description: 用户 ID
-        example: 1
+        description: 用户 ID;其类型是一个 uint 类型
+        type: integer
       nickname:
         description: 用户中文名称，默认为 ‘’，可后期通过修改用户信息设置
         type: string
@@ -128,41 +125,39 @@ definitions:
 host: localhost:8080
 info:
   contact: {}
-  description: 一个  IM 服务器
+  description: |-
+    一个 IM 服务器
+    支持用户注册、登录、好友管理、群组聊天
+    基于 Go + Gin + GORM + Redis
+    目前访问服务器任何接口: localhost:8080/api 前端可用先使用代理设置
+    使用文件 hash 获取文件地址可用先固定: localhost:8080/api/file/:hash 前端可用看作做;方便后期迁移
   title: go-net
   version: "1.0"
 paths:
-  /download/:hash:
+  /file/{hash}:
     get:
+      description: 注意该接口没有做任何权限验证；慎用；请使用 GetFile 接口获取带有时效性的 url 地址。
       parameters:
       - description: 哈希地址
         in: path
         name: hash
         required: true
         type: string
-      - description: 过期时间
-        in: query
-        name: expred
-        required: true
-        type: string
-      - description: 签名
-        in: query
-        name: signature
-        required: true
-        type: string
+      produces:
+      - application/octet-stream
       responses:
         "200":
-          description: 成功
+          description: 文件二进制数据
           schema:
             items:
               format: int32
               type: integer
             type: array
-        "500":
-          description: 服务器错误
+        "404":
+          description: 文件不存在
           schema:
             $ref: '#/definitions/utils.KResponse'
-      summary: 根据 url 地址；下载文件;
+      summary: 根据 hash 直接返回文件
       tags:
       - 文件
   /file/getfile:
@@ -192,6 +187,41 @@ paths:
           schema:
             $ref: '#/definitions/utils.KResponse'
       summary: 根据 hash 获取文件的 url 地址
+      tags:
+      - 文件
+  /file/getfile/:hash:
+    get:
+      parameters:
+      - description: 哈希地址
+        in: path
+        name: hash
+        required: true
+        type: string
+      - description: 过期时间
+        in: query
+        name: expred
+        required: true
+        type: string
+      - description: 签名
+        in: query
+        name: signature
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: 文件二进制数据
+          schema:
+            items:
+              format: int32
+              type: integer
+            type: array
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 根据 url 地址；下载文件;
       tags:
       - 文件
   /file/upload:
@@ -242,7 +272,7 @@ paths:
             - $ref: '#/definitions/utils.KResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/model.UserResponse'
+                  $ref: '#/definitions/model.User'
               type: object
         "500":
           description: 服务器错误
@@ -268,13 +298,13 @@ paths:
             - $ref: '#/definitions/utils.KResponse'
             - properties:
                 data:
-                  type: string
+                  $ref: '#/definitions/model.User'
               type: object
         "500":
           description: 服务器错误
           schema:
             $ref: '#/definitions/utils.KResponse'
-      summary: 用改用户头像;
+      summary: 用改用户头像;注意是存hash地址；而不是 url 地址;
       tags:
       - 用户
   /users/get:
@@ -341,6 +371,32 @@ paths:
           schema:
             $ref: '#/definitions/utils.KResponse'
       summary: 退出登录
+      tags:
+      - 用户
+  /users/nickname:
+    put:
+      parameters:
+      - description: 修改中文名称请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.UserPutNicknameRequest'
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.User'
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 用改用户中文名称;
       tags:
       - 用户
   /users/password:

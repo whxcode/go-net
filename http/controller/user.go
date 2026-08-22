@@ -2,6 +2,7 @@ package controller
 
 import (
 	"net/http"
+	"strconv"
 
 	"go-net/model"
 	"go-net/redis"
@@ -35,19 +36,15 @@ func (*userControll) GetUser(c *gin.Context) *utils.KResponse {
 // @Summary  根据用户ID获取用户信息
 // @Tags 用户
 // @Param id path int true "用户ID"
-// @Success 200 {object} utils.KResponse{data=model.UserResponse} "成功"
+// @Success 200 {object} utils.KResponse{data=model.User} "成功"
 // @Failure 500 {object} utils.KResponse "服务器错误"
 // @Router /users/:id [get]
 func (*userControll) GetUserByID(c *gin.Context) *utils.KResponse {
-	token := utils.GetToken(c)
-	u := utils.GetUserID(c)
+	u, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 
-	user := model.UserDb.GetUserByUserID(u)
+	user := model.UserDb.GetUserByUserID(model.UserID(u))
 
-	return utils.MakeResponse(&model.UserResponse{
-		User:  *user,
-		Token: token,
-	})
+	return utils.MakeResponse(user)
 }
 
 // @Summary 根据 search 关键字 获取用户列表
@@ -193,10 +190,10 @@ type UserPutAvatarRequest struct {
 	Avatar string `json:"avatar" binding:"required"`
 }
 
-// @Summary 用改用户头像;
+// @Summary 用改用户头像;注意是存hash地址；而不是 url 地址;
 // @Tags 用户
 // @Param request body UserPutAvatarRequest true "修改头像请求"
-// @Success 200 {object} utils.KResponse{data=string} "成功"
+// @Success 200 {object} utils.KResponse{data=model.User} "成功"
 // @Failure 500 {object} utils.KResponse "服务器错误"
 // @Router /users/avatar [put]
 func (*userControll) UserPutAvatar(c *gin.Context) *utils.KResponse {
@@ -207,6 +204,28 @@ func (*userControll) UserPutAvatar(c *gin.Context) *utils.KResponse {
 	model.UserDb.UpdateUserAvatar(userID, data.Avatar)
 
 	user.Avatar = data.Avatar
+
+	return utils.MakeResponse(user)
+}
+
+type UserPutNicknameRequest struct {
+	Nickname string `json:"nickname" binding:"required"`
+}
+
+// @Summary 用改用户中文名称;
+// @Tags 用户
+// @Param request body UserPutNicknameRequest true "修改中文名称请求"
+// @Success 200 {object} utils.KResponse{data=model.User} "成功"
+// @Failure 500 {object} utils.KResponse "服务器错误"
+// @Router /users/nickname [put]
+func (*userControll) UserPutNickname(c *gin.Context) *utils.KResponse {
+	userID := utils.GetUserID(c)
+	data := utils.ShouldBindBodyWithJSON[*UserPutNicknameRequest](c)
+	user := model.UserDb.GetUserByUserID(userID)
+
+	model.UserDb.UpdateUserNickname(userID, data.Nickname)
+
+	user.Nickname = data.Nickname
 
 	return utils.MakeResponse(user)
 }

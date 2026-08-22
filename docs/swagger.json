@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "一个  IM 服务器",
+        "description": "一个 IM 服务器\n支持用户注册、登录、好友管理、群组聊天\n基于 Go + Gin + GORM + Redis\n目前访问服务器任何接口: localhost:8080/api 前端可用先使用代理设置\n使用文件 hash 获取文件地址可用先固定: localhost:8080/api/file/:hash 前端可用看作做;方便后期迁移",
         "title": "go-net",
         "contact": {},
         "version": "1.0"
@@ -9,55 +9,6 @@
     "host": "localhost:8080",
     "basePath": "/api",
     "paths": {
-        "/download/:hash": {
-            "get": {
-                "tags": [
-                    "文件"
-                ],
-                "summary": "根据 url 地址；下载文件;",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "哈希地址",
-                        "name": "hash",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "过期时间",
-                        "name": "expred",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "签名",
-                        "name": "signature",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "成功",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "integer",
-                                "format": "int32"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "服务器错误",
-                        "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/file/getfile": {
             "post": {
                 "description": "此接口生成的 url 地址；含有时效性；不建议作为长时间显示。",
@@ -96,6 +47,58 @@
                                     }
                                 }
                             ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/file/getfile/:hash": {
+            "get": {
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "文件"
+                ],
+                "summary": "根据 url 地址；下载文件;",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "哈希地址",
+                        "name": "hash",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "过期时间",
+                        "name": "expred",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "签名",
+                        "name": "signature",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "文件二进制数据",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer",
+                                "format": "int32"
+                            }
                         }
                     },
                     "500": {
@@ -160,6 +163,45 @@
                 }
             }
         },
+        "/file/{hash}": {
+            "get": {
+                "description": "注意该接口没有做任何权限验证；慎用；请使用 GetFile 接口获取带有时效性的 url 地址。",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "文件"
+                ],
+                "summary": "根据 hash 直接返回文件",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "哈希地址",
+                        "name": "hash",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "文件二进制数据",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer",
+                                "format": "int32"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "文件不存在",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/users/:id": {
             "get": {
                 "tags": [
@@ -187,7 +229,7 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/model.UserResponse"
+                                            "$ref": "#/definitions/model.User"
                                         }
                                     }
                                 }
@@ -208,7 +250,7 @@
                 "tags": [
                     "用户"
                 ],
-                "summary": "用改用户头像;",
+                "summary": "用改用户头像;注意是存hash地址；而不是 url 地址;",
                 "parameters": [
                     {
                         "description": "修改头像请求",
@@ -232,7 +274,7 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "type": "string"
+                                            "$ref": "#/definitions/model.User"
                                         }
                                     }
                                 }
@@ -349,6 +391,51 @@
                                     "properties": {
                                         "data": {
                                             "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/nickname": {
+            "put": {
+                "tags": [
+                    "用户"
+                ],
+                "summary": "用改用户中文名称;",
+                "parameters": [
+                    {
+                        "description": "修改中文名称请求",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.UserPutNicknameRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.KResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.User"
                                         }
                                     }
                                 }
@@ -571,6 +658,17 @@
                 }
             }
         },
+        "controller.UserPutNicknameRequest": {
+            "type": "object",
+            "required": [
+                "nickname"
+            ],
+            "properties": {
+                "nickname": {
+                    "type": "string"
+                }
+            }
+        },
         "controller.UserPutPasswordRequest": {
             "type": "object",
             "required": [
@@ -595,7 +693,7 @@
             ],
             "properties": {
                 "avatar": {
-                    "description": "用户头像、创建时；为空字符串",
+                    "description": "用户头像、创建时；为空字符串;注意只是保存 文件的hash 地址；而不是 URL 地址",
                     "type": "string",
                     "example": "''"
                 },
@@ -603,13 +701,8 @@
                     "type": "string"
                 },
                 "id": {
-                    "description": "用户 ID",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.UserID"
-                        }
-                    ],
-                    "example": 1
+                    "description": "用户 ID;其类型是一个 uint 类型",
+                    "type": "integer"
                 },
                 "nickname": {
                     "description": "用户中文名称，默认为 ‘’，可后期通过修改用户信息设置",
@@ -625,15 +718,6 @@
                 }
             }
         },
-        "model.UserID": {
-            "type": "integer",
-            "enum": [
-                0
-            ],
-            "x-enum-varnames": [
-                "InvalidUserID"
-            ]
-        },
         "model.UserResponse": {
             "type": "object",
             "required": [
@@ -644,7 +728,7 @@
             ],
             "properties": {
                 "avatar": {
-                    "description": "用户头像、创建时；为空字符串",
+                    "description": "用户头像、创建时；为空字符串;注意只是保存 文件的hash 地址；而不是 URL 地址",
                     "type": "string",
                     "example": "''"
                 },
@@ -652,13 +736,8 @@
                     "type": "string"
                 },
                 "id": {
-                    "description": "用户 ID",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.UserID"
-                        }
-                    ],
-                    "example": 1
+                    "description": "用户 ID;其类型是一个 uint 类型",
+                    "type": "integer"
                 },
                 "nickname": {
                     "description": "用户中文名称，默认为 ‘’，可后期通过修改用户信息设置",

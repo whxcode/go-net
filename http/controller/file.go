@@ -92,6 +92,21 @@ func (*fileController) GetFile(c *gin.Context) *utils.KResponse {
 	return utils.MakeResponse(result)
 }
 
+// PreviewFile 根据 hash 直接返回文件
+// @Summary 根据 hash 直接返回文件
+// @Description 注意该接口没有做任何权限验证；慎用；请使用 GetFile 接口获取带有时效性的 url 地址。
+// @Tags 文件
+// @Produce application/octet-stream
+// @Param hash path string true "哈希地址"
+// @Success 200 {array} byte "文件二进制数据"
+// @Failure 404 {object} utils.KResponse "文件不存在"
+// @Router /file/{hash} [get]
+func (*fileController) PreviewFile(c *gin.Context) {
+	hash := c.Param("hash")
+
+	c.File(config.ConfigData.Server.FileOss + "/" + hash)
+}
+
 func (*fileController) DownloadMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		expred := c.Query("expred")
@@ -120,12 +135,13 @@ func (*fileController) DownloadMiddleware() gin.HandlerFunc {
 
 // @Summary  根据 url 地址；下载文件;
 // @Tags 文件
+// @Produce application/octet-stream
 // @Param hash path string true "哈希地址"
 // @Param expred query string true "过期时间"
 // @Param signature query string true "签名"
-// @Success 200 {object} []byte "成功"
+// @Success 200 {array} byte "文件二进制数据"
 // @Failure 500 {object} utils.KResponse "服务器错误"
-// @Router /download/:hash [get]
+// @Router /file/getfile/:hash [get]
 func (*fileController) DowloadFile(c *gin.Context) {
 	hash := c.Param("hash")
 

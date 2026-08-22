@@ -11,7 +11,11 @@ GraphQL	c.GetRawData()	解析 query 字段
 
 // @title go-net
 // @version 1.0
-// @description 一个  IM 服务器
+// @description 一个 IM 服务器
+// @description 支持用户注册、登录、好友管理、群组聊天
+// @description 基于 Go + Gin + GORM + Redis
+// @description 目前访问服务器任何接口: localhost:8080/api 前端可用先使用代理设置
+// @description 使用文件 hash 获取文件地址可用先固定: localhost:8080/api/file/:hash 前端可用看作做;方便后期迁移
 // @host localhost:8080
 // @BasePath /api
 import (

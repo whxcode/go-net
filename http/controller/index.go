@@ -17,7 +17,8 @@ const (
 	KRegister    RouterPath = "/register"
 	KUpload                 = "/upload"
 	KGetfile                = "/getfile"
-	KDowloadfile            = "/download"
+	KGetfileHash            = "/getfile/:hash"
+	KPreviewFile            = "/:hash"
 
 	KUserGetUser     = "/get"
 	KUserGetUserByID = "/:id"
@@ -27,6 +28,7 @@ const (
 	KUserGetUsers    = "/users"
 	UserPassword     = "/password"
 	UserAvatar       = "/avatar"
+	UserNickname     = "/nickname"
 
 	KFriends          = "/friends"
 	KFriendRequest    = "/request"

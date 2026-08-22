@@ -127,10 +127,11 @@ func Start() {
 
 	fileRouter.POST(controller.KUpload, execute(controller.FileController.Upload))
 	fileRouter.POST(controller.KGetfile, execute(controller.FileController.GetFile))
+	fileRouter.GET(controller.KPreviewFile, controller.FileController.PreviewFile)
 
-	fileDowloadRouter := api.Group(controller.KDowloadfile)
+	fileDowloadRouter := api.Group("/file")
 	fileDowloadRouter.Use(controller.FileController.DownloadMiddleware()) // 使用自定义响应中间件
-	fileDowloadRouter.GET("/:hash", controller.FileController.DowloadFile)
+	fileDowloadRouter.GET(controller.KGetfileHash, controller.FileController.DowloadFile)
 
 	{
 
@@ -142,6 +143,7 @@ func Start() {
 		userRouterPrivate.GET(controller.KUserGetUsers, execute(controller.UserControll.GetUsers))
 		userRouterPrivate.PUT(controller.UserPassword, execute(controller.UserControll.UserPutPassword))
 		userRouterPrivate.PUT(controller.UserAvatar, execute(controller.UserControll.UserPutAvatar))
+		userRouterPrivate.PUT(controller.UserNickname, execute(controller.UserControll.UserPutNickname))
 
 		userRouterPublic := api.Group("/users")
 		userRouterPublic.POST(controller.KUserRegister, execute(controller.UserControll.Register))

@@ -1,11 +1,13 @@
 package model
 
 import (
+	"fmt"
 	"strconv"
 	"sync"
 	"time"
 )
 
+// UserID 用户 ID
 type UserID uint
 
 const InvalidUserID UserID = 0
@@ -19,11 +21,11 @@ func (id UserID) MarshalBinary() ([]byte, error) {
 }
 
 type User struct {
-	// 用户 ID
-	ID UserID `gorm:"primarykey" json:"id" example:"1" validate:"required"`
+	// 用户 ID;其类型是一个 uint 类型
+	ID UserID `gorm:"primarykey" json:"id" validate:"required" swaggertype:"integer"`
 	// 用户账户；创建时使用；后期不可修改。
 	Username string `gorm:"uniqueIndex;size:50" json:"username" example:"whx" validate:"required"`
-	// 用户头像、创建时；为空字符串
+	// 用户头像、创建时；为空字符串;注意只是保存 文件的hash 地址；而不是 URL 地址
 	Avatar string `gorm:"column:avatar" json:"avatar" example:"''" validate:"required"`
 	// 用户中文名称，默认为 ‘’，可后期通过修改用户信息设置
 	Nickname  string    `gorm:"column:nickname" json:"nickname"`
@@ -62,6 +64,8 @@ func (db *userDb) GetUserByUsername(username string) (*User, error) {
 func (db *userDb) GetUserByUserID(userID UserID) *User {
 	user := &User{}
 	err := DB.Where("id = ?", userID).First(user).Error
+
+	fmt.Println("err:", err)
 	if err != nil {
 		panic(err)
 	}
@@ -100,6 +104,17 @@ func (db *userDb) UpdateUser(user *User) error {
 func (db *userDb) UpdateUserAvatar(userID UserID, avatar string) error {
 	err := DB.Table("users").Where("id = ?", userID).
 		Update("avatar", avatar).
+		Error
+	if err != nil {
+		panic(err)
+	}
+
+	return nil
+}
+
+func (db *userDb) UpdateUserNickname(userID UserID, nickname string) error {
+	err := DB.Table("users").Where("id = ?", userID).
+		Update("nickname", nickname).
 		Error
 	if err != nil {
 		panic(err)

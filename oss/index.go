@@ -89,7 +89,7 @@ func GenerateSignedURL(hash string, expred time.Duration) string {
 
 	signature := Signature(message)
 
-	baseURL := "http://localhost:8080/file/download"
+	baseURL := "http://localhost:8080/api/file/getfile"
 
 	signatureURL := fmt.Sprintf("%s/%s?expred=%s&signature=%s", baseURL, hash, expredAtStr, signature)
 
