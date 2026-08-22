@@ -47,7 +47,11 @@ var User *user = &user{}
 *
 * */
 func (u *user) SetToken(token string, userID model.UserID) error {
-	return RedisClient.Set(Ctx, token, userID, 7*24*time.Hour).Err()
+	if err := RedisClient.Set(Ctx, token, userID, 7*24*time.Hour).Err(); err != nil {
+		panic(err)
+	}
+
+	return nil
 }
 
 /**
@@ -55,9 +59,18 @@ func (u *user) SetToken(token string, userID model.UserID) error {
 *
 * */
 func (u *user) GetToken(c *gin.Context, token string) (string, error) {
-	return RedisClient.Get(c, token).Result()
+	r, err := RedisClient.Get(c, token).Result()
+	if err != nil {
+		panic(err)
+	}
+
+	return r, nil
 }
 
 func (u *user) DelToken(token string) error {
-	return RedisClient.Del(Ctx, token).Err()
+	err := RedisClient.Del(Ctx, token).Err()
+	if err != nil {
+		panic(err)
+	}
+	return nil
 }

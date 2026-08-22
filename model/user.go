@@ -1,6 +1,7 @@
 package model
 
 import (
+	"strconv"
 	"sync"
 	"time"
 )
@@ -11,6 +12,10 @@ const InvalidUserID UserID = 0
 
 func (id UserID) String() string {
 	return string(id)
+}
+
+func (id UserID) MarshalBinary() ([]byte, error) {
+	return []byte(strconv.FormatUint(uint64(id), 10)), nil
 }
 
 type User struct {

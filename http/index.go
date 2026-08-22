@@ -1,7 +1,9 @@
 package httpServer
 
 import (
+	"fmt"
 	"log"
+	"net/http"
 
 	"go-net/config"
 	"go-net/http/controller"
@@ -74,12 +76,21 @@ func Start() {
 	// ✅ 自定义 Recovery 中间件
 	api.Use(func(c *gin.Context) {
 		defer func() {
-			if err := recover(); err != nil {
-				// 记录日志
-				// 返回统一格式
-				c.AbortWithStatusJSON(500, gin.H{
-					"code":    500,
-					"message": err,
+			if r := recover(); r != nil {
+				var errMsg string
+				switch v := r.(type) {
+				case error:
+					errMsg = v.Error()
+				case string:
+					errMsg = v
+				default:
+					errMsg = fmt.Sprintf("%v", v)
+				}
+
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+					"code":    http.StatusInternalServerError,
+					"message": errMsg,
+					"type":    "panic-recovery",
 				})
 			}
 		}()

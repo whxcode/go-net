@@ -139,9 +139,6 @@ func (*userControll) Login(c *gin.Context) *utils.KResponse {
 	}
 
 	err = redis.User.SetToken(token, user.ID)
-	if err != nil {
-		return utils.MakeResponseWidthCode("保存token失败", http.StatusInternalServerError)
-	}
 
 	return utils.MakeResponse(&model.UserResponse{
 		User:  *user,
