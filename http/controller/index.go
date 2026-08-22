@@ -24,7 +24,8 @@ const (
 	KUserLogout      = "/logout"
 	KUserRegister    = "/register"
 	KUserLogin       = "/login"
-	KUserGetUsers    = "/list"
+	KUserGetUsers    = "/users"
+	UserPassword     = "/password"
 
 	KFriends          = "/friends"
 	KFriendRequest    = "/request"

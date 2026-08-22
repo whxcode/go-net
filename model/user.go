@@ -17,7 +17,11 @@ type User struct {
 	// 用户 ID
 	ID UserID `gorm:"primarykey" json:"id" example:"1" validate:"required"`
 	// 用户账户；创建时使用；后期不可修改。
-	Username  string    `gorm:"uniqueIndex;size:50" json:"username" example:"whx" validate:"required"`
+	Username string `gorm:"uniqueIndex;size:50" json:"username" example:"whx" validate:"required"`
+	// 用户头像、创建时；为空字符串
+	Avatar string `gorm:"column:avatar" json:"avatar" example:"''" validate:"required"`
+	// 用户中文名称，默认为 ‘’，可后期通过修改用户信息设置
+	Nickname  string    `gorm:"column:nickname" json:"nickname"`
 	Password  string    `json:"-" comment:"密码（不返回给前端）"`
 	CreatedAt time.Time `gorm:"column:created_at" json:"createAt" comment:"创建时间"`
 	UpdatedAt time.Time `gorm:"column:updated_at" json:"updateAt" comment:"更新时间"`

@@ -17,7 +17,7 @@ GraphQL	c.GetRawData()	解析 query 字段
 import (
 	httpServer "go-net/http"
 	"go-net/model"
-	"go-net/model/redis"
+	"go-net/redis"
 	"go-net/utils"
 )
 

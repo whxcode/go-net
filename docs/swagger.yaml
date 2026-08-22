@@ -10,8 +10,21 @@ definitions:
     - password
     - username
     type: object
+  controller.UserPutPasswordRequest:
+    properties:
+      newPassword:
+        type: string
+      oldPassword:
+        type: string
+    required:
+    - newPassword
+    - oldPassword
+    type: object
   model.User:
     properties:
+      avatar:
+        description: 用户头像、创建时；为空字符串
+        type: string
       createAt:
         type: string
       id:
@@ -19,12 +32,18 @@ definitions:
         - $ref: '#/definitions/model.UserID'
         description: 用户 ID
         example: 1
+      nickname:
+        description: 用户中文名称，默认为 ‘’，可后期通过修改用户信息设置
+        type: string
       updateAt:
         type: string
       username:
         description: 用户账户；创建时使用；后期不可修改。
         example: whx
         type: string
+    required:
+    - id
+    - username
     type: object
   model.UserID:
     enum:
@@ -34,6 +53,9 @@ definitions:
     - InvalidUserID
   model.UserResponse:
     properties:
+      avatar:
+        description: 用户头像、创建时；为空字符串
+        type: string
       createAt:
         type: string
       id:
@@ -41,6 +63,9 @@ definitions:
         - $ref: '#/definitions/model.UserID'
         description: 用户 ID
         example: 1
+      nickname:
+        description: 用户中文名称，默认为 ‘’，可后期通过修改用户信息设置
+        type: string
       token:
         description: 认证令牌
         type: string
@@ -51,7 +76,9 @@ definitions:
         example: whx
         type: string
     required:
+    - id
     - token
+    - username
     type: object
   utils.KResponse:
     properties:
@@ -112,33 +139,6 @@ paths:
       summary: 获取用户信息
       tags:
       - 用户
-  /users/list:
-    get:
-      parameters:
-      - default: '""'
-        description: 搜索关键字
-        in: query
-        name: search
-        type: string
-      responses:
-        "200":
-          description: 成功
-          schema:
-            allOf:
-            - $ref: '#/definitions/utils.KResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/model.User'
-                  type: array
-              type: object
-        "500":
-          description: 服务器错误
-          schema:
-            $ref: '#/definitions/utils.KResponse'
-      summary: 根据 search 关键字 获取用户列表
-      tags:
-      - 用户
   /users/login:
     post:
       parameters:
@@ -186,6 +186,33 @@ paths:
       summary: 退出登录
       tags:
       - 用户
+  /users/password:
+    put:
+      description: 成功后；服务端将清除当前用户token的登录状态
+      parameters:
+      - description: 修改密码请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.UserPutPasswordRequest'
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 修改用户密码;
+      tags:
+      - 用户
   /users/register:
     post:
       parameters:
@@ -212,6 +239,33 @@ paths:
           schema:
             $ref: '#/definitions/utils.KResponse'
       summary: 用户注册
+      tags:
+      - 用户
+  /users/users:
+    get:
+      parameters:
+      - default: '""'
+        description: 搜索关键字
+        in: query
+        name: search
+        type: string
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.User'
+                  type: array
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 根据 search 关键字 获取用户列表
       tags:
       - 用户
 swagger: "2.0"

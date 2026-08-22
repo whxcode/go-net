@@ -1,12 +1,11 @@
 package controller
 
 import (
-	"fmt"
 	"net/http"
-	"time"
+	"strconv"
 
 	"go-net/model"
-	"go-net/model/redis"
+	"go-net/redis"
 	"go-net/utils"
 
 	"github.com/gin-gonic/gin"
@@ -63,7 +62,7 @@ func (*userControll) GetUserByID(c *gin.Context) *utils.KResponse {
 // @Param search query string false "搜索关键字" default("")
 // @Success 200 {object} utils.KResponse{data=[]model.User} "成功"
 // @Failure 500 {object} utils.KResponse "服务器错误"
-// @Router /users/list [get]
+// @Router /users/users [get]
 func (*userControll) GetUsers(c *gin.Context) *utils.KResponse {
 	search := c.Query("search")
 
@@ -88,7 +87,7 @@ type RegisterRequest struct {
 // @Failure 500 {object} utils.KResponse "服务器错误"
 // @Router /users/register [post]
 func (*userControll) Register(c *gin.Context) *utils.KResponse {
-	user := &model.User{}
+	user := &RegisterRequest{}
 
 	if err := c.ShouldBindBodyWithJSON(user); err != nil {
 		return utils.MakeResponseWidthCode("无效的参数", http.StatusBadRequest)
@@ -98,10 +97,13 @@ func (*userControll) Register(c *gin.Context) *utils.KResponse {
 		return utils.MakeResponseWidthCode("用户已存在", http.StatusBadRequest)
 	}
 
-	hashed, _ := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-	user.Password = string(hashed)
+	hashed := utils.GenerateFromPasswordString(user.Password)
+	user.Password = hashed
 
-	model.UserDb.AddUser(user)
+	model.UserDb.AddUser(&model.User{
+		Username: user.Username,
+		Password: user.Password,
+	})
 
 	user.Password = ""
 
@@ -115,7 +117,7 @@ func (*userControll) Register(c *gin.Context) *utils.KResponse {
 // @Failure 500 {object} utils.KResponse "服务器错误"
 // @Router /users/login [post]
 func (*userControll) Login(c *gin.Context) *utils.KResponse {
-	reqUser := &model.User{}
+	reqUser := &RegisterRequest{}
 
 	if err := c.ShouldBindBodyWithJSON(reqUser); err != nil {
 		return utils.MakeResponseWidthCode("无效的参数", http.StatusBadRequest)
@@ -136,9 +138,8 @@ func (*userControll) Login(c *gin.Context) *utils.KResponse {
 		return utils.MakeResponseWidthCode("生成token失败", http.StatusInternalServerError)
 	}
 
-	err = redis.RedisClient.Set(redis.Ctx, token, uint(user.ID), 7*24*time.Hour).Err()
+	err = redis.User.SetToken(token, user.ID)
 	if err != nil {
-		fmt.Println(err)
 		return utils.MakeResponseWidthCode("保存token失败", http.StatusInternalServerError)
 	}
 
@@ -154,12 +155,63 @@ func (*userControll) Login(c *gin.Context) *utils.KResponse {
 // @Failure 500 {object} utils.KResponse "服务器错误"
 // @Router /users/logout [get]
 func (*userControll) Logout(c *gin.Context) *utils.KResponse {
-	token, _ := c.Get("token")
-
-	err := redis.RedisClient.Del(redis.Ctx, token.(string)).Err()
+	token := utils.GetToken(c)
+	err := redis.User.DelToken(token)
 	if err != nil {
 		return utils.MakeResponseWidthCode("退出失败", http.StatusInternalServerError)
 	}
 
 	return utils.MakeResponse("退出成功")
+}
+
+type UserPutPasswordRequest struct {
+	OldPassword string `json:"oldPassword" binding:"required"`
+	NewPassword string `json:"newPassword" binding:"required"`
+}
+
+// @Summary 修改用户密码;
+// @Description 成功后；服务端将清除当前用户token的登录状态
+// @Tags 用户
+// @Param request body UserPutPasswordRequest true "修改密码请求"
+// @Success 200 {object} utils.KResponse{data=string} "成功"
+// @Failure 500 {object} utils.KResponse "服务器错误"
+// @Router /users/password [put]
+func (*userControll) UserPutPassword(c *gin.Context) *utils.KResponse {
+	token := utils.GetToken(c)
+	userID := utils.GetUserID(c)
+
+	data := &UserPutPasswordRequest{}
+
+	if err := c.ShouldBindBodyWithJSON(data); err != nil {
+		return utils.MakeResponseWidthCode("无效的参数", http.StatusBadRequest)
+	}
+
+	user, err := model.UserDb.GetUserByUserID(userID)
+	if err != nil {
+		return utils.MakeResponseWidthCode("用户不存在", http.StatusBadRequest)
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data.OldPassword))
+	if err != nil {
+		return utils.MakeResponseWidthCode(gin.H{
+			"data": data,
+			"err":  err,
+			"user": user,
+		}, http.StatusBadRequest)
+	}
+
+	newPassword := utils.GenerateFromPasswordString(data.NewPassword)
+
+	/*
+		err := redis.RedisClient.Del(redis.Ctx, token.(string)).Err()
+		if err != nil {
+			return utils.MakeResponseWidthCode("退出失败", http.StatusInternalServerError)
+		}
+	*/
+
+	return utils.MakeResponse(gin.H{
+		"msg":         "修改成功" + token + ":" + strconv.Itoa(int(userID)),
+		"data":        data,
+		"newPassword": newPassword,
+	})
 }

@@ -1,0 +1,237 @@
+========================================
+go-redis 常用操作速查
+========================================
+
+import "github.com/redis/go-redis/v9"
+
+
+一、String（字符串）
+========================================
+// 存
+err := rdb.Set(ctx, "key", "value", 0).Err()
+err := rdb.Set(ctx, "key", "value", 7*24*time.Hour).Err()  // 带过期时间
+
+// 取
+val, err := rdb.Get(ctx, "key").Result()
+val, err := rdb.Get(ctx, "key").Int64()      // 转 int64
+val, err := rdb.Get(ctx, "key").Uint64()     // 转 uint64
+val, err := rdb.Get(ctx, "key").Bool()       // 转 bool
+
+// 删
+err := rdb.Del(ctx, "key").Err()
+
+// 判断是否存在
+val, err := rdb.Exists(ctx, "key").Result()  // 返回 1 存在，0 不存在
+
+// 自增/自减
+val, err := rdb.Incr(ctx, "counter").Result()
+val, err := rdb.IncrBy(ctx, "counter", 10).Result()
+val, err := rdb.Decr(ctx, "counter").Result()
+
+// 设置过期时间
+err := rdb.Expire(ctx, "key", 7*24*time.Hour).Err()
+
+// 查看过期时间
+ttl, err := rdb.TTL(ctx, "key").Result()  // 返回 time.Duration
+
+
+二、Hash（哈希表）
+========================================
+// 存字段
+err := rdb.HSet(ctx, "user:1", "name", "张三").Err()
+err := rdb.HSet(ctx, "user:1", "name", "张三", "age", 18).Err()
+
+// 取字段
+val, err := rdb.HGet(ctx, "user:1", "name").Result()
+
+// 取全部字段
+vals, err := rdb.HGetAll(ctx, "user:1").Result()  // 返回 map[string]string
+
+// 删除字段
+err := rdb.HDel(ctx, "user:1", "age").Err()
+
+// 判断字段是否存在
+ok, err := rdb.HExists(ctx, "user:1", "name").Result()  // 返回 bool
+
+// 字段自增
+val, err := rdb.HIncrBy(ctx, "user:1", "age", 1).Result()
+
+
+三、List（列表）
+========================================
+// 从左边插入
+err := rdb.LPush(ctx, "queue", "msg1").Err()
+err := rdb.LPush(ctx, "queue", "msg2", "msg3").Err()
+
+// 从右边插入
+err := rdb.RPush(ctx, "queue", "msg1").Err()
+
+// 从左边弹出
+val, err := rdb.LPop(ctx, "queue").Result()
+
+// 从右边弹出
+val, err := rdb.RPop(ctx, "queue").Result()
+
+// 取指定范围（0 -1 取全部）
+vals, err := rdb.LRange(ctx, "queue", 0, -1).Result()
+vals, err := rdb.LRange(ctx, "queue", 0, 9).Result()  // 取前10条
+
+// 列表长度
+n, err := rdb.LLen(ctx, "queue").Result()
+
+
+四、Set（集合）
+========================================
+// 添加元素
+err := rdb.SAdd(ctx, "tags", "go", "redis", "gin").Err()
+
+// 获取所有元素
+vals, err := rdb.SMembers(ctx, "tags").Result()
+
+// 判断是否存在
+ok, err := rdb.SIsMember(ctx, "tags", "go").Result()
+
+// 删除元素
+err := rdb.SRem(ctx, "tags", "go").Err()
+
+// 集合大小
+n, err := rdb.SCard(ctx, "tags").Result()
+
+// 交集
+vals, err := rdb.SInter(ctx, "set1", "set2").Result()
+
+// 并集
+vals, err := rdb.SUnion(ctx, "set1", "set2").Result()
+
+
+五、Sorted Set（有序集合）
+========================================
+// 添加元素
+err := rdb.ZAdd(ctx, "rank", redis.Z{Score: 100, Member: "张三"}).Err()
+err := rdb.ZAdd(ctx, "rank", 
+    redis.Z{Score: 100, Member: "张三"},
+    redis.Z{Score: 90, Member: "李四"},
+).Err()
+
+// 按分数升序取（从低到高）
+vals, err := rdb.ZRange(ctx, "rank", 0, -1).Result()
+// 按分数降序取（从高到低）
+vals, err := rdb.ZRevRange(ctx, "rank", 0, -1).Result()
+
+// 取前10名（从高到低）
+vals, err := rdb.ZRevRange(ctx, "rank", 0, 9).Result()
+
+// 取分数
+score, err := rdb.ZScore(ctx, "rank", "张三").Result()
+
+// 增加分数
+val, err := rdb.ZIncrBy(ctx, "rank", 10, "张三").Result()
+
+// 删除
+err := rdb.ZRem(ctx, "rank", "张三").Err()
+
+// 排名（从0开始）
+n, err := rdb.ZRank(ctx, "rank", "张三").Result()       // 正序排名
+n, err := rdb.ZRevRank(ctx, "rank", "张三").Result()    // 倒序排名
+
+
+六、Pub/Sub（发布订阅）
+========================================
+// 发布
+err := rdb.Publish(ctx, "channel", "hello").Err()
+
+// 订阅
+pubsub := rdb.Subscribe(ctx, "channel")
+defer pubsub.Close()
+
+// 接收消息
+for {
+    msg, err := pubsub.ReceiveMessage(ctx)
+    if err != nil {
+        break
+    }
+    fmt.Println(msg.Payload)
+}
+
+// 带超时接收
+msg, err := pubsub.ReceiveMessage(ctx)
+if err == redis.Nil {
+    // 超时
+}
+
+
+七、Pipeline（批量操作）
+========================================
+pipe := rdb.Pipeline()
+pipe.Set(ctx, "key1", "val1", 0)
+pipe.Set(ctx, "key2", "val2", 0)
+pipe.Incr(ctx, "counter")
+cmds, err := pipe.Exec(ctx)
+
+
+八、通用
+========================================
+// 删除 key
+err := rdb.Del(ctx, "key1", "key2").Err()
+
+// 判断 key 是否存在
+n, err := rdb.Exists(ctx, "key").Result()
+
+// 设置过期时间
+err := rdb.Expire(ctx, "key", 7*24*time.Hour).Err()
+
+// 查看过期时间
+ttl, err := rdb.TTL(ctx, "key").Result()
+
+// 查看 key 类型
+typ, err := rdb.Type(ctx, "key").Result()
+
+
+九、错误判断
+========================================
+import "github.com/redis/go-redis/v9"
+
+// key 不存在
+if err == redis.Nil {
+    // key 不存在
+}
+
+// 通用错误
+if err != nil {
+    // 处理错误
+}
+
+
+十、完整示例
+========================================
+package model
+
+import (
+    "context"
+    "time"
+    "github.com/redis/go-redis/v9"
+)
+
+var Ctx = context.Background()
+var Rdb *redis.Client
+
+func InitRedis() {
+    Rdb = redis.NewClient(&redis.Options{
+        Addr:     "localhost:6379",
+        Password: "",
+        DB:       0,
+    })
+}
+
+// token 存储
+func SetToken(token string, userID uint) error {
+    return Rdb.Set(Ctx, token, userID, 7*24*time.Hour).Err()
+}
+
+func GetToken(token string) (string, error) {
+    return Rdb.Get(Ctx, token).Result()
+}
+
+func DelToken(token string) error {
+    return Rdb.Del(Ctx, token).Err()
+}

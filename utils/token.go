@@ -3,6 +3,8 @@ package utils
 import (
 	"crypto/rand"
 	"encoding/hex"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func GenerateToken(userID uint) (string, error) {
@@ -15,4 +17,16 @@ func GenerateToken(userID uint) (string, error) {
 	token := hex.EncodeToString(b)
 
 	return token, nil
+}
+
+func GenerateFromPasswordString(p string) string {
+	hashed, _ := bcrypt.GenerateFromPassword([]byte(p), bcrypt.DefaultCost)
+
+	return string(hashed)
+}
+
+func GenerateFromPasswordByte(p string) []byte {
+	hashed, _ := bcrypt.GenerateFromPassword([]byte(p), bcrypt.DefaultCost)
+
+	return hashed
 }

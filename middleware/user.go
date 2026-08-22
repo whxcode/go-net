@@ -1,12 +1,11 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
 	"go-net/model"
-	"go-net/model/redis"
+	"go-net/redis"
 	"go-net/utils"
 
 	"github.com/gin-gonic/gin"
@@ -21,10 +20,7 @@ func AuthorizationMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		userIdStr, err := redis.RedisClient.Get(c, token).Result()
-
-		fmt.Println("userIdStr:", userIdStr, err, "toekn:--->", token, "<--")
-
+		userIdStr, err := redis.User.GetToken(c, token)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, utils.MakeResponseWidthCode("登录已过期", http.StatusUnauthorized))
 			return

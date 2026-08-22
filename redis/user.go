@@ -3,6 +3,10 @@ package redis
 import (
 	"fmt"
 	"time"
+
+	"go-net/model"
+
+	"github.com/gin-gonic/gin"
 )
 
 func SaveOfflineMessage(userID uint, msg []byte) error {
@@ -32,4 +36,28 @@ func GetOfflineMessage(userID uint) ([][]byte, error) {
 	}
 
 	return messages, nil
+}
+
+type user struct{}
+
+var User *user = &user{}
+
+/**
+* token: userID
+*
+* */
+func (u *user) SetToken(token string, userID model.UserID) error {
+	return RedisClient.Set(Ctx, token, userID, 7*24*time.Hour).Err()
+}
+
+/**
+* token: userID
+*
+* */
+func (u *user) GetToken(c *gin.Context, token string) (string, error) {
+	return RedisClient.Get(c, token).Result()
+}
+
+func (u *user) DelToken(token string) error {
+	return RedisClient.Del(Ctx, token).Err()
 }

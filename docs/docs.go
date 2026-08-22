@@ -92,52 +92,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/list": {
-            "get": {
-                "tags": [
-                    "用户"
-                ],
-                "summary": "根据 search 关键字 获取用户列表",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "default": "\"\"",
-                        "description": "搜索关键字",
-                        "name": "search",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "成功",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/utils.KResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/model.User"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "500": {
-                        "description": "服务器错误",
-                        "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/users/login": {
             "post": {
                 "tags": [
@@ -220,6 +174,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/users/password": {
+            "put": {
+                "description": "成功后；服务端将清除当前用户token的登录状态",
+                "tags": [
+                    "用户"
+                ],
+                "summary": "修改用户密码;",
+                "parameters": [
+                    {
+                        "description": "修改密码请求",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.UserPutPasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.KResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/users/register": {
             "post": {
                 "tags": [
@@ -235,6 +235,52 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/controller.RegisterRequest"
                         }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.KResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.User"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/users": {
+            "get": {
+                "tags": [
+                    "用户"
+                ],
+                "summary": "根据 search 关键字 获取用户列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "\"\"",
+                        "description": "搜索关键字",
+                        "name": "search",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -285,9 +331,32 @@ const docTemplate = `{
                 }
             }
         },
+        "controller.UserPutPasswordRequest": {
+            "type": "object",
+            "required": [
+                "newPassword",
+                "oldPassword"
+            ],
+            "properties": {
+                "newPassword": {
+                    "type": "string"
+                },
+                "oldPassword": {
+                    "type": "string"
+                }
+            }
+        },
         "model.User": {
             "type": "object",
+            "required": [
+                "id",
+                "username"
+            ],
             "properties": {
+                "avatar": {
+                    "description": "用户头像、创建时；为空字符串",
+                    "type": "string"
+                },
                 "createAt": {
                     "type": "string"
                 },
@@ -299,6 +368,10 @@ const docTemplate = `{
                         }
                     ],
                     "example": 1
+                },
+                "nickname": {
+                    "description": "用户中文名称，默认为 ‘’，可后期通过修改用户信息设置",
+                    "type": "string"
                 },
                 "updateAt": {
                     "type": "string"
@@ -322,9 +395,15 @@ const docTemplate = `{
         "model.UserResponse": {
             "type": "object",
             "required": [
-                "token"
+                "id",
+                "token",
+                "username"
             ],
             "properties": {
+                "avatar": {
+                    "description": "用户头像、创建时；为空字符串",
+                    "type": "string"
+                },
                 "createAt": {
                     "type": "string"
                 },
@@ -336,6 +415,10 @@ const docTemplate = `{
                         }
                     ],
                     "example": 1
+                },
+                "nickname": {
+                    "description": "用户中文名称，默认为 ‘’，可后期通过修改用户信息设置",
+                    "type": "string"
                 },
                 "token": {
                     "description": "认证令牌",

@@ -9,8 +9,8 @@ import (
 
 	"go-net/middleware"
 	"go-net/model"
-	"go-net/model/redis"
 	"go-net/pool"
+	"go-net/redis"
 )
 
 func RequestWsHandle(c *gin.Context) middleware.CloseHandle {
