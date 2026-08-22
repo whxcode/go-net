@@ -1,5 +1,19 @@
 basePath: /api
 definitions:
+  controller.GetFileRequest:
+    properties:
+      files:
+        items:
+          type: string
+        type: array
+    type: object
+  controller.GetFileResponse:
+    properties:
+      hash:
+        type: string
+      url:
+        type: string
+    type: object
   controller.RegisterRequest:
     properties:
       password:
@@ -9,6 +23,18 @@ definitions:
     required:
     - password
     - username
+    type: object
+  controller.UploadResponse:
+    properties:
+      filename:
+        description: 文件名称
+        type: string
+      hash:
+        description: 文件 hash 地址
+        type: string
+      size:
+        description: 文件大小 字节
+        type: integer
     type: object
   controller.UserPutAvatarRequest:
     properties:
@@ -106,6 +132,100 @@ info:
   title: go-net
   version: "1.0"
 paths:
+  /download/:hash:
+    get:
+      parameters:
+      - description: 哈希地址
+        in: path
+        name: hash
+        required: true
+        type: string
+      - description: 过期时间
+        in: query
+        name: expred
+        required: true
+        type: string
+      - description: 签名
+        in: query
+        name: signature
+        required: true
+        type: string
+      responses:
+        "200":
+          description: 成功
+          schema:
+            items:
+              format: int32
+              type: integer
+            type: array
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 根据 url 地址；下载文件;
+      tags:
+      - 文件
+  /file/getfile:
+    post:
+      description: 此接口生成的 url 地址；含有时效性；不建议作为长时间显示。
+      parameters:
+      - description: 文件的hash列表
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.GetFileRequest'
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/controller.GetFileResponse'
+                  type: array
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 根据 hash 获取文件的 url 地址
+      tags:
+      - 文件
+  /file/upload:
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - collectionFormat: csv
+        description: 文件列表
+        in: formData
+        items:
+          type: file
+        name: files
+        required: true
+        type: array
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/controller.UploadResponse'
+                  type: array
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 保存用户上传的文件
+      tags:
+      - 文件
   /users/:id:
     get:
       parameters:

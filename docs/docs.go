@@ -15,6 +15,157 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/download/:hash": {
+            "get": {
+                "tags": [
+                    "文件"
+                ],
+                "summary": "根据 url 地址；下载文件;",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "哈希地址",
+                        "name": "hash",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "过期时间",
+                        "name": "expred",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "签名",
+                        "name": "signature",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer",
+                                "format": "int32"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/file/getfile": {
+            "post": {
+                "description": "此接口生成的 url 地址；含有时效性；不建议作为长时间显示。",
+                "tags": [
+                    "文件"
+                ],
+                "summary": "根据 hash 获取文件的 url 地址",
+                "parameters": [
+                    {
+                        "description": "文件的hash列表",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.GetFileRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.KResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/controller.GetFileResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/file/upload": {
+            "post": {
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "tags": [
+                    "文件"
+                ],
+                "summary": "保存用户上传的文件",
+                "parameters": [
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "file"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "文件列表",
+                        "name": "files",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.KResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/controller.UploadResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/users/:id": {
             "get": {
                 "tags": [
@@ -361,6 +512,28 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "controller.GetFileRequest": {
+            "type": "object",
+            "properties": {
+                "files": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "controller.GetFileResponse": {
+            "type": "object",
+            "properties": {
+                "hash": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
         "controller.RegisterRequest": {
             "type": "object",
             "required": [
@@ -373,6 +546,23 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "controller.UploadResponse": {
+            "type": "object",
+            "properties": {
+                "filename": {
+                    "description": "文件名称",
+                    "type": "string"
+                },
+                "hash": {
+                    "description": "文件 hash 地址",
+                    "type": "string"
+                },
+                "size": {
+                    "description": "文件大小 字节",
+                    "type": "integer"
                 }
             }
         },

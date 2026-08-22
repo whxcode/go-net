@@ -130,7 +130,7 @@ func Start() {
 
 	fileDowloadRouter := api.Group(controller.KDowloadfile)
 	fileDowloadRouter.Use(controller.FileController.DownloadMiddleware()) // 使用自定义响应中间件
-	fileDowloadRouter.GET("", controller.FileController.DowloadFile)
+	fileDowloadRouter.GET("/:hash", controller.FileController.DowloadFile)
 
 	{
 
