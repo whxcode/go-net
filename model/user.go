@@ -7,7 +7,6 @@ import (
 	"time"
 )
 
-// UserID 用户 ID
 type UserID uint
 
 const InvalidUserID UserID = 0
