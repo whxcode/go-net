@@ -15,10 +15,15 @@ definitions:
       createAt:
         type: string
       id:
-        $ref: '#/definitions/model.UserID'
+        allOf:
+        - $ref: '#/definitions/model.UserID'
+        description: 用户 ID
+        example: 1
       updateAt:
         type: string
       username:
+        description: 用户账户；创建时使用；后期不可修改。
+        example: whx
         type: string
     type: object
   model.UserID:
@@ -32,13 +37,21 @@ definitions:
       createAt:
         type: string
       id:
-        $ref: '#/definitions/model.UserID'
+        allOf:
+        - $ref: '#/definitions/model.UserID'
+        description: 用户 ID
+        example: 1
       token:
+        description: 认证令牌
         type: string
       updateAt:
         type: string
       username:
+        description: 用户账户；创建时使用；后期不可修改。
+        example: whx
         type: string
+    required:
+    - token
     type: object
   utils.KResponse:
     properties:

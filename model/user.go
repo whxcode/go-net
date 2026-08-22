@@ -14,16 +14,19 @@ func (id UserID) String() string {
 }
 
 type User struct {
-	ID        UserID    `gorm:"primarykey" json:"id"`
-	Username  string    `gorm:"uniqueIndex;size:50" json:"username"`
-	Password  string    `json:"-"`
-	CreatedAt time.Time `gorm:"column:created_at" json:"createAt"`
-	UpdatedAt time.Time `gorm:"column:updated_at" json:"updateAt"`
+	// 用户 ID
+	ID UserID `gorm:"primarykey" json:"id" example:"1" validate:"required"`
+	// 用户账户；创建时使用；后期不可修改。
+	Username  string    `gorm:"uniqueIndex;size:50" json:"username" example:"whx" validate:"required"`
+	Password  string    `json:"-" comment:"密码（不返回给前端）"`
+	CreatedAt time.Time `gorm:"column:created_at" json:"createAt" comment:"创建时间"`
+	UpdatedAt time.Time `gorm:"column:updated_at" json:"updateAt" comment:"更新时间"`
 }
 
 type UserResponse struct {
 	User
-	Token string `json:"token"`
+	// 认证令牌
+	Token string `json:"token" validate:"required"`
 }
 
 type userDb struct {
