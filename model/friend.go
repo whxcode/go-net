@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -119,7 +120,42 @@ func (*friendDB) Request(userId, friendId UserID, remark string) *Friend {
 		Remark:   remark,
 	}
 
-	err := DB.Create(f).Error
+	var existingFriend *Friend
+
+	err := DB.Table("friends").Where("user_id = ? AND friend_id = ?", userId, friendId).Find(&existingFriend).Error
+
+	if err == nil {
+		switch existingFriend.Status {
+		case FriendStatusAccepted, FriendStatusPending:
+		case FriendStatusRejected, FriendStatusDeleted:
+
+			existingFriend.Status = FriendStatusPending
+			existingFriend.Remark = remark
+			err = DB.Save(existingFriend).Error
+			if err != nil {
+				panic(err)
+			}
+
+			// 也要重置对方队列中的状态
+			result := DB.Table("friends").
+				Where("user_id = ? and friend_id = ?", friendId, userId).
+				Update("status", FriendStatusPending)
+
+			if result.Error != nil {
+				panic(err)
+			}
+
+			if result.RowsAffected == 0 {
+				// 查不到，什么都不做
+				fmt.Println("没有记录需要更新")
+			}
+
+		}
+
+		return existingFriend
+	}
+
+	err = DB.Create(f).Error
 	if err != nil {
 		panic(err)
 	}
@@ -128,8 +164,29 @@ func (*friendDB) Request(userId, friendId UserID, remark string) *Friend {
 }
 
 func (*friendDB) PutRequestFriendStatus(id uint, status RequestFriendStatus) {
+	var f *Friend
+
+	err := DB.Table("friends").Where("id = ?", id).Find(&f).Error
+	if err != nil {
+		panic(err)
+	}
+
+	if f == nil {
+		panic("好友申请不存在")
+	}
+
+	if status == FriendStatusDeleted {
+		err = DB.Table("friends").
+			Where("user_id = ? AND friend_id = ?", f.FriendID, f.UserID).
+			Update("status", status).Error
+		if err != nil {
+			panic(err)
+		}
+
+	}
+
 	// 查询时;需要交互一下 查询条件条件
-	err := DB.Table("friends").Where("id = ?", id).
+	err = DB.Table("friends").Where("id = ?", id).
 		Update("status", status).Error
 	if err != nil {
 		panic(err)

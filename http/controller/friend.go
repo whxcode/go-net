@@ -56,6 +56,9 @@ type RequestResponse struct {
 }
 
 // @Summary 发起好友申请
+// @Description 好友表没有关系则新增一条记录 status = 0
+// @Description 好友表中已经存在；且 status != 1 或 != 0时；则重新更新 status = 0 和 remark(如果有传递)
+// @Description 好友表中已经存在；且 status == 1 或 = 0时；不会有任何变化；返回成功
 // @Tags 好友模块
 // @Param request body RequestResponse true "发起好友申请"
 // @Success 200 {object} utils.KResponse{data=RequestResponse} "成功"
