@@ -16,7 +16,7 @@ definitions:
     type: object
   controller.GetPrivateMessagesResponse:
     properties:
-      messages:
+      data:
         items:
           $ref: '#/definitions/model.Message'
         type: array
@@ -548,7 +548,7 @@ paths:
   /messages/private/:friendID:
     get:
       parameters:
-      - default: 50
+      - default: 20
         description: 限制条数
         in: query
         name: limit

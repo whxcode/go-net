@@ -28,7 +28,7 @@ func parseHistoryQuery(c *gin.Context) (model.UserID, int, int) {
 }
 
 type GetPrivateMessagesResponse struct {
-	Data  []*model.Message `json:"messages"`
+	Data  []*model.Message `json:"data"`
 	Total int              `json:"total"`
 	Size  int              `json:"size"`
 }

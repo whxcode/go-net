@@ -391,7 +391,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "default": 50,
+                        "default": 20,
                         "description": "限制条数",
                         "name": "limit",
                         "in": "query"
@@ -848,7 +848,7 @@ const docTemplate = `{
         "controller.GetPrivateMessagesResponse": {
             "type": "object",
             "properties": {
-                "messages": {
+                "data": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.Message"

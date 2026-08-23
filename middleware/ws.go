@@ -49,14 +49,14 @@ func BeatExecute(
 
 		//conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 		if !ok {
-			fmt.Println("wsConn not found in context")
+			fmt.Println("--wsConn not found in context--")
 			return
 		}
 
 		conn, o := wsConn.(*websocket.Conn)
 
 		if !o {
-			fmt.Println("wsConn is not of type *websocket.Conn")
+			fmt.Println("--wsConn is not of type *websocket.Conn--")
 			return
 		}
 
@@ -75,7 +75,7 @@ func BeatExecute(
 		for {
 			_, msg, err := conn.ReadMessage()
 			if err != nil {
-				fmt.Println("ReadMessage err:", err)
+				fmt.Println("--------ReadMessage err---------:", err)
 				break
 			}
 			// 收到任何消息重置读超时

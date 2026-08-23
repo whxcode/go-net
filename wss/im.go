@@ -33,7 +33,7 @@ func RequestWsHandle(c *gin.Context) middleware.CloseHandle {
 
 	close := func(conn *websocket.Conn) {
 		// 用户主动关闭链接
-
+		fmt.Println("--关闭链接--")
 		pool.UserPool.RemoveUser(userID)
 		conn.Close()
 	}
