@@ -2,11 +2,14 @@ package redis
 
 import (
 	"fmt"
+	"net/http"
 	"time"
 
 	"go-net/model"
+	"go-net/utils"
 
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 )
 
 func SaveOfflineMessage(userID uint, msg []byte) error {
@@ -61,7 +64,12 @@ func (u *user) SetToken(token string, userID model.UserID) error {
 func (u *user) GetToken(c *gin.Context, token string) (string, error) {
 	r, err := RedisClient.Get(c, token).Result()
 	if err != nil {
-		panic(err)
+		if err == redis.Nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, utils.MakeResponseWidthCode("登录已过期", http.StatusUnauthorized))
+			return "", err
+		}
+
+		panic("GetToken error" + err.Error())
 	}
 
 	return r, nil

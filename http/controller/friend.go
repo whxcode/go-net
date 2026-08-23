@@ -60,16 +60,16 @@ type RequestResponse struct {
 // @Description 好友表中已经存在；且 status == 1 或 = 0时；不会有任何变化；返回成功
 // @Tags 好友模块
 // @Param request body RequestResponse true "发起好友申请"
-// @Success 200 {object} utils.KResponse{data=RequestResponse} "成功"
+// @Success 200 {object} utils.KResponse{data=Friend} "成功"
 // @Failure 500 {object} utils.KResponse "服务器错误"
 // @Router /friends/request [post]
 func (*firendsControll) Request(c *gin.Context) *utils.KResponse {
 	UserID := utils.GetUserID(c)
 	param := utils.ShouldBindBodyWithJSON[*RequestResponse](c)
 
-	model.FriendDB.Request(UserID, param.FriendID, param.Remark)
+	f := model.FriendDB.Request(UserID, param.FriendID, param.Remark)
 
-	return utils.MakeResponse(param)
+	return utils.MakeResponse(f)
 }
 
 // @Summary 获取申请列表

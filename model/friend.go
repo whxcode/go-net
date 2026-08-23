@@ -1,8 +1,11 @@
 package model
 
 import (
+	"errors"
 	"fmt"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 /***
@@ -71,27 +74,75 @@ type friendDB struct{}
 var FriendDB = &friendDB{}
 
 // 根据用户id 查询好用列表
-func (*friendDB) firends(userId UserID, status []RequestFriendStatus, extar string) []*FriendResponse {
+func (*friendDB) firends(userId UserID, status []RequestFriendStatus, isRequests bool) []*FriendResponse {
 	var result []*FriendResponse
 	var err error
 
-	if extar == "" {
-		err = DB. //
-				Table("friends f").
-				Select("f.*,u.username,u.nickname,u.avatar").
-				Joins("left join users u on u.id = f.friend_id").
-				Where("(user_id = ? AND status IN (?))", userId, status).
-				Find(&result).Error
-	} else {
+	if isRequests {
 		err = DB.Table("friends f").
 			Select("f.*,u.username,u.nickname,u.avatar").
 			Joins("left join users u on u.id = f.friend_id").
-			Where("(user_id = ? AND status IN (?))"+extar, userId, status, userId, status).
+			Where("(user_id = ? AND status IN (?)) OR (friend_id = ? AND status IN (?))", userId, status, userId, status).
 			Find(&result).Error
+		if err != nil {
+			panic(err)
+		}
+
+		return result
+	}
+
+	friends := []*Friend{}
+
+	err = DB.Table("friends").Where("user_id = ? OR friend_id = ?", userId, userId).Find(&friends).Error
+
+	if len(friends) == 0 {
+		panic("没有好友")
 	}
 
 	if err != nil {
 		panic(err)
+	}
+
+	ids := make([]UserID, len(friends))
+
+	fmt.Println("err:--->", ids, friends)
+	for i, f := range friends {
+		if f.UserID == userId {
+			ids[i] = f.FriendID
+		} else {
+			ids[i] = f.UserID
+		}
+	}
+
+	var users []*User
+
+	err = DB.Where("id IN ?", ids).Find(&users).Error
+	if err != nil {
+		panic(err)
+	}
+	userMap := make(map[UserID]*User, len(users))
+
+	for _, u := range users {
+		userMap[u.ID] = u
+	}
+
+	result = make([]*FriendResponse, len(friends))
+
+	for i, f := range friends {
+		var targetID UserID
+		if f.UserID == userId {
+			targetID = f.FriendID
+		} else {
+			targetID = f.UserID
+		}
+
+		result[i] = &FriendResponse{
+			Friend:   f,
+			Username: userMap[targetID].Username,
+			Nickname: userMap[targetID].Nickname,
+			Avatar:   userMap[targetID].Avatar,
+		}
+
 	}
 
 	return result
@@ -99,11 +150,11 @@ func (*friendDB) firends(userId UserID, status []RequestFriendStatus, extar stri
 
 // 根据用户id 查询好用列表
 func (f *friendDB) Firends(userId UserID) []*FriendResponse {
-	return f.firends(userId, []RequestFriendStatus{FriendStatusAccepted}, "")
+	return f.firends(userId, []RequestFriendStatus{FriendStatusAccepted}, false)
 }
 
 func (f *friendDB) Requests(userID UserID) (result []*FriendResponse) {
-	return f.firends(userID, []RequestFriendStatus{FriendStatusPending, FriendStatusRejected}, "OR (friend_id = ? AND status IN (?))")
+	return f.firends(userID, []RequestFriendStatus{FriendStatusPending, FriendStatusRejected}, true)
 }
 
 /*
@@ -119,48 +170,69 @@ func (*friendDB) Request(userId, friendId UserID, remark string) *Friend {
 		Status:   FriendStatusPending,
 		Remark:   remark,
 	}
+	/*
+		// First
+		err := DB.First(&user, id).Error
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+		    // 查不到
+		} else if err != nil {
+		    // 报错
+		}
+
+		// Find
+		err := DB.Find(&users).Error
+		if err != nil {
+		    // 报错
+		} else if len(users) == 0 {
+		    // 查不到
+		}
+	*/
 
 	var existingFriend *Friend
 
-	err := DB.Table("friends").Where("user_id = ? AND friend_id = ?", userId, friendId).Find(&existingFriend).Error
+	err := DB.Table("friends").Where("user_id = ? AND friend_id = ?", userId, friendId).First(&existingFriend).Error
 
-	if err == nil {
-		switch existingFriend.Status {
-		case FriendStatusAccepted, FriendStatusPending:
-		case FriendStatusRejected, FriendStatusDeleted:
-
-			existingFriend.Status = FriendStatusPending
-			existingFriend.Remark = remark
-			err = DB.Save(existingFriend).Error
-			if err != nil {
-				panic(err)
-			}
-
-			// 也要重置对方队列中的状态
-			result := DB.Table("friends").
-				Where("user_id = ? and friend_id = ?", friendId, userId).
-				Update("status", FriendStatusPending)
-
-			if result.Error != nil {
-				panic(err)
-			}
-
-			if result.RowsAffected == 0 {
-				// 查不到，什么都不做
-				fmt.Println("没有记录需要更新")
-			}
-
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		err = DB.Create(f).Error
+		if err != nil {
+			panic(err)
 		}
 
-		return existingFriend
+		return f
 	}
 
-	err = DB.Create(f).Error
 	if err != nil {
 		panic(err)
 	}
 
-	return f
+	switch existingFriend.Status {
+	case FriendStatusAccepted, FriendStatusPending:
+	case FriendStatusRejected, FriendStatusDeleted:
+
+		existingFriend.Status = FriendStatusPending
+		existingFriend.Remark = remark
+		err = DB.Save(existingFriend).Error
+		if err != nil {
+			panic(err)
+		}
+
+		// 也要重置对方队列中的状态
+		result := DB.Table("friends").
+			Where("user_id = ? and friend_id = ?", friendId, userId).
+			Update("status", FriendStatusPending)
+
+		if result.Error != nil {
+			panic(err)
+		}
+
+		if result.RowsAffected == 0 {
+			// 查不到，什么都不做
+			fmt.Println("没有记录需要更新")
+		}
+
+	}
+
+	return existingFriend
 }
 
 func (*friendDB) PutRequestFriendStatus(id uint, status RequestFriendStatus) {
