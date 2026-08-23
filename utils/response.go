@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"go-net/model"
 
@@ -60,4 +62,22 @@ func ShouldBindBodyWithJSON[T any](c *gin.Context) T {
 	}
 
 	return data
+}
+
+func StringToInt(s string) int {
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		panic(err)
+	}
+	return i
+}
+
+func StringToUserID(s string) model.UserID {
+	i, err := strconv.Atoi(s)
+	fmt.Println("StringToUserID:", s, i, err)
+	if err != nil {
+		panic(err)
+	}
+
+	return model.UserID(i)
 }

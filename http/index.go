@@ -162,6 +162,13 @@ func Start() {
 	}
 
 	{
+		messageRouter := api.Group("/messages")
+		messageRouter.Use(middleware.AuthorizationMiddleware())
+		messageRouter.GET(controller.KMessagePrivate, execute(controller.MessageController.GetPrivateMessages))
+
+	}
+
+	{
 		wssRouter := api.Group("/ws")
 		wssRouter.Use(middleware.BeatMiddleware())
 		wssRouter.GET("/im", middleware.BeatExecute(wss.RequestWsHandle, wss.ChannelHandle)) // WebSocket路由

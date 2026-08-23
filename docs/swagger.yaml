@@ -14,6 +14,17 @@ definitions:
       url:
         type: string
     type: object
+  controller.GetPrivateMessagesResponse:
+    properties:
+      messages:
+        items:
+          $ref: '#/definitions/model.Message'
+        type: array
+      size:
+        type: integer
+      total:
+        type: integer
+    type: object
   controller.PutRequesetRequestResponse:
     properties:
       status:
@@ -76,6 +87,64 @@ definitions:
     - newPassword
     - oldPassword
     type: object
+  model.ChannelType:
+    enum:
+    - 0
+    - 1
+    - 2
+    format: int32
+    type: integer
+    x-enum-varnames:
+    - ChannelTypeNORMAL
+    - ChannelTypePING
+    - ChannelTypePONG
+  model.Element:
+    properties:
+      content:
+        description: 消息内容（文本内容或文件 HASH）
+        type: string
+      hash:
+        description: 文件信息（仅在 Type 为图片/视频/文件时有效）
+        type: string
+      height:
+        type: integer
+      name:
+        type: string
+      size:
+        type: integer
+      type:
+        allOf:
+        - $ref: '#/definitions/model.MessageType'
+        description: 消息类型（0：文本，1：图片，2：视频，3：文件）
+      url:
+        type: string
+      width:
+        type: integer
+    type: object
+  model.Friend:
+    properties:
+      createdAt:
+        type: string
+      friendId:
+        description: 好友的 用户ID (类型 uint)
+        type: integer
+      id:
+        description: 唯一 ID
+        type: integer
+      remark:
+        description: 发起好友申请时备注时的备注
+        type: string
+      status:
+        allOf:
+        - $ref: '#/definitions/model.RequestFriendStatus'
+        description: '状态:  `status` tinyint(1) DEFAULT ''0'' COMMENT ''0-待确认, 1-已确认,
+          2-已拒绝, 3-已删除'','
+      updatedAt:
+        type: string
+      userId:
+        description: 自身的 ID 和当前登录的 用户 ID 一直。 (类型 uint)
+        type: integer
+    type: object
   model.FriendResponse:
     properties:
       avatar:
@@ -112,6 +181,46 @@ definitions:
         description: 用户账号
         type: string
     type: object
+  model.Message:
+    properties:
+      createdAt:
+        type: string
+      elements:
+        description: 消息元素列表（JSON 序列化存储）
+        items:
+          $ref: '#/definitions/model.Element'
+        type: array
+      id:
+        description: 消息 数据库索引
+        type: integer
+      msgId:
+        description: 消息唯一 ID（客户端生成，保证幂等性）
+        type: string
+      receiverId:
+        description: 消息接收者 ID
+        type: integer
+      senderId:
+        description: 消息发送者 ID
+        type: integer
+      status:
+        type: integer
+      type:
+        allOf:
+        - $ref: '#/definitions/model.ChannelType'
+        description: 消息类型 0：普通消息 1：ping 2：pong
+    type: object
+  model.MessageType:
+    enum:
+    - 0
+    - 1
+    - 2
+    - 3
+    type: integer
+    x-enum-varnames:
+    - MsgTypeText
+    - MsgTypeImage
+    - MsgTypeVideo
+    - MsgTypeFile
   model.RequestFriendStatus:
     enum:
     - 0
@@ -405,7 +514,7 @@ paths:
             - $ref: '#/definitions/utils.KResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/controller.RequestResponse'
+                  $ref: '#/definitions/model.Friend'
               type: object
         "500":
           description: 服务器错误
@@ -436,6 +545,36 @@ paths:
       summary: 获取申请列表
       tags:
       - 好友模块
+  /messages/private/:friendID:
+    get:
+      parameters:
+      - default: 50
+        description: 限制条数
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: 偏移量
+        in: query
+        name: offset
+        type: integer
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/controller.GetPrivateMessagesResponse'
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 获取与好友的历史记录
+      tags:
+      - 好友消息
   /users/:id:
     get:
       parameters:

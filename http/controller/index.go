@@ -34,6 +34,8 @@ const (
 	KFriendRequest    = "/request"
 	KFriendRequests   = "/requests"
 	KFriendPutRequest = "/:id"
+
+	KMessagePrivate = "/private/:friendID"
 )
 
 type KResponseHandle = func(c *gin.Context) *utils.KResponse

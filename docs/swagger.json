@@ -269,7 +269,7 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/controller.RequestResponse"
+                                            "$ref": "#/definitions/model.Friend"
                                         }
                                     }
                                 }
@@ -361,6 +361,56 @@
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/controller.PutRequesetRequestResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/messages/private/:friendID": {
+            "get": {
+                "tags": [
+                    "好友消息"
+                ],
+                "summary": "获取与好友的历史记录",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 50,
+                        "description": "限制条数",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "偏移量",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.KResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/controller.GetPrivateMessagesResponse"
                                         }
                                     }
                                 }
@@ -789,6 +839,23 @@
                 }
             }
         },
+        "controller.GetPrivateMessagesResponse": {
+            "type": "object",
+            "properties": {
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Message"
+                    }
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
         "controller.PutRequesetRequestResponse": {
             "type": "object",
             "properties": {
@@ -880,6 +947,91 @@
                 }
             }
         },
+        "model.ChannelType": {
+            "type": "integer",
+            "format": "int32",
+            "enum": [
+                0,
+                1,
+                2
+            ],
+            "x-enum-varnames": [
+                "ChannelTypeNORMAL",
+                "ChannelTypePING",
+                "ChannelTypePONG"
+            ]
+        },
+        "model.Element": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "description": "消息内容（文本内容或文件 HASH）",
+                    "type": "string"
+                },
+                "hash": {
+                    "description": "文件信息（仅在 Type 为图片/视频/文件时有效）",
+                    "type": "string"
+                },
+                "height": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "type": {
+                    "description": "消息类型（0：文本，1：图片，2：视频，3：文件）",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.MessageType"
+                        }
+                    ]
+                },
+                "url": {
+                    "type": "string"
+                },
+                "width": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.Friend": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "friendId": {
+                    "description": "好友的 用户ID (类型 uint)",
+                    "type": "integer"
+                },
+                "id": {
+                    "description": "唯一 ID",
+                    "type": "integer"
+                },
+                "remark": {
+                    "description": "发起好友申请时备注时的备注",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "状态:  `status` tinyint(1) DEFAULT '0' COMMENT '0-待确认, 1-已确认, 2-已拒绝, 3-已删除',",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.RequestFriendStatus"
+                        }
+                    ]
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userId": {
+                    "description": "自身的 ID 和当前登录的 用户 ID 一直。 (类型 uint)",
+                    "type": "integer"
+                }
+            }
+        },
         "model.FriendResponse": {
             "type": "object",
             "properties": {
@@ -930,6 +1082,63 @@
                     "type": "string"
                 }
             }
+        },
+        "model.Message": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "elements": {
+                    "description": "消息元素列表（JSON 序列化存储）",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Element"
+                    }
+                },
+                "id": {
+                    "description": "消息 数据库索引",
+                    "type": "integer"
+                },
+                "msgId": {
+                    "description": "消息唯一 ID（客户端生成，保证幂等性）",
+                    "type": "string"
+                },
+                "receiverId": {
+                    "description": "消息接收者 ID",
+                    "type": "integer"
+                },
+                "senderId": {
+                    "description": "消息发送者 ID",
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "type": {
+                    "description": "消息类型 0：普通消息 1：ping 2：pong",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ChannelType"
+                        }
+                    ]
+                }
+            }
+        },
+        "model.MessageType": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2,
+                3
+            ],
+            "x-enum-varnames": [
+                "MsgTypeText",
+                "MsgTypeImage",
+                "MsgTypeVideo",
+                "MsgTypeFile"
+            ]
         },
         "model.RequestFriendStatus": {
             "type": "integer",
