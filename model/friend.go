@@ -134,6 +134,8 @@ func (*friendDB) firends(userId UserID, status []RequestFriendStatus, isRequests
 			targetID = f.FriendID
 		} else {
 			targetID = f.UserID
+			f.UserID = f.FriendID
+			f.FriendID = targetID
 		}
 
 		result[i] = &FriendResponse{
