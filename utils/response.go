@@ -34,13 +34,14 @@ func GetUserID(c *gin.Context) model.UserID {
 	userID, exists := c.Get("userID")
 
 	if !exists {
+		fmt.Printf("userID is not of type model.UserID, got %T\n", userID)
 		panic(fmt.Sprintf("userID is not of type model.UserID, got %T", userID))
-		return model.InvalidUserID
 	}
 
 	id, ok := userID.(model.UserID)
 
 	if !ok {
+		fmt.Printf("userID is not of type model.UserID, got %T\n", userID)
 		panic(fmt.Sprintf("userID is not of type model.UserID, got %T", userID))
 	}
 
@@ -49,6 +50,10 @@ func GetUserID(c *gin.Context) model.UserID {
 
 func GetToken(c *gin.Context) string {
 	return c.Request.Header.Get("token")
+}
+
+func GetTokenFromQuery(c *gin.Context) string {
+	return c.Query("token")
 }
 
 func SetUserID(c *gin.Context, userID model.UserID) {

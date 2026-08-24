@@ -14,7 +14,6 @@ import (
 	"go-net/model"
 	"go-net/pool"
 	"go-net/redis"
-	"go-net/utils"
 )
 
 func RequestWsHandle(c *gin.Context) middleware.CloseHandle {
@@ -84,7 +83,7 @@ const (
 	WriteWait = 10 * time.Second
 
 	// Time allowed to read the next pong message from the peer.
-	PongWait = 10 * time.Second
+	PongWait = 60 * time.Second
 )
 
 func IM(c *gin.Context) {
@@ -101,12 +100,20 @@ func IM(c *gin.Context) {
 
 	fmt.Println("WebSocket连接已建立:", conn.RemoteAddr())
 
-	conn.WriteMessage(websocket.TextMessage, []byte("连接成功-----"))
 	conn.SetReadDeadline(time.Now().Add(PongWait))
-	userID := utils.GetUserID(c)
+
+	fmt.Println(" conn.SetReadDeadline(time.Now().Add(PongWait)) ")
+
+	// 客户端首次链接
+	userIDStr := c.Query("userID")
+	userIDUint, _ := strconv.ParseUint(userIDStr, 10, 64)
+	userID := uint(userIDUint)
+	fmt.Println("---", userID, "---", userIDUint, "---", userIDStr)
+
 	pool.UserPool.AddUser(uint(userID), conn)
 
 	for {
+		fmt.Println("-------------------------------------- start -------------------------------")
 		_, msg, err := conn.ReadMessage()
 		if err != nil {
 
@@ -122,6 +129,7 @@ func IM(c *gin.Context) {
 				break
 			}
 
+			fmt.Println("--->err:", err)
 			panic(err)
 
 		}
@@ -138,7 +146,7 @@ func IM(c *gin.Context) {
 
 		if err := json.Unmarshal(msg, &message); err != nil {
 			fmt.Println("解析JSON失败", err)
-			return
+			break
 		}
 
 		if message.Type == model.ChannelTypePING {
@@ -151,6 +159,8 @@ func IM(c *gin.Context) {
 		if senderConn != nil {
 			senderConn.WriteMessage(websocket.TextMessage, msg)
 		}
+
+		fmt.Println("-------------------------------------- end -------------------------------")
 
 	}
 }

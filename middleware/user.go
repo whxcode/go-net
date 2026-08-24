@@ -16,6 +16,10 @@ func AuthorizationMiddleware() gin.HandlerFunc {
 		token := utils.GetToken(c)
 
 		if token == "" {
+			token = utils.GetTokenFromQuery(c)
+		}
+
+		if token == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, utils.MakeResponseWidthCode("未登录", http.StatusUnauthorized))
 			return
 		}
