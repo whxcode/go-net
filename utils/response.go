@@ -34,13 +34,14 @@ func GetUserID(c *gin.Context) model.UserID {
 	userID, exists := c.Get("userID")
 
 	if !exists {
+		panic(fmt.Sprintf("userID is not of type model.UserID, got %T", userID))
 		return model.InvalidUserID
 	}
 
 	id, ok := userID.(model.UserID)
 
 	if !ok {
-		return model.InvalidUserID
+		panic(fmt.Sprintf("userID is not of type model.UserID, got %T", userID))
 	}
 
 	return id

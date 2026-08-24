@@ -49,18 +49,17 @@ func BeatExecute(
 
 		//conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 		if !ok {
-			fmt.Println("--wsConn not found in context--")
+			fmt.Println("查询不到 wsConn")
 			return
 		}
 
 		conn, o := wsConn.(*websocket.Conn)
 
 		if !o {
-			fmt.Println("--wsConn is not of type *websocket.Conn--")
+			fmt.Println("wsConn 类型错误型")
 			return
 		}
 
-		// var userID uint = 0
 		closeHandle := requestHandle(c)
 
 		if closeHandle == nil {
@@ -75,7 +74,7 @@ func BeatExecute(
 		for {
 			_, msg, err := conn.ReadMessage()
 			if err != nil {
-				fmt.Println("--------ReadMessage err---------:", err)
+				fmt.Println("读取数据失败:", err)
 				break
 			}
 			// 收到任何消息重置读超时
@@ -84,11 +83,11 @@ func BeatExecute(
 			message := &model.Message{}
 
 			if err := json.Unmarshal(msg, &message); err != nil {
-				println("json.Unmarshal err:", err)
+				fmt.Println("解析JSON失败", err)
 				return
 			}
 
-			fmt.Println("message:[", message.Type, "]")
+			fmt.Println("消息类型:[", message.Type, "]")
 
 			if message.Type == model.ChannelTypePING {
 				conn.WriteMessage(websocket.TextMessage, []byte(`{"type":2}`)) // PONG

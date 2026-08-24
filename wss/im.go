@@ -1,8 +1,11 @@
 package wss
 
 import (
+	"encoding/json"
 	"fmt"
+	"net"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -11,6 +14,7 @@ import (
 	"go-net/model"
 	"go-net/pool"
 	"go-net/redis"
+	"go-net/utils"
 )
 
 func RequestWsHandle(c *gin.Context) middleware.CloseHandle {
@@ -73,4 +77,80 @@ func ChannelHandle(conn *websocket.Conn, p []byte, message *model.Message) bool 
 
 	senderConn.WriteMessage(websocket.TextMessage, p)
 	return true
+}
+
+const (
+	// Time allowed to write a message to the peer.
+	WriteWait = 10 * time.Second
+
+	// Time allowed to read the next pong message from the peer.
+	PongWait = 10 * time.Second
+)
+
+func IM(c *gin.Context) {
+	conn, err := pool.Upgrader.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		fmt.Println("升级为WebSocket失败:", err)
+		return
+	}
+
+	defer func() {
+		fmt.Println("WebSocket连接已关闭:", conn.RemoteAddr())
+		conn.Close()
+	}()
+
+	fmt.Println("WebSocket连接已建立:", conn.RemoteAddr())
+
+	conn.WriteMessage(websocket.TextMessage, []byte("连接成功-----"))
+	conn.SetReadDeadline(time.Now().Add(PongWait))
+	userID := utils.GetUserID(c)
+	pool.UserPool.AddUser(uint(userID), conn)
+
+	for {
+		_, msg, err := conn.ReadMessage()
+		if err != nil {
+
+			// 判断是否超时
+			if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+				fmt.Println("读取消息超时，关闭连接")
+				break
+			}
+
+			// 判断是否是客户端主动关闭
+			if closeErr, ok := err.(*websocket.CloseError); ok {
+				fmt.Printf("客户端关闭连接，状态码: %d，原因: %s\n", closeErr.Code, closeErr.Text)
+				break
+			}
+
+			panic(err)
+
+		}
+
+		if len(msg) == 0 {
+			fmt.Println(userID, "收到空消息---")
+			continue
+		}
+
+		conn.SetReadDeadline(time.Now().Add(PongWait))
+
+		var message *model.Message
+		err = json.Unmarshal(msg, &message)
+
+		if err := json.Unmarshal(msg, &message); err != nil {
+			fmt.Println("解析JSON失败", err)
+			return
+		}
+
+		if message.Type == model.ChannelTypePING {
+			conn.WriteMessage(websocket.TextMessage, []byte(`{"type":2}`)) // PONG
+			continue
+		}
+
+		senderConn := pool.UserPool.GetUserConn(message.ReceiverID)
+
+		if senderConn != nil {
+			senderConn.WriteMessage(websocket.TextMessage, msg)
+		}
+
+	}
 }

@@ -170,8 +170,9 @@ func Start() {
 
 	{
 		wssRouter := api.Group("/ws")
-		wssRouter.Use(middleware.BeatMiddleware())
-		wssRouter.GET("/im", middleware.BeatExecute(wss.RequestWsHandle, wss.ChannelHandle)) // WebSocket路由
+		// wssRouter.Use(middleware.BeatMiddleware())
+		//wssRouter.GET("/im", middleware.BeatExecute(wss.RequestWsHandle, wss.ChannelHandle)) // WebSocket路由
+		wssRouter.GET("/im", wss.IM) // WebSocket路由
 	}
 
 	// Start server on port 8080 (default)

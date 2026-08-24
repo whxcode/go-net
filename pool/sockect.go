@@ -28,6 +28,7 @@ func (p *userPool) AddUser(userID uint, conn *websocket.Conn) {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
+	fmt.Println("AddUser:", userID)
 	oldConn, k := p.users[userID]
 
 	// 移除之前的链接
