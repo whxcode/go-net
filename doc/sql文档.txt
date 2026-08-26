@@ -196,3 +196,43 @@ LEFT JOIN users u(没有就显示 NULL) ON u.id = f.friend_id;
 SELECT *
 FROM friends f
 RIGHT JOIN users u ON u.id = f.friend_id;
+
+
+-- 高级查询
+
+# 条件查询
+SELECT 
+    f.id,
+    CASE 
+        WHEN f.user_id = ? THEN f.friend_id   -- 我是发起方，friend_id 是对方
+        ELSE f.user_id                        -- 我是接收方，user_id 是对方
+    END AS target_user_id,
+    u.username,
+    u.nickname,
+    u.avatar
+FROM friends f
+LEFT JOIN users u ON u.id = (
+    CASE 
+        WHEN f.user_id = ? THEN f.friend_id
+        ELSE f.user_id
+    END
+)
+WHERE (f.user_id = ? OR f.friend_id = ?) AND f.status = 1;
+
+
+# 子表查询
+WITH base AS (
+    SELECT 
+        f.id,
+        CASE WHEN f.user_id = 2 THEN f.friend_id ELSE f.user_id END AS target_user_id,
+        f.user_id,
+        f.friend_id
+    FROM friends f
+    WHERE (f.user_id = 2 OR f.friend_id = 2) AND f.status = 1
+)
+SELECT 
+    b.*,
+    u.username,
+    u.nickname
+FROM base b
+LEFT JOIN users u ON u.id = b.target_user_id;
