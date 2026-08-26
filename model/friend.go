@@ -2,7 +2,6 @@ package model
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -74,89 +73,46 @@ type friendDB struct{}
 var FriendDB = &friendDB{}
 
 // 根据用户id 查询好用列表
-func (*friendDB) firends(userId UserID, status []RequestFriendStatus, isRequests bool) []*FriendResponse {
+func (f *friendDB) Firends(userId UserID) []*FriendResponse {
 	var result []*FriendResponse
-	var err error
+	DB.Exec("SET @user_id = ?", userId)
+	DB.Exec("SET @status = ?", FriendStatusAccepted)
 
-	if isRequests {
-		err = DB.Table("friends f").
-			Select("f.*,u.username,u.nickname,u.avatar").
-			Joins("left join users u on u.id = f.friend_id").
-			Where("(user_id = ? AND status IN (?)) OR (friend_id = ? AND status IN (?))", userId, status, userId, status).
-			Find(&result).Error
-		if err != nil {
-			panic(err)
-		}
-
-		return result
-	}
-
-	friends := []*Friend{}
-
-	err = DB.Table("friends").Where("user_id = ? OR friend_id = ?", userId, userId).Find(&friends).Error
-
-	if len(friends) == 0 {
-		panic("没有好友")
-	}
-
+	err := DB.Raw(
+		`
+		select
+		f.id,
+		case when f.user_id = @user_id then f.user_id else f.friend_id end as user_id,
+		case when f.user_id = @user_id then f.friend_id else f.user_id end as friend_id,
+		u.username,
+		u.nickname,
+		u.avatar
+		from friends f
+		left join users u on u.id = (case when f.user_id = @user_id then f.friend_id else f.user_id end)
+		where (f.user_id = @user_id or f.friend_id = @user_id) and f.status = @status
+	`, userId, FriendStatusAccepted).Scan(&result).Error
 	if err != nil {
 		panic(err)
 	}
 
-	ids := make([]UserID, len(friends))
-
-	fmt.Println("err:--->", ids, friends)
-	for i, f := range friends {
-		if f.UserID == userId {
-			ids[i] = f.FriendID
-		} else {
-			ids[i] = f.UserID
-		}
-	}
-
-	var users []*User
-
-	err = DB.Where("id IN ?", ids).Find(&users).Error
-	if err != nil {
-		panic(err)
-	}
-	userMap := make(map[UserID]*User, len(users))
-
-	for _, u := range users {
-		userMap[u.ID] = u
-	}
-
-	result = make([]*FriendResponse, len(friends))
-
-	for i, f := range friends {
-		var targetID UserID
-		if f.UserID == userId {
-			targetID = f.FriendID
-		} else {
-			targetID = f.UserID
-			f.UserID = f.FriendID
-			f.FriendID = targetID
-		}
-
-		result[i] = &FriendResponse{
-			Friend:   f,
-			Username: userMap[targetID].Username,
-			Nickname: userMap[targetID].Nickname,
-			Avatar:   userMap[targetID].Avatar,
-		}
-
+	if result == nil {
+		result = make([]*FriendResponse, 0)
 	}
 
 	return result
 }
 
-// 根据用户id 查询好用列表
-func (f *friendDB) Firends(userId UserID) []*FriendResponse {
-	return f.firends(userId, []RequestFriendStatus{FriendStatusAccepted}, false)
-}
-
 func (f *friendDB) Requests(userID UserID) (result []*FriendResponse) {
-	return f.firends(userID, []RequestFriendStatus{FriendStatusPending, FriendStatusRejected}, true)
+	err := DB.Table("friends f").
+		Select("f.id, f.user_id, f.friend_id, u.username, u.nickname, u.avatar").
+		Joins("left join users u on u.id = (case when f.user_id = ? then f.friend_id else f.user_id end)", userID).
+		Where("(f.user_id = ? or f.friend_id = ?) and f.status in (?)", userID, userID, []RequestFriendStatus{FriendStatusPending, FriendStatusRejected}).
+		Find(&result).Error
+	if err != nil {
+		panic(err)
+	}
+
+	return result
 }
 
 /*
@@ -216,20 +172,6 @@ func (*friendDB) Request(userId, friendId UserID, remark string) *Friend {
 		err = DB.Save(existingFriend).Error
 		if err != nil {
 			panic(err)
-		}
-
-		// 也要重置对方队列中的状态
-		result := DB.Table("friends").
-			Where("user_id = ? and friend_id = ?", friendId, userId).
-			Update("status", FriendStatusPending)
-
-		if result.Error != nil {
-			panic(err)
-		}
-
-		if result.RowsAffected == 0 {
-			// 查不到，什么都不做
-			fmt.Println("没有记录需要更新")
 		}
 
 	}
