@@ -545,6 +545,25 @@ paths:
       summary: 获取申请列表
       tags:
       - 好友模块
+  /groups:
+    get:
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.UserResponse'
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 获取群列表
+      tags:
+      - 群
   /messages/private/:friendID:
     get:
       parameters:

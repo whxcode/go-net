@@ -169,6 +169,13 @@ func Start() {
 	}
 
 	{
+		messageRouter := api.Group("/groups")
+		messageRouter.Use(middleware.AuthorizationMiddleware())
+		messageRouter.GET(controller.KGroupGetGroups, execute(controller.GroupController.Groups))
+
+	}
+
+	{
 		wssRouter := api.Group("/ws")
 		// wssRouter.Use(middleware.AuthorizationMiddleware())
 		// wssRouter.Use(middleware.BeatMiddleware())
