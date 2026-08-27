@@ -87,3 +87,11 @@ func StringToUserID(s string) model.UserID {
 
 	return model.UserID(i)
 }
+
+func StringToUInt(s string) uint {
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		panic(err)
+	}
+	return uint(i)
+}

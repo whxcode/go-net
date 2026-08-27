@@ -38,6 +38,7 @@ const (
 	KMessagePrivate = "/private/:friendID"
 
 	KGroupGetGroups = "/"
+	KGroupGetGroup  = "/:id"
 )
 
 type KResponseHandle = func(c *gin.Context) *utils.KResponse

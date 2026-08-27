@@ -400,7 +400,53 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/model.UserResponse"
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.GroupChatResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/groups/:id": {
+            "get": {
+                "tags": [
+                    "群"
+                ],
+                "summary": "获取群列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "群ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.KResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.GroupChatResponse"
                                         }
                                     }
                                 }
@@ -1120,6 +1166,117 @@ const docTemplate = `{
                 "username": {
                     "description": "用户账号",
                     "type": "string"
+                }
+            }
+        },
+        "model.GroupChatResponse": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "description": "群头像",
+                    "type": "string"
+                },
+                "createdAt": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "encrypted": {
+                    "description": "是否加密 0-否 1-是",
+                    "type": "integer"
+                },
+                "id": {
+                    "description": "群ID",
+                    "type": "integer"
+                },
+                "isMuted": {
+                    "description": "是否全员禁言 0-否 1-是",
+                    "type": "integer"
+                },
+                "members": {
+                    "description": "该群的所有成员信息；注意：该字段是通过关联查询获取的，而不是直接存储在数据库中的",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.GroupMemberResponse"
+                    }
+                },
+                "name": {
+                    "description": "群名称",
+                    "type": "string"
+                },
+                "notice": {
+                    "description": "群公告",
+                    "type": "string"
+                },
+                "ownerId": {
+                    "description": "群主ID",
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "description": "更新时间",
+                    "type": "string"
+                },
+                "userId": {
+                    "description": "用户 ID；如果 ownerId == userId，则表示该用户是群主",
+                    "type": "integer"
+                }
+            }
+        },
+        "model.GroupMemberResponse": {
+            "type": "object",
+            "required": [
+                "avatar",
+                "username"
+            ],
+            "properties": {
+                "avatar": {
+                    "description": "用户头像、创建时；为空字符串;注意只是保存 文件的hash 地址；而不是 URL 地址",
+                    "type": "string",
+                    "example": "''"
+                },
+                "createdAt": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "groupId": {
+                    "description": "群ID",
+                    "type": "integer"
+                },
+                "id": {
+                    "description": "成员ID",
+                    "type": "integer"
+                },
+                "isMuted": {
+                    "description": "该用户是否被禁言 0-否 1-是",
+                    "type": "integer"
+                },
+                "isNotifyDisabled": {
+                    "description": "该用户是否关闭该群通知 0-否 1-是",
+                    "type": "integer"
+                },
+                "joinedAt": {
+                    "description": "加入时间",
+                    "type": "string"
+                },
+                "nickname": {
+                    "description": "用户中文名称，默认为 ‘’，可后期通过修改用户信息设置",
+                    "type": "string"
+                },
+                "role": {
+                    "description": "角色 0-成员 1-管理员 2-群主",
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "description": "更新时间",
+                    "type": "string"
+                },
+                "userId": {
+                    "description": "用户ID",
+                    "type": "integer"
+                },
+                "username": {
+                    "description": "用户账户；创建时使用；后期不可修改。",
+                    "type": "string",
+                    "example": "whx"
                 }
             }
         },

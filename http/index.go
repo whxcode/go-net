@@ -172,6 +172,7 @@ func Start() {
 		messageRouter := api.Group("/groups")
 		messageRouter.Use(middleware.AuthorizationMiddleware())
 		messageRouter.GET(controller.KGroupGetGroups, execute(controller.GroupController.Groups))
+		messageRouter.GET(controller.KGroupGetGroup, execute(controller.GroupController.GroupID))
 
 	}
 
