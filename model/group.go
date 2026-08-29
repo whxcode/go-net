@@ -144,3 +144,28 @@ func (db *groupDB) Groups(userID UserID) []*GroupChatResponse {
 func (db *groupDB) GroupID(groupID uint) *GroupChatResponse {
 	return db.groups(nil, &[]uint{groupID})[0]
 }
+
+func (db *groupDB) PutGroup(group *GroupChat) *GroupChatResponse {
+	err := DB.Save(group).Error
+	if err != nil {
+		panic(err)
+	}
+
+	return db.GroupID(group.ID)
+}
+
+func (db *groupDB) PostGroupMembers(groupID uint, MemberIDs []UserID) {
+	members := make([]*GroupMember, len(MemberIDs))
+
+	for _, memberID := range MemberIDs {
+		members = append(members, &GroupMember{
+			GroupID: groupID,
+			UserID:  uint(memberID),
+		})
+	}
+
+	err := DB.Save(members).Error
+	if err != nil {
+		panic(err)
+	}
+}
