@@ -44,7 +44,7 @@ func (*messageController) GetPrivateMessages(c *gin.Context) *utils.KResponse {
 	userID := utils.GetUserID(c)
 	friendID, limit, offset := parseHistoryQuery(c)
 
-	m, t := model.MessageDB.GetHistory(userID, friendID, limit, offset)
+	m, t := model.MessageDB.GetFriendsHistory(userID, friendID, limit, offset)
 
 	return utils.MakeResponse(&GetPrivateMessagesResponse{
 		Data:  m,

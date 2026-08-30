@@ -49,7 +49,7 @@ func (*groupController) PutGroupID(c *gin.Context) *utils.KResponse {
 
 	group.ID = id
 
-	result := model.GroupDB.GroupID(id)
+	result := model.GroupDB.PutGroup(group)
 
 	return utils.MakeResponse(result)
 }

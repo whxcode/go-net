@@ -173,7 +173,7 @@ func Start() {
 		messageRouter.Use(middleware.AuthorizationMiddleware())
 		messageRouter.GET(controller.KGroupGetGroups, execute(controller.GroupController.Groups))
 		messageRouter.GET(controller.KGroupGetGroup, execute(controller.GroupController.GroupID))
-		messageRouter.PUT(controller.KGroupGetGroup, execute(controller.GroupController.GroupID))
+		messageRouter.PUT(controller.KGroupGetGroup, execute(controller.GroupController.PutGroupID))
 		messageRouter.POST(controller.KPostGroupMember, execute(controller.GroupController.PostGroupMember))
 		messageRouter.PUT(controller.KGroupPutMember, execute(controller.GroupController.PutGroupMember))
 	}

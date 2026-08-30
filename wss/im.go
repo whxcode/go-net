@@ -86,6 +86,31 @@ const (
 	PongWait = 60 * time.Second
 )
 
+func broadcastFriendMessage(message *model.Message, msg []byte) {
+	senderConn := pool.UserPool.GetUserConn(message.ReceiverID)
+
+	if senderConn != nil {
+		senderConn.WriteMessage(websocket.TextMessage, msg)
+	}
+}
+
+func broadcastGroupMessage(message *model.Message, msg []byte) {
+	result := model.GroupDB.GroupMembers(message.ReceiverID)
+
+	for _, userID := range result {
+		if userID == message.SenderID {
+			continue
+		}
+
+		senderConn := pool.UserPool.GetUserConn(userID)
+
+		if senderConn != nil {
+			senderConn.WriteMessage(websocket.TextMessage, msg)
+		}
+
+	}
+}
+
 func IM(c *gin.Context) {
 	conn, err := pool.Upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
@@ -149,15 +174,18 @@ func IM(c *gin.Context) {
 			break
 		}
 
-		if message.Type == model.ChannelTypePING {
-			conn.WriteMessage(websocket.TextMessage, []byte(`{"type":2}`)) // PONG
-			continue
+		switch message.Type {
+		case model.ChannelTypePING:
+			conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintln(`{"type":%v}`, model.ChannelTypePONG))) // PONG
+		case model.ChannelTypeFriend:
+			broadcastFriendMessage(message, msg)
+		case model.ChannelTypeGroup:
+			broadcastGroupMessage(message, msg)
 		}
 
-		senderConn := pool.UserPool.GetUserConn(message.ReceiverID)
-
-		if senderConn != nil {
-			senderConn.WriteMessage(websocket.TextMessage, msg)
+		switch message.Type {
+		case model.ChannelTypeFriend, model.ChannelTypeGroup:
+			go func() { model.MessageDB.Save(message) }()
 		}
 
 		fmt.Println("-------------------------------------- end -------------------------------")

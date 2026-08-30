@@ -152,7 +152,7 @@ func (db *groupDB) groups(userID *[]UserID, groupID *[]uint) []*GroupChatRespons
 }
 
 func (db *groupDB) Groups(userID UserID) []*GroupChatResponse {
-	return db.groups(&[]UserID{userID, 2}, nil)
+	return db.groups(&[]UserID{userID}, nil)
 }
 
 func (db *groupDB) GroupID(groupID uint) *GroupChatResponse {
@@ -165,8 +165,25 @@ func (db *groupDB) GroupID(groupID uint) *GroupChatResponse {
 	return result[0]
 }
 
+func (db *groupDB) GroupMembers(groupID uint) []uint {
+	var result []uint
+	err := DB.Debug().Table("group_members m").
+		Select("m.user_id").
+		Where("m.group_id = ? and m.status = 0", groupID).
+		Find(&result).
+		Error
+	if err != nil {
+		fmt.Println("GroupMembers error:", err)
+		panic(err)
+	}
+
+	return result
+}
+
 func (db *groupDB) PutGroup(group *GroupChat) *GroupChatResponse {
-	err := DB.Save(group).Error
+	err := DB.Model(&GroupChat{}).
+		Where("id = ?", group.ID).
+		Updates(group).Error
 	if err != nil {
 		panic(err)
 	}

@@ -57,22 +57,25 @@ func (e ElementList) Value() (driver.Value, error) {
 type ChannelType uint8
 
 const (
-	ChannelTypeNORMAL ChannelType = iota
+	// 好友之间消息  SenderID(UserID) -> ReceiverID (UserID)
+	ChannelTypeFriend ChannelType = iota
+	// 群组消息  SenderID(UserID) -> ReceiverID (GroupID)
+	ChannelTypeGroup
+	// 0 PING
 	ChannelTypePING
+	// 1 PONG
 	ChannelTypePONG
 )
 
 // ====== 消息主结构 ======
 type Message struct {
-	// 消息类型 0：普通消息 1：ping 2：pong
-	Type ChannelType `json:"type" gorm:"-"`
+	// 消息类型 (0：好友消息，1：群组消息，2：PING，3：PONG)
+	Type ChannelType `gorm:"column:type;default:0" json:"type"`
 	// 消息 数据库索引
 	ID uint `gorm:"primarykey" json:"id"`
-	// 消息唯一 ID（客户端生成，保证幂等性）
-	MsgID string `gorm:"column:msg_id;uniqueIndex;size:64" json:"msgId"` // varchar(64)
 	// 消息发送者 ID
 	SenderID uint `gorm:"column:sender_id;index" json:"senderId"`
-	// 消息接收者 ID
+	// 消息接收者 ID, 如果是好友消息则为好友的 UserID，如果是群组消息则为群组的 GroupID
 	ReceiverID uint `gorm:"column:receiver_id;index" json:"receiverId"`
 	// 消息元素列表（JSON 序列化存储）
 	Elements  ElementList `gorm:"type:json" json:"elements"`
@@ -92,7 +95,12 @@ var MessageDB = &messageDB{}
 
 // 保存单条
 func (*messageDB) Save(msg *Message) error {
-	return DB.Create(msg).Error
+	err := DB.Create(msg).Error
+	if err != nil {
+		panic(err)
+	}
+
+	return nil
 }
 
 // 批量保存
@@ -104,7 +112,7 @@ func (*messageDB) SaveBatch(msgs []*Message) error {
 }
 
 // 查询两人聊天记录
-func (*messageDB) GetHistory(userId, friendId UserID, limit, offset int) ([]*Message, int) {
+func (*messageDB) GetFriendsHistory(userId, friendId UserID, limit, offset int) ([]*Message, int) {
 	var messages []*Message
 	var total int64 = 0
 	// 1. 先查总数
