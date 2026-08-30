@@ -419,12 +419,117 @@ const docTemplate = `{
                 }
             }
         },
-        "/groups/:id": {
+        "/groups/:id/members": {
+            "post": {
+                "tags": [
+                    "群"
+                ],
+                "summary": "给该群添加群成员",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "群ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "成员ID列表(用户 ID)",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.ReseutPostGroupMember"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.KResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.GroupChat"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/groups/:id/putMember": {
+            "put": {
+                "description": "注意： 所属群主无法修改 Role、Status 状态",
+                "tags": [
+                    "群"
+                ],
+                "summary": "修改当前用户在该群的信息(如：是否静音、是否加密、是否退群等)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "群ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "需要修改的数据；注意：UserID 和 ID 字段无效，系统会自动获取当前用户的 ID",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.GroupMember"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功-修改成功后的数据",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.KResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.GroupMember"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/groups/{id}": {
             "get": {
                 "tags": [
                     "群"
                 ],
-                "summary": "获取群列表",
+                "summary": "获取群详情",
                 "parameters": [
                     {
                         "type": "integer",
@@ -447,6 +552,56 @@ const docTemplate = `{
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/model.GroupChatResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "群"
+                ],
+                "summary": "修改群信息",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "群ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "群信息-传递 ID 字段无效",
+                        "name": "group",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.GroupChat"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.KResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.GroupChat"
                                         }
                                     }
                                 }
@@ -979,6 +1134,17 @@ const docTemplate = `{
                 }
             }
         },
+        "controller.ReseutPostGroupMember": {
+            "type": "object",
+            "properties": {
+                "memberIDs": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
         "controller.UploadResponse": {
             "type": "object",
             "properties": {
@@ -1169,6 +1335,47 @@ const docTemplate = `{
                 }
             }
         },
+        "model.GroupChat": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "description": "群头像",
+                    "type": "string"
+                },
+                "createdAt": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "encrypted": {
+                    "description": "是否加密 0-否 1-是",
+                    "type": "integer"
+                },
+                "id": {
+                    "description": "群ID",
+                    "type": "integer"
+                },
+                "isMuted": {
+                    "description": "是否全员禁言 0-否 1-是",
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "群名称",
+                    "type": "string"
+                },
+                "notice": {
+                    "description": "群公告",
+                    "type": "string"
+                },
+                "ownerId": {
+                    "description": "群主ID",
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "description": "更新时间",
+                    "type": "string"
+                }
+            }
+        },
         "model.GroupChatResponse": {
             "type": "object",
             "properties": {
@@ -1193,7 +1400,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "members": {
-                    "description": "该群的所有成员信息；注意：该字段是通过关联查询获取的，而不是直接存储在数据库中的",
+                    "description": "用户 ID；如果 ownerId == userId，则表示该用户是群主\nUserID UserID ` + "`" + `gorm:\"column:user_id;index;uniqueIndex:uk_group_user\" json:\"userId\" swaggertype:\"integer\"` + "`" + `\n该群的所有成员信息；注意：该字段是通过关联查询获取的，而不是直接存储在数据库中的",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.GroupMemberResponse"
@@ -1214,9 +1421,50 @@ const docTemplate = `{
                 "updatedAt": {
                     "description": "更新时间",
                     "type": "string"
+                }
+            }
+        },
+        "model.GroupMember": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "groupId": {
+                    "description": "群ID",
+                    "type": "integer"
+                },
+                "id": {
+                    "description": "成员ID",
+                    "type": "integer"
+                },
+                "isMuted": {
+                    "description": "该用户是否被禁言 0-否 1-是",
+                    "type": "integer"
+                },
+                "isNotifyDisabled": {
+                    "description": "该用户是否关闭该群通知 0-否 1-是",
+                    "type": "integer"
+                },
+                "joinedAt": {
+                    "description": "加入时间",
+                    "type": "string"
+                },
+                "role": {
+                    "description": "角色 0-成员 1-管理员 2-群主",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "该群员状态 0-正常 1-退群(自己退、被踢出)",
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "description": "更新时间",
+                    "type": "string"
                 },
                 "userId": {
-                    "description": "用户 ID；如果 ownerId == userId，则表示该用户是群主",
+                    "description": "用户ID",
                     "type": "integer"
                 }
             }
@@ -1263,6 +1511,10 @@ const docTemplate = `{
                 },
                 "role": {
                     "description": "角色 0-成员 1-管理员 2-群主",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "该群员状态 0-正常 1-退群(自己退、被踢出)",
                     "type": "integer"
                 },
                 "updatedAt": {

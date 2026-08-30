@@ -53,6 +53,9 @@ type GroupMember struct {
 	IsMuted int8 `gorm:"column:is_muted;default:0" json:"isMuted"`
 	// 该用户是否关闭该群通知 0-否 1-是
 	IsNotifyDisabled int8 `gorm:"column:is_notify_disabled;default:0" json:"isNotifyDisabled"`
+
+	// 该群员状态 0-正常 1-退群(自己退、被踢出)
+	Status int8 `gorm:"column:status;default:0" json:"status"`
 }
 
 type GroupMemberResponse struct {
@@ -85,25 +88,38 @@ var GroupDB = &groupDB{}
 
 func (db *groupDB) groups(userID *[]UserID, groupID *[]uint) []*GroupChatResponse {
 	var result []*GroupChatResponse
+	var parmas []interface{} = make([]interface{}, 0)
 
-	// 2 次查询
-	query := DB.Debug().Table("group_chats as c").
-		Select("c.*")
+	sql := `WITH  m as (select distinctrow group_id from group_members where status = 0`
 
 	if userID != nil {
-		query = query.
-			Select("c.*,m.user_id").
-			Joins("left join group_members as m on c.id = m.group_id").
-			Where("user_id IN ?", *userID)
+
+		usrUint := make([]uint, len(*userID))
+		for i, id := range *userID {
+			usrUint[i] = uint(id)
+		}
+		sql += ` and user_id in (?)) `
+		parmas = append(parmas, usrUint)
+	} else {
+		sql += `) `
 	}
 
+	sql += `select c.* from m left join group_chats c on m.group_id = c.id`
+
 	if groupID != nil {
-		query = query.Where("c.id IN ?", *groupID)
+		sql += ` where c.id in (?)`
+		parmas = append(parmas, *groupID)
 	}
+
+	query := DB.Raw(sql, parmas...)
 
 	err := query.Find(&result).Error
 	if err != nil {
 		panic(err)
+	}
+
+	if result == nil || len(result) == 0 {
+		return nil
 	}
 
 	groupIDs := make([]uint, len(result))
@@ -121,12 +137,10 @@ func (db *groupDB) groups(userID *[]UserID, groupID *[]uint) []*GroupChatRespons
 	err = DB.Table("group_members as m").
 		Select("m.*,u.username,u.nickname,u.avatar").
 		Joins("left join users as u on m.user_id = u.id").
-		Where("m.group_id IN ?", m_tools.UniqueSlice(groupIDs)).Find(&members).Error
+		Where("m.group_id IN ?  and m.status = ?", m_tools.UniqueSlice(groupIDs), 0).Find(&members).Error
 	if err != nil {
 		panic(err)
 	}
-
-	fmt.Println("members--", result, groupIDs, members)
 
 	for _, member := range members {
 		if group, ok := groupMap[member.GroupID]; ok {
@@ -142,7 +156,13 @@ func (db *groupDB) Groups(userID UserID) []*GroupChatResponse {
 }
 
 func (db *groupDB) GroupID(groupID uint) *GroupChatResponse {
-	return db.groups(nil, &[]uint{groupID})[0]
+	result := db.groups(nil, &[]uint{groupID})
+
+	if result == nil || len(result) == 0 {
+		return nil
+	}
+
+	return result[0]
 }
 
 func (db *groupDB) PutGroup(group *GroupChat) *GroupChatResponse {
@@ -157,15 +177,58 @@ func (db *groupDB) PutGroup(group *GroupChat) *GroupChatResponse {
 func (db *groupDB) PostGroupMembers(groupID uint, MemberIDs []UserID) {
 	members := make([]*GroupMember, len(MemberIDs))
 
-	for _, memberID := range MemberIDs {
-		members = append(members, &GroupMember{
+	for i, memberID := range MemberIDs {
+		members[i] = &GroupMember{
 			GroupID: groupID,
 			UserID:  uint(memberID),
-		})
+		}
 	}
 
-	err := DB.Save(members).Error
+	err := DB.Debug().Save(members).Error
 	if err != nil {
 		panic(err)
 	}
+}
+
+func (db *groupDB) PutGroupMember(groupID uint, groupMember *GroupMember) *GroupMember {
+	var result *GroupMember
+	var group *GroupChat
+
+	err := DB.Table("group_members").
+		Where("group_id = ? AND user_id = ?", groupID, groupMember.UserID).
+		Find(&result).
+		Error
+		// err := DB.Raw("update table group_members", groupID, groupMember.UserID).Delete(&GroupMember{}).Error
+	if err != nil {
+		panic(err)
+	}
+
+	if result == nil {
+		panic(fmt.Sprintf("group member not found for groupID: %d, userID: %d", groupID, groupMember.UserID))
+	}
+
+	err = DB.Table("group_chats").
+		Where("id = ?", groupID).Find(&group).Error
+	if err != nil {
+		panic(err)
+	}
+
+	if group == nil {
+		panic(fmt.Sprintf("group not found for groupID: %d", groupID))
+	}
+
+	result.IsMuted = groupMember.IsMuted
+	result.IsNotifyDisabled = groupMember.IsNotifyDisabled
+
+	if group.OwnerID != groupMember.UserID {
+		result.Status = groupMember.Status
+		result.Role = groupMember.Role
+	}
+
+	err = DB.Save(result).Error
+	if err != nil {
+		panic(err)
+	}
+
+	return result
 }
