@@ -50,13 +50,15 @@ func RequestWsHandle(c *gin.Context) middleware.CloseHandle {
 	pool.UserPool.AddUser(userID, conn)
 
 	// 每当用户上上线后；推送离线信息
-	messages, _ := redis.GetOfflineMessage(userID)
+	// messages, _ := redis.GetOfflineMessage(userID)
 
-	if messages != nil {
-		for _, msg := range messages {
-			conn.WriteMessage(websocket.TextMessage, msg)
+	/*
+		if messages != nil {
+			for _, msg := range messages {
+				conn.WriteMessage(websocket.TextMessage, msg)
+			}
 		}
-	}
+	*/
 
 	return close
 }
@@ -70,7 +72,7 @@ func ChannelHandle(conn *websocket.Conn, p []byte, message *model.Message) bool 
 	// 将离线信息存入 redis 7 天时间。
 	if senderConn == nil {
 		conn.WriteMessage(websocket.TextMessage, []byte("当前好友不在线"))
-		redis.SaveOfflineMessage(message.ReceiverID, p)
+		// redis.SaveOfflineMessage(message.ReceiverID, p)
 		return true
 	}
 
@@ -89,8 +91,11 @@ const (
 func broadcastFriendMessage(message *model.Message, msg []byte) {
 	senderConn := pool.UserPool.GetUserConn(message.ReceiverID)
 
+	// 用户在线
 	if senderConn != nil {
 		senderConn.WriteMessage(websocket.TextMessage, msg)
+	} else {
+		redis.Message.SaveOfflineMessage(message.ReceiverID, msg)
 	}
 }
 
@@ -103,9 +108,10 @@ func broadcastGroupMessage(message *model.Message, msg []byte) {
 		}
 
 		senderConn := pool.UserPool.GetUserConn(userID)
-
 		if senderConn != nil {
 			senderConn.WriteMessage(websocket.TextMessage, msg)
+		} else {
+			redis.Message.SaveOfflineMessage(userID, msg)
 		}
 
 	}
@@ -136,6 +142,15 @@ func IM(c *gin.Context) {
 	fmt.Println("---", userID, "---", userIDUint, "---", userIDStr)
 
 	pool.UserPool.AddUser(uint(userID), conn)
+
+	offlineMsg := redis.Message.GetOfflineMessage(userID)
+
+	// 推送离线消息
+	if len(offlineMsg) > 0 {
+		for _, msg := range offlineMsg {
+			conn.WriteMessage(websocket.TextMessage, msg)
+		}
+	}
 
 	for {
 		fmt.Println("-------------------------------------- start -------------------------------")

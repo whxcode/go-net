@@ -35,7 +35,8 @@ const (
 	KFriendRequests   = "/requests"
 	KFriendPutRequest = "/:id"
 
-	KMessagePrivate = "/private/:friendID"
+	KMessageFriend = "/friend/:friendID"
+	KMessageGroup  = "/group/:groupID"
 
 	KGroupGetGroups  = "/"
 	KGroupGetGroup   = "/:id"

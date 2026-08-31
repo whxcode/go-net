@@ -164,7 +164,8 @@ func Start() {
 	{
 		messageRouter := api.Group("/messages")
 		messageRouter.Use(middleware.AuthorizationMiddleware())
-		messageRouter.GET(controller.KMessagePrivate, execute(controller.MessageController.GetPrivateMessages))
+		messageRouter.GET(controller.KMessageFriend, execute(controller.MessageController.GetFrinedMessages))
+		messageRouter.GET(controller.KMessageGroup, execute(controller.MessageController.GetGroupMessages))
 
 	}
 

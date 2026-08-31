@@ -99,10 +99,12 @@ definitions:
     - 0
     - 1
     - 2
+    - 3
     format: int32
     type: integer
     x-enum-varnames:
-    - ChannelTypeNORMAL
+    - ChannelTypeFriend
+    - ChannelTypeGroup
     - ChannelTypePING
     - ChannelTypePONG
   model.Element:
@@ -348,11 +350,8 @@ definitions:
       id:
         description: 消息 数据库索引
         type: integer
-      msgId:
-        description: 消息唯一 ID（客户端生成，保证幂等性）
-        type: string
       receiverId:
-        description: 消息接收者 ID
+        description: 消息接收者 ID, 如果是好友消息则为好友的 UserID，如果是群组消息则为群组的 GroupID
         type: integer
       senderId:
         description: 消息发送者 ID
@@ -362,7 +361,7 @@ definitions:
       type:
         allOf:
         - $ref: '#/definitions/model.ChannelType'
-        description: 消息类型 0：普通消息 1：ping 2：pong
+        description: 消息类型 (0：好友消息，1：群组消息，2：PING，3：PONG)
     type: object
   model.MessageType:
     enum:
@@ -839,7 +838,7 @@ paths:
       summary: 修改群信息
       tags:
       - 群
-  /messages/private/:friendID:
+  /messages/firend/:friendID:
     get:
       parameters:
       - default: 20
@@ -868,7 +867,37 @@ paths:
             $ref: '#/definitions/utils.KResponse'
       summary: 获取与好友的历史记录
       tags:
-      - 好友消息
+      - 消息
+  /messages/group/:groupID:
+    get:
+      parameters:
+      - default: 20
+        description: 限制条数
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: 偏移量
+        in: query
+        name: offset
+        type: integer
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/controller.GetPrivateMessagesResponse'
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 获取群组消息
+      tags:
+      - 消息
   /users/:id:
     get:
       parameters:

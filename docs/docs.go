@@ -617,12 +617,62 @@ const docTemplate = `{
                 }
             }
         },
-        "/messages/private/:friendID": {
+        "/messages/firend/:friendID": {
             "get": {
                 "tags": [
-                    "好友消息"
+                    "消息"
                 ],
                 "summary": "获取与好友的历史记录",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "限制条数",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "偏移量",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.KResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/controller.GetPrivateMessagesResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/messages/group/:groupID": {
+            "get": {
+                "tags": [
+                    "消息"
+                ],
+                "summary": "获取群组消息",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1205,10 +1255,12 @@ const docTemplate = `{
             "enum": [
                 0,
                 1,
-                2
+                2,
+                3
             ],
             "x-enum-varnames": [
-                "ChannelTypeNORMAL",
+                "ChannelTypeFriend",
+                "ChannelTypeGroup",
                 "ChannelTypePING",
                 "ChannelTypePONG"
             ]
@@ -1549,12 +1601,8 @@ const docTemplate = `{
                     "description": "消息 数据库索引",
                     "type": "integer"
                 },
-                "msgId": {
-                    "description": "消息唯一 ID（客户端生成，保证幂等性）",
-                    "type": "string"
-                },
                 "receiverId": {
-                    "description": "消息接收者 ID",
+                    "description": "消息接收者 ID, 如果是好友消息则为好友的 UserID，如果是群组消息则为群组的 GroupID",
                     "type": "integer"
                 },
                 "senderId": {
@@ -1565,7 +1613,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "type": {
-                    "description": "消息类型 0：普通消息 1：ping 2：pong",
+                    "description": "消息类型 (0：好友消息，1：群组消息，2：PING，3：PONG)",
                     "allOf": [
                         {
                             "$ref": "#/definitions/model.ChannelType"

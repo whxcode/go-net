@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"fmt"
+
 	"go-net/model"
 	"go-net/utils"
 
@@ -19,10 +21,12 @@ type messageController struct{}
 | POST | /api/upload | `{url, key}`（FormData file 字段；url 用于消息里图片/文件显示） | ⬜ |
 */
 
-func parseHistoryQuery(c *gin.Context) (model.UserID, int, int) {
-	friendID := c.Param("friendID")
+func parseHistoryQuery(c *gin.Context, filed string) (model.UserID, int, int) {
+	friendID := c.Param(filed)
 	limit := c.DefaultQuery("limit", "20")
 	offset := c.DefaultQuery("offset", "0")
+
+	fmt.Printf("friendID: %s, limit: %s, offset: %s\n", friendID, limit, offset)
 
 	return utils.StringToUserID(friendID), utils.StringToInt(limit), utils.StringToInt(offset)
 }
@@ -34,17 +38,35 @@ type GetPrivateMessagesResponse struct {
 }
 
 // @Summary 获取与好友的历史记录
-// @Tags 好友消息
+// @Tags 消息
 // @Param limit query int false "限制条数" default(20)
 // @Param offset query int false "偏移量" default(0)
 // @Success 200 {object} utils.KResponse{data=GetPrivateMessagesResponse} "成功"
 // @Failure 500 {object} utils.KResponse "服务器错误"
-// @Router /messages/private/:friendID [get]
-func (*messageController) GetPrivateMessages(c *gin.Context) *utils.KResponse {
+// @Router /messages/friend/:friendID [get]
+func (*messageController) GetFrinedMessages(c *gin.Context) *utils.KResponse {
 	userID := utils.GetUserID(c)
-	friendID, limit, offset := parseHistoryQuery(c)
+	friendID, limit, offset := parseHistoryQuery(c, "friendID")
 
 	m, t := model.MessageDB.GetFriendsHistory(userID, friendID, limit, offset)
+
+	return utils.MakeResponse(&GetPrivateMessagesResponse{
+		Data:  m,
+		Total: t,
+	})
+}
+
+// @Summary 获取群组消息
+// @Tags 消息
+// @Param limit query int false "限制条数" default(20)
+// @Param offset query int false "偏移量" default(0)
+// @Success 200 {object} utils.KResponse{data=GetPrivateMessagesResponse} "成功"
+// @Failure 500 {object} utils.KResponse "服务器错误"
+// @Router /messages/group/:groupID [get]
+func (*messageController) GetGroupMessages(c *gin.Context) *utils.KResponse {
+	groupID, limit, offset := parseHistoryQuery(c, "groupID")
+
+	m, t := model.MessageDB.GetGroupHistory(groupID, limit, offset)
 
 	return utils.MakeResponse(&GetPrivateMessagesResponse{
 		Data:  m,
