@@ -42,6 +42,13 @@ const (
 	KGroupGetGroup   = "/:id"
 	KPostGroupMember = "/:id/members"
 	KGroupPutMember  = "/:id/putMember"
+
+	KMoments               = "/"
+	KMomentsUser           = "/:userID"
+	KMomentsLike           = "/:id/like"
+	KMomentsID             = "/:id"
+	KMomentPrivacyTargetID = "/privacy/:targetId"
+	KMomentsPrivacy        = "/moments/privacy"
 )
 
 type KResponseHandle = func(c *gin.Context) *utils.KResponse

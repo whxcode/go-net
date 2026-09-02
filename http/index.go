@@ -180,6 +180,19 @@ func Start() {
 	}
 
 	{
+		momentsRouter := api.Group("/moments")
+		momentsRouter.Use(middleware.AuthorizationMiddleware())
+		momentsRouter.GET(controller.KMoments, execute(controller.MomentController.Moments))
+		momentsRouter.GET(controller.KMomentsUser, execute(controller.MomentController.MomentUserID))
+		momentsRouter.POST(controller.KMoments, execute(controller.MomentController.PostMoments))
+		momentsRouter.POST(controller.KMomentsLike, execute(controller.MomentController.MomentsIdLike))
+		momentsRouter.DELETE(controller.KMomentsLike, execute(controller.MomentController.MomentsIdUnLike))
+		momentsRouter.DELETE(controller.KMomentsID, execute(controller.MomentController.MomentDelete))
+		momentsRouter.GET(controller.KMomentPrivacyTargetID, execute(controller.MomentController.MomentPrivacyTargetID))
+		momentsRouter.POST(controller.KMomentsPrivacy, execute(controller.MomentController.MomentPrivacy))
+	}
+
+	{
 		wssRouter := api.Group("/ws")
 		// wssRouter.Use(middleware.AuthorizationMiddleware())
 		// wssRouter.Use(middleware.BeatMiddleware())

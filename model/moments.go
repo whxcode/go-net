@@ -14,6 +14,16 @@ create table if not exists moment_likes (
 ) ENGINE=InnoDB default charset=utf8mb4 comment "朋友圈点赞表;记录谁给谁的朋友圈点赞";
 */
 
+// 可见性，0-公开，1-好友可见，2-仅自己可见 3-部分好友可见
+type MomentVisbileStatus int
+
+const (
+	MomentVisibleStatusPublic         MomentVisbileStatus = 0
+	MomentVisibleStatusFriendsOnly    MomentVisbileStatus = 1
+	MomentVisibleStatusSelfOnly       MomentVisbileStatus = 2
+	MomentVisibleStatusPartialFriends MomentVisbileStatus = 3
+)
+
 // ====== 朋友圈主结构 ======
 type Moment struct {
 	// 朋友圈 ID
@@ -27,7 +37,7 @@ type Moment struct {
 	// 点赞数
 	LikeCount int `gorm:"column:like_count;default:0" json:"likeCount"`
 	// 可见性，0-公开，1-好友可见，2-仅自己可见 3-部分好友可见
-	Visible int `gorm:"column:visible;default:0" json:"visible"`
+	Visible MomentVisbileStatus `gorm:"column:visible;default:0" json:"visible"`
 	// 创建时间
 	CreatedAt time.Time `gorm:"column:created_at" json:"createdAt"`
 	// 更新时间

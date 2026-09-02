@@ -95,3 +95,14 @@ func StringToUInt(s string) uint {
 	}
 	return uint(i)
 }
+
+/*
+* 解析分页查询必备参数
+*
+* */
+func ParsePageQuery(c *gin.Context) (limit int, offset int) {
+	limitS := c.DefaultQuery("limit", "20")
+	offsetS := c.DefaultQuery("offset", "0")
+
+	return StringToInt(limitS), StringToInt(offsetS)
+}
