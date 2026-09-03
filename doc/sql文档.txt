@@ -236,3 +236,6 @@ SELECT
     u.nickname
 FROM base b
 LEFT JOIN users u ON u.id = b.target_user_id;
+
+# 修改表名称
+RENAME TABLE 旧表名 TO 新表名;

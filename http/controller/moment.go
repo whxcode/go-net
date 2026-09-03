@@ -17,6 +17,8 @@
 package controller
 
 import (
+	"net/http"
+
 	"go-net/model"
 	"go-net/utils"
 
@@ -35,7 +37,7 @@ type momentController struct{}
 func (m *momentController) Moments(c *gin.Context) *utils.KResponse {
 	limit, offset := utils.ParsePageQuery(c)
 
-	return utils.MakeResponse([]int{limit, offset})
+	return utils.MakeResponse(model.MomentDB.GetMoments(utils.GetUserID(c), limit, offset))
 }
 
 // @Summary 看某个人的朋友圈
@@ -59,19 +61,21 @@ func (m *momentController) MomentUserID(c *gin.Context) *utils.KResponse {
 // @Router /moments [post]
 func (m *momentController) PostMoments(c *gin.Context) *utils.KResponse {
 	moment := utils.ShouldBindBodyWithJSON[*model.Moment](c)
+	moment.OwnerID = uint(utils.GetUserID(c))
 
-	return utils.MakeResponse(moment)
+	return utils.MakeResponse(model.MomentDB.AddMoment(moment))
 }
 
 // @Summary  POST /api/moments/:id/like —— 点赞。传 id。
 // @Tags 朋友圈
 // @Param id path int true "朋友圈ID"
-// @Success 200 {object} utils.KResponse{data=int} "成功"
+// @Success 200 {object} utils.KResponse{data=Moment} "成功"
 // @Failure 500 {object} utils.KResponse "服务器错误"
 // @Router /moments/:id/like [post]
 func (m *momentController) MomentsIdLike(c *gin.Context) *utils.KResponse {
 	id := c.Param("id")
-	return utils.MakeResponse(id)
+
+	return utils.MakeResponse(model.MomentDB.MomentLike(utils.GetUserID(c), utils.StringToUInt(id)))
 }
 
 // @Summary  取消点赞
@@ -82,11 +86,10 @@ func (m *momentController) MomentsIdLike(c *gin.Context) *utils.KResponse {
 // @Router /moments/:id/like [delete]
 func (m *momentController) MomentsIdUnLike(c *gin.Context) *utils.KResponse {
 	id := c.Param("id")
-
-	return utils.MakeResponse(id)
+	return utils.MakeResponse(model.MomentDB.MomentUnLike(utils.GetUserID(c), utils.StringToUInt(id)))
 }
 
-// @Summary  取消点赞
+// @Summary  删除朋友圈
 // @Tags 朋友圈
 // @Param id path int true "朋友圈ID"
 // @Success 200 {object} utils.KResponse{data=int} "成功"
@@ -95,10 +98,12 @@ func (m *momentController) MomentsIdUnLike(c *gin.Context) *utils.KResponse {
 func (m *momentController) MomentDelete(c *gin.Context) *utils.KResponse {
 	id := c.Param("id")
 
-	return utils.MakeResponse(id)
+	model.MomentDB.DeleteMoment(utils.StringToUInt(id))
+
+	return utils.MakeResponse(http.StatusOK)
 }
 
-// @Summary  取消点赞 设置屏蔽。传 target_id、hide_their（我不看TA的）、hide_mine（不让TA看我的）。
+// @Summary  查和某个人的屏蔽设置。传 targetId。
 // @Tags 朋友圈
 // @Param targetId path int true "用户ID"
 // @Success 200 {object} utils.KResponse{data=int} "成功"

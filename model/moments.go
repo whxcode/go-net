@@ -1,6 +1,8 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 /*
 create table if not exists moment_likes (
@@ -44,6 +46,10 @@ type Moment struct {
 	UpdatedAt time.Time `gorm:"column:updated_at" json:"updatedAt"`
 }
 
+func (m *Moment) TableName() string {
+	return "moments"
+}
+
 // ===== 朋友圈点赞结构 ======
 type MomentLike struct {
 	// 点赞 ID
@@ -54,6 +60,10 @@ type MomentLike struct {
 	UserID uint `gorm:"column:user_id" json:"userId"`
 	// 创建时间
 	CreatedAt time.Time `gorm:"column:created_at" json:"createdAt"`
+}
+
+func (m *MomentLike) TableName() string {
+	return "moments_likes"
 }
 
 /**
@@ -75,6 +85,10 @@ type MomentVisible struct {
 	MomentID uint `gorm:"column:moment_id" json:"momentId"`
 	UserID   uint `gorm:"column:user_id" json:"userId"`
 	Visible  int  `gorm:"column:visible;default:0" json:"visible"`
+}
+
+func (m *MomentVisible) TableName() string {
+	return "moments_visible"
 }
 
 /**
@@ -117,6 +131,10 @@ type MomentComments struct {
 	UpdatedAt time.Time `gorm:"column:updated_at" json:"updatedAt"`
 }
 
+func (m *MomentComments) TableName() string {
+	return "moments_comments"
+}
+
 /*
 *
 *
@@ -143,4 +161,8 @@ type MomentPrivacy struct {
 	HideTheir bool `gorm:"column:hide_their;default:false" json:"hideTheir"`
 	// 不让TA看我的朋友圈，0-不屏蔽，1-屏蔽
 	HideMine bool `gorm:"column:hide_mine;default:false" json:"hideMine"`
+}
+
+func (m *MomentPrivacy) TableName() string {
+	return "moment_privacy"
 }

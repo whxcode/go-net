@@ -375,6 +375,48 @@ definitions:
     - MsgTypeImage
     - MsgTypeVideo
     - MsgTypeFile
+  model.Moment:
+    properties:
+      createdAt:
+        description: 创建时间
+        type: string
+      elements:
+        description: 朋友圈元素列表（JSON 序列化存储）
+        items:
+          $ref: '#/definitions/model.Element'
+        type: array
+      id:
+        description: 朋友圈 ID
+        type: integer
+      likeCount:
+        description: 点赞数
+        type: integer
+      ownerId:
+        description: 朋友圈发布者 ID
+        type: integer
+      status:
+        description: 朋友圈状态，0-正常，1-删除
+        type: integer
+      updatedAt:
+        description: 更新时间
+        type: string
+      visible:
+        allOf:
+        - $ref: '#/definitions/model.MomentVisbileStatus'
+        description: 可见性，0-公开，1-好友可见，2-仅自己可见 3-部分好友可见
+    type: object
+  model.MomentVisbileStatus:
+    enum:
+    - 0
+    - 1
+    - 2
+    - 3
+    type: integer
+    x-enum-varnames:
+    - MomentVisibleStatusPublic
+    - MomentVisibleStatusFriendsOnly
+    - MomentVisibleStatusSelfOnly
+    - MomentVisibleStatusPartialFriends
   model.RequestFriendStatus:
     enum:
     - 0
@@ -838,7 +880,7 @@ paths:
       summary: 修改群信息
       tags:
       - 群
-  /messages/firend/:friendID:
+  /messages/friend/:friendID:
     get:
       parameters:
       - default: 20
@@ -898,6 +940,211 @@ paths:
       summary: 获取群组消息
       tags:
       - 消息
+  /moments:
+    get:
+      parameters:
+      - default: 20
+        description: 限制条数
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: 偏移量
+        in: query
+        name: offset
+        type: integer
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.UserResponse'
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 获取朋友圈列表 (首页刷的流,当前登陆用户 + 好友)
+      tags:
+      - 朋友圈
+    post:
+      parameters:
+      - description: 注册请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.Moment'
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Moment'
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 发布朋友圈;仅取 Elements,Visbile 字段.
+      tags:
+      - 朋友圈
+  /moments/:id:
+    delete:
+      parameters:
+      - description: 朋友圈ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  type: integer
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 取消点赞
+      tags:
+      - 朋友圈
+  /moments/:id/like:
+    delete:
+      parameters:
+      - description: 朋友圈ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  type: integer
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 取消点赞
+      tags:
+      - 朋友圈
+    post:
+      parameters:
+      - description: 朋友圈ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  type: integer
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: POST /api/moments/:id/like —— 点赞。传 id。
+      tags:
+      - 朋友圈
+  /moments/:userID:
+    get:
+      parameters:
+      - default: 20
+        description: 限制条数
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: 偏移量
+        in: query
+        name: offset
+        type: integer
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Moment'
+                  type: array
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 看某个人的朋友圈
+      tags:
+      - 朋友圈
+  /moments/privacy:
+    post:
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  type: integer
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 设置屏蔽。传 target_id、hide_their（我不看TA的）、hide_mine（不让TA看我的）。
+      tags:
+      - 朋友圈
+  /moments/privacy/:targetId:
+    get:
+      parameters:
+      - description: 用户ID
+        in: path
+        name: targetId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  type: integer
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 取消点赞 设置屏蔽。传 target_id、hide_their（我不看TA的）、hide_mine（不让TA看我的）。
+      tags:
+      - 朋友圈
   /users/:id:
     get:
       parameters:

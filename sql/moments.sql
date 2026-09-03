@@ -18,7 +18,7 @@
 create table moments (
   id bigint not null comment "朋友圈id" primary key auto_increment,
   owner_id bigint not null comment "朋友圈发布者id",
-  content json not null comment "朋友圈文字内容",
+  elements json not null comment "朋友圈文字内容",
   status tinyint default 0 comment "朋友圈状态，0-正常，1-删除",
   like_count int default 0 comment "点赞数",
   visible int default 0 comment "可见性，0-公开，1-好友可见，2-仅自己可见 3-部分好友可见",
@@ -27,7 +27,7 @@ create table moments (
 ) ENGINE=InnoDB default charset=utf8mb4 comment "朋友圈表;内容主题";
 
 
-create table moment_likes (
+create table moments_likes (
   id bigint not null comment "点赞id" primary key auto_increment,
   moment_id bigint not null comment "朋友圈id",
   user_id bigint not null comment "点赞者id",
@@ -45,7 +45,7 @@ create table moments_visible (
   UNIQUE KEY uk_moment_user (moment_id, user_id)
 ) ENGINE=InnoDB default charset=utf8mb4 comment "该条记录谁可见；谁不可见表";
 
-create table moment_privacy (
+create table moments_privacy (
  id bigint not null primary key auto_increment comment "隐私设置id",
  user_id bigint not null comment "用户id",
  target_id bigint not null comment "目标用户id",

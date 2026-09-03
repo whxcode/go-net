@@ -611,7 +611,7 @@
                 }
             }
         },
-        "/messages/firend/:friendID": {
+        "/messages/friend/:friendID": {
             "get": {
                 "tags": [
                     "消息"
@@ -696,6 +696,356 @@
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/controller.GetPrivateMessagesResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/moments": {
+            "get": {
+                "tags": [
+                    "朋友圈"
+                ],
+                "summary": "获取朋友圈列表 (首页刷的流,当前登陆用户 + 好友)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "限制条数",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "偏移量",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.KResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.UserResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "朋友圈"
+                ],
+                "summary": "发布朋友圈;仅取 Elements,Visbile 字段.",
+                "parameters": [
+                    {
+                        "description": "注册请求",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Moment"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.KResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.Moment"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/moments/:id": {
+            "delete": {
+                "tags": [
+                    "朋友圈"
+                ],
+                "summary": "取消点赞",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "朋友圈ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.KResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/moments/:id/like": {
+            "post": {
+                "tags": [
+                    "朋友圈"
+                ],
+                "summary": "POST /api/moments/:id/like —— 点赞。传 id。",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "朋友圈ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.KResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "朋友圈"
+                ],
+                "summary": "取消点赞",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "朋友圈ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.KResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/moments/:userID": {
+            "get": {
+                "tags": [
+                    "朋友圈"
+                ],
+                "summary": "看某个人的朋友圈",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "限制条数",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "偏移量",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.KResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.Moment"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/moments/privacy": {
+            "post": {
+                "tags": [
+                    "朋友圈"
+                ],
+                "summary": "设置屏蔽。传 target_id、hide_their（我不看TA的）、hide_mine（不让TA看我的）。",
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.KResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/moments/privacy/:targetId": {
+            "get": {
+                "tags": [
+                    "朋友圈"
+                ],
+                "summary": "取消点赞 设置屏蔽。传 target_id、hide_their（我不看TA的）、hide_mine（不让TA看我的）。",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "用户ID",
+                        "name": "targetId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.KResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "integer"
                                         }
                                     }
                                 }
@@ -1629,6 +1979,65 @@
                 "MsgTypeImage",
                 "MsgTypeVideo",
                 "MsgTypeFile"
+            ]
+        },
+        "model.Moment": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "elements": {
+                    "description": "朋友圈元素列表（JSON 序列化存储）",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Element"
+                    }
+                },
+                "id": {
+                    "description": "朋友圈 ID",
+                    "type": "integer"
+                },
+                "likeCount": {
+                    "description": "点赞数",
+                    "type": "integer"
+                },
+                "ownerId": {
+                    "description": "朋友圈发布者 ID",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "朋友圈状态，0-正常，1-删除",
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "description": "更新时间",
+                    "type": "string"
+                },
+                "visible": {
+                    "description": "可见性，0-公开，1-好友可见，2-仅自己可见 3-部分好友可见",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.MomentVisbileStatus"
+                        }
+                    ]
+                }
+            }
+        },
+        "model.MomentVisbileStatus": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2,
+                3
+            ],
+            "x-enum-varnames": [
+                "MomentVisibleStatusPublic",
+                "MomentVisibleStatusFriendsOnly",
+                "MomentVisibleStatusSelfOnly",
+                "MomentVisibleStatusPartialFriends"
             ]
         },
         "model.RequestFriendStatus": {
