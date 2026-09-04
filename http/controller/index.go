@@ -46,9 +46,13 @@ const (
 	KMoments               = "/"
 	KMomentsUser           = "/:userID"
 	KMomentsLike           = "/:id/like"
+	KMomentsLikes          = "/likes/:id"
 	KMomentsID             = "/:id"
 	KMomentPrivacyTargetID = "/privacy/:targetId"
-	KMomentsPrivacy        = "/moments/privacy"
+	KMomentsPrivacy        = "/privacy"
+
+	// 朋友圈评论相关
+	KMomentComments = "/comments/:id"
 )
 
 type KResponseHandle = func(c *gin.Context) *utils.KResponse

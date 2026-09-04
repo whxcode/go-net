@@ -50,7 +50,7 @@ func (m *Moment) TableName() string {
 	return "moments"
 }
 
-// ===== 朋友圈点赞结构 ======
+// swagger:model MomentPrivacy
 type MomentLike struct {
 	// 点赞 ID
 	ID uint `gorm:"primaryKey" json:"id"`
@@ -66,20 +66,20 @@ func (m *MomentLike) TableName() string {
 	return "moments_likes"
 }
 
-/**
-create table if not exists moments_visible (
+type MomentUser struct {
+	// 用户中文名称，默认为 ‘’，可后期通过修改用户信息设置
+	Nickname string `gorm:"column:nickname" json:"nickname"`
 
-	id bigint not null comment "朋友圈id" primary key auto_increment,
-	moment_id bigint not null comment "朋友圈id",
-	user_id bigint not null comment "用户 id",
-	visible int default 0 comment "0 该好友可见,1 该好友不可见;需要配合coments.visible = 3 的情况",
+	// 用户头像、创建时；为空字符串;注意只是保存 文件的hash 地址；而不是 URL 地址
+	Avatar string `gorm:"column:avatar" json:"avatar" example:"''" validate:"required"`
+}
 
-	UNIQUE KEY uk_moment_user (moment_id, user_id)
+// swagger:model MomentPrivacy
+type MomentLikeResponse struct {
+	*MomentLike
+	*MomentUser
+}
 
-) ENGINE=InnoDB default charset=utf8mb4 comment "该条记录谁可见；谁不可见表";
-* */
-
-// ===== 朋友圈可见性结构 ======
 type MomentVisible struct {
 	ID       uint `gorm:"primaryKey" json:"id"`
 	MomentID uint `gorm:"column:moment_id" json:"momentId"`
@@ -91,29 +91,13 @@ func (m *MomentVisible) TableName() string {
 	return "moments_visible"
 }
 
-/**
-*
-朋友圈评论表
-create table if not exists moments_comments (
-	id bigint not null comment "评论id" primary key auto_increment,
-	moment_id bigint not null comment "朋友圈id",
-	user_id bigint not null comment "评论者id",
-	content text not null comment "评论内容",
-	status tinyint default 0 comment "评论状态，0-正常，1-删除",
-	created_at datetime default current_timestamp comment "创建时间",
-	updated_at datetime default current_timestamp on update current_timestamp comment "更新时间"
-
-) ENGINE=InnoDB default charset=utf8mb4 comment "朋友圈评论表";
-*
-* */
-
 var (
 	// 评论状态，0-正常，1-删除
 	MomentCommentStatusNormal  = 0
 	MomentCommentStatusDeleted = 1
 )
 
-// ===== 朋友圈可见性结构 ======
+// swagger:model MomentComments
 type MomentComments struct {
 	// 评论ID
 	ID uint `gorm:"primaryKey" json:"id"`
@@ -135,21 +119,13 @@ func (m *MomentComments) TableName() string {
 	return "moments_comments"
 }
 
-/*
-*
-*
-create table if not exists moment_privacy (
+// swagger:model MomentCommentsResponse
+type MomentCommentsResponse struct {
+	*MomentComments
+	*MomentUser
+}
 
-	id bigint not null primary key auto_increment comment "隐私设置id",
-	user_id bigint not null comment "用户id",
-	target_id bigint not null comment "目标用户id",
-	hide_their tinyint default 0 comment "我不看TA的朋友圈，0-不屏蔽，1-屏蔽",
-	hide_mine tinyint default 0 comment "不让TA看我的朋友圈，0-不屏蔽，1-屏蔽",
-	UNIQUE KEY uk_user_target (user_id, target_id)
-
-) ENGINE=InnoDB default charset=utf8mb4 comment "朋友圈隐私表;记录谁屏蔽谁的朋友圈";
-* */
-
+// swagger:model MomentPrivacy
 type MomentPrivacy struct {
 	// 隐私设置ID
 	ID uint `gorm:"primaryKey" json:"id"`
@@ -164,5 +140,5 @@ type MomentPrivacy struct {
 }
 
 func (m *MomentPrivacy) TableName() string {
-	return "moment_privacy"
+	return "moments_privacy"
 }
