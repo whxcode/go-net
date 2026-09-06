@@ -106,7 +106,7 @@ type MomentComments struct {
 	// 评论者用户ID
 	UserID uint `gorm:"column:user_id" json:"userId"`
 	// 评论内容
-	Content string `gorm:"column:visible;default:0" json:"visible"`
+	Elements ElementList `gorm:"type:json" json:"elements"`
 	// 评论状态，0-正常，1-删除
 	Status uint `gorm:"column:status;default:0" json:"status"`
 	// 创建时间

@@ -853,59 +853,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/moments/:userID": {
-            "get": {
-                "tags": [
-                    "朋友圈"
-                ],
-                "summary": "看某个人的朋友圈",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "default": 20,
-                        "description": "限制条数",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 0,
-                        "description": "偏移量",
-                        "name": "offset",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "成功",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/utils.KResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/model.Moment"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "500": {
-                        "description": "服务器错误",
-                        "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/moments/comments/:id": {
             "get": {
                 "tags": [
@@ -1005,7 +952,7 @@ const docTemplate = `{
                 "tags": [
                     "朋友圈/评论"
                 ],
-                "summary": "评论一条朋友圈;只取 MomentID,UserID,Content 字段",
+                "summary": "评论一条朋友圈;只取 Content 字段",
                 "parameters": [
                     {
                         "description": "评论体",
@@ -1300,6 +1247,66 @@ const docTemplate = `{
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/model.MomentPrivacy"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.KResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/moments/user/:userID": {
+            "get": {
+                "tags": [
+                    "朋友圈"
+                ],
+                "summary": "看某个人的朋友圈",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "好友的 userID",
+                        "name": "userID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "限制条数",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "偏移量",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.KResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.Moment"
+                                            }
                                         }
                                     }
                                 }
@@ -2286,6 +2293,13 @@ const docTemplate = `{
                     "description": "创建时间",
                     "type": "string"
                 },
+                "elements": {
+                    "description": "评论内容",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Element"
+                    }
+                },
                 "id": {
                     "description": "评论ID",
                     "type": "integer"
@@ -2305,10 +2319,6 @@ const docTemplate = `{
                 "userId": {
                     "description": "评论者用户ID",
                     "type": "integer"
-                },
-                "visible": {
-                    "description": "评论内容",
-                    "type": "string"
                 }
             }
         },
@@ -2326,6 +2336,13 @@ const docTemplate = `{
                 "createdAt": {
                     "description": "创建时间",
                     "type": "string"
+                },
+                "elements": {
+                    "description": "评论内容",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Element"
+                    }
                 },
                 "id": {
                     "description": "评论ID",
@@ -2350,10 +2367,6 @@ const docTemplate = `{
                 "userId": {
                     "description": "评论者用户ID",
                     "type": "integer"
-                },
-                "visible": {
-                    "description": "评论内容",
-                    "type": "string"
                 }
             }
         },

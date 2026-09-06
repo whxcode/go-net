@@ -43,9 +43,10 @@ const (
 	KPostGroupMember = "/:id/members"
 	KGroupPutMember  = "/:id/putMember"
 
-	KMoments       = "/"
-	KMomentsUser   = "/:userID"
-	KMomentsID     = "/:id"
+	KMoments   = "/"
+	KMomentsID = "/:id"
+
+	KMomentsUser   = "/user/:userID"
 	KMomentPrivacy = "/privacy/:userID"
 
 	KMomentsLikes = "/likes/:id"

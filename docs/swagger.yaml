@@ -410,6 +410,11 @@ definitions:
       createdAt:
         description: 创建时间
         type: string
+      elements:
+        description: 评论内容
+        items:
+          $ref: '#/definitions/model.Element'
+        type: array
       id:
         description: 评论ID
         type: integer
@@ -425,9 +430,6 @@ definitions:
       userId:
         description: 评论者用户ID
         type: integer
-      visible:
-        description: 评论内容
-        type: string
     type: object
   model.MomentCommentsResponse:
     properties:
@@ -438,6 +440,11 @@ definitions:
       createdAt:
         description: 创建时间
         type: string
+      elements:
+        description: 评论内容
+        items:
+          $ref: '#/definitions/model.Element'
+        type: array
       id:
         description: 评论ID
         type: integer
@@ -456,9 +463,6 @@ definitions:
       userId:
         description: 评论者用户ID
         type: integer
-      visible:
-        description: 评论内容
-        type: string
     required:
     - avatar
     type: object
@@ -1119,38 +1123,6 @@ paths:
       summary: 删除朋友圈
       tags:
       - 朋友圈
-  /moments/:userID:
-    get:
-      parameters:
-      - default: 20
-        description: 限制条数
-        in: query
-        name: limit
-        type: integer
-      - default: 0
-        description: 偏移量
-        in: query
-        name: offset
-        type: integer
-      responses:
-        "200":
-          description: 成功
-          schema:
-            allOf:
-            - $ref: '#/definitions/utils.KResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/model.Moment'
-                  type: array
-              type: object
-        "500":
-          description: 服务器错误
-          schema:
-            $ref: '#/definitions/utils.KResponse'
-      summary: 看某个人的朋友圈
-      tags:
-      - 朋友圈
   /moments/comments/:id:
     delete:
       parameters:
@@ -1230,7 +1202,7 @@ paths:
           description: 服务器错误
           schema:
             $ref: '#/definitions/utils.KResponse'
-      summary: 评论一条朋友圈;只取 MomentID,UserID,Content 字段
+      summary: 评论一条朋友圈;只取 Content 字段
       tags:
       - 朋友圈/评论
     put:
@@ -1393,6 +1365,43 @@ paths:
       summary: 设置屏蔽。传 hide_their（我不看TA的）、hide_mine（不让TA看我的）。
       tags:
       - 朋友圈/隐私模块
+  /moments/user/:userID:
+    get:
+      parameters:
+      - description: 好友的 userID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      - default: 20
+        description: 限制条数
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: 偏移量
+        in: query
+        name: offset
+        type: integer
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Moment'
+                  type: array
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 看某个人的朋友圈
+      tags:
+      - 朋友圈
   /users/:id:
     get:
       parameters:

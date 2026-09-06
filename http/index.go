@@ -182,10 +182,13 @@ func Start() {
 	{
 		momentsRouter := api.Group("/moments")
 		momentsRouter.Use(middleware.AuthorizationMiddleware())
+
 		momentsRouter.GET(controller.KMoments, execute(controller.MomentController.Moments))
-		momentsRouter.GET(controller.KMomentsUser, execute(controller.MomentController.MomentUserID))
 		momentsRouter.POST(controller.KMoments, execute(controller.MomentController.PostMoments))
 		momentsRouter.DELETE(controller.KMomentsID, execute(controller.MomentController.MomentDelete))
+
+		// 某个好友的朋友圈记录
+		momentsRouter.GET(controller.KMomentsUser, execute(controller.MomentController.MomentUserID))
 
 		// 隐私
 		momentsRouter.GET(controller.KMomentPrivacy, execute(controller.MomentController.MomentPrivacyTargetID))

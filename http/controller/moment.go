@@ -40,22 +40,23 @@ var MomentController = &momentController{}
 // @Failure 500 {object} utils.KResponse "服务器错误"
 // @Router /moments [get]
 func (m *momentController) Moments(c *gin.Context) *utils.KResponse {
-	limit, offset := utils.ParsePageQuery(c)
-
-	return utils.MakeResponse(dbMoment.MomentDB.GetMoments(utils.GetUserID(c), limit, offset))
+	// limit, offset := utils.ParsePageQuery(c)
+	// return utils.MakeResponse(dbMoment.MomentDB.GetMoments(utils.GetUserID(c), limit, offset))
+	return utils.MakeResponse("成功")
 }
 
 // @Summary 看某个人的朋友圈
 // @Tags 朋友圈
+// @Param userID path int true "好友的 userID"
 // @Param limit query int false "限制条数" default(20)
 // @Param offset query int false "偏移量" default(0)
 // @Success 200 {object} utils.KResponse{data=[]model.Moment} "成功"
 // @Failure 500 {object} utils.KResponse "服务器错误"
-// @Router /moments/:userID [get]
+// @Router /moments/user/:userID [get]
 func (m *momentController) MomentUserID(c *gin.Context) *utils.KResponse {
 	limit, offset := utils.ParsePageQuery(c)
 
-	return utils.MakeResponse([]int{limit, offset})
+	return utils.MakeResponse([]int{limit, offset, 1000})
 }
 
 // @Summary 发布朋友圈;仅取 Elements,Visbile 字段.
@@ -162,10 +163,10 @@ func (m *momentController) MomentsIdUnLike(c *gin.Context) *utils.KResponse {
 func (m *momentController) MomentComments(c *gin.Context) *utils.KResponse {
 	id := c.Param("id")
 
-	return utils.MakeResponse(dbMoment.MomentDB.MomentLikes(utils.StringToUInt(id)))
+	return utils.MakeResponse(dbMoment.CommentDB.GetMomentComments(utils.StringToUInt(id)))
 }
 
-// @Summary 评论一条朋友圈;只取 MomentID,UserID,Content 字段
+// @Summary 评论一条朋友圈;只取 Content 字段
 // @Tags 朋友圈/评论
 // @Param reqeust body model.MomentComments true "评论体"
 // @Param id path int true "朋友圈ID"
@@ -175,9 +176,10 @@ func (m *momentController) MomentComments(c *gin.Context) *utils.KResponse {
 func (m *momentController) PostMomentComment(c *gin.Context) *utils.KResponse {
 	data := utils.ShouldBindBodyWithJSON[*model.MomentComments](c)
 	id := c.Param("id")
-	data.ID = utils.StringToUInt(id)
+	data.MomentID = utils.StringToUInt(id)
+	data.UserID = uint(utils.GetUserID(c))
 
-	return utils.MakeResponse(data)
+	return utils.MakeResponse(dbMoment.CommentDB.PostMomentComments(data))
 }
 
 // @Summary 修改一条评论列表;只取 Content 字段
@@ -191,8 +193,9 @@ func (m *momentController) PutMomentComment(c *gin.Context) *utils.KResponse {
 	data := utils.ShouldBindBodyWithJSON[*model.MomentComments](c)
 	id := c.Param("id")
 	data.ID = utils.StringToUInt(id)
+	data.UserID = uint(utils.GetUserID(c))
 
-	return utils.MakeResponse(data)
+	return utils.MakeResponse(dbMoment.CommentDB.PutMomentComments(data))
 }
 
 // @Summary 删除一条朋友圈评论
@@ -205,5 +208,5 @@ func (m *momentController) PutMomentComment(c *gin.Context) *utils.KResponse {
 func (m *momentController) DeleteMomentComment(c *gin.Context) *utils.KResponse {
 	id := c.Param("id")
 
-	return utils.MakeResponse(id)
+	return utils.MakeResponse(dbMoment.CommentDB.DeleteMomentComments(&model.MomentComments{ID: utils.StringToUInt(id)}))
 }
