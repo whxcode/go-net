@@ -20,9 +20,13 @@ create table if not exists moment_likes (
 type MomentVisbileStatus int
 
 const (
-	MomentVisibleStatusPublic         MomentVisbileStatus = 0
-	MomentVisibleStatusFriendsOnly    MomentVisbileStatus = 1
-	MomentVisibleStatusSelfOnly       MomentVisbileStatus = 2
+	// 0 公开
+	MomentVisibleStatusPublic MomentVisbileStatus = 0
+	// 1 好友可见
+	MomentVisibleStatusFriendsOnly MomentVisbileStatus = 1
+	// 2 仅自己可见
+	MomentVisibleStatusSelfOnly MomentVisbileStatus = 2
+	// 部分好友可见
 	MomentVisibleStatusPartialFriends MomentVisbileStatus = 3
 )
 
@@ -48,6 +52,11 @@ type Moment struct {
 
 func (m *Moment) TableName() string {
 	return "moments"
+}
+
+type MomentResponse struct {
+	*Moment
+	*MomentUser
 }
 
 // swagger:model MomentPrivacy

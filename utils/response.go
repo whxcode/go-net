@@ -16,7 +16,7 @@ type KResponse struct {
 	Code    int    `json:"code"`
 }
 
-func MakeResponse(data any) *KResponse {
+func MakeResponse[T any](data T) *KResponse {
 	return &KResponse{
 		Data: data,
 		Code: http.StatusOK,

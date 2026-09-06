@@ -466,6 +466,21 @@ definitions:
     required:
     - avatar
     type: object
+  model.MomentLike:
+    properties:
+      createdAt:
+        description: 创建时间
+        type: string
+      id:
+        description: 点赞 ID
+        type: integer
+      momentId:
+        description: 朋友圈记录 ID
+        type: integer
+      userId:
+        description: 点赞者 ID
+        type: integer
+    type: object
   model.MomentLikeResponse:
     properties:
       avatar:
@@ -507,6 +522,45 @@ definitions:
       userId:
         description: 用户ID
         type: integer
+    type: object
+  model.MomentResponse:
+    properties:
+      avatar:
+        description: 用户头像、创建时；为空字符串;注意只是保存 文件的hash 地址；而不是 URL 地址
+        example: ''''''
+        type: string
+      createdAt:
+        description: 创建时间
+        type: string
+      elements:
+        description: 朋友圈元素列表（JSON 序列化存储）
+        items:
+          $ref: '#/definitions/model.Element'
+        type: array
+      id:
+        description: 朋友圈 ID
+        type: integer
+      likeCount:
+        description: 点赞数
+        type: integer
+      nickname:
+        description: 用户中文名称，默认为 ‘’，可后期通过修改用户信息设置
+        type: string
+      ownerId:
+        description: 朋友圈发布者 ID
+        type: integer
+      status:
+        description: 朋友圈状态，0-正常，1-删除
+        type: integer
+      updatedAt:
+        description: 更新时间
+        type: string
+      visible:
+        allOf:
+        - $ref: '#/definitions/model.MomentVisbileStatus'
+        description: 可见性，0-公开，1-好友可见，2-仅自己可见 3-部分好友可见
+    required:
+    - avatar
     type: object
   model.MomentVisbileStatus:
     enum:
@@ -1064,7 +1118,9 @@ paths:
             - $ref: '#/definitions/utils.KResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/model.UserResponse'
+                  items:
+                    $ref: '#/definitions/model.MomentResponse'
+                  type: array
               type: object
         "500":
           description: 服务器错误
@@ -1301,7 +1357,7 @@ paths:
             - $ref: '#/definitions/utils.KResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/model.Moment'
+                  $ref: '#/definitions/model.MomentLike'
               type: object
         "500":
           description: 服务器错误

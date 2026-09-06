@@ -751,7 +751,10 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/model.UserResponse"
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.MomentResponse"
+                                            }
                                         }
                                     }
                                 }
@@ -1112,7 +1115,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/model.Moment"
+                                            "$ref": "#/definitions/model.MomentLike"
                                         }
                                     }
                                 }
@@ -2370,6 +2373,27 @@ const docTemplate = `{
                 }
             }
         },
+        "model.MomentLike": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "点赞 ID",
+                    "type": "integer"
+                },
+                "momentId": {
+                    "description": "朋友圈记录 ID",
+                    "type": "integer"
+                },
+                "userId": {
+                    "description": "点赞者 ID",
+                    "type": "integer"
+                }
+            }
+        },
         "model.MomentLikeResponse": {
             "type": "object",
             "required": [
@@ -2425,6 +2449,62 @@ const docTemplate = `{
                 "userId": {
                     "description": "用户ID",
                     "type": "integer"
+                }
+            }
+        },
+        "model.MomentResponse": {
+            "type": "object",
+            "required": [
+                "avatar"
+            ],
+            "properties": {
+                "avatar": {
+                    "description": "用户头像、创建时；为空字符串;注意只是保存 文件的hash 地址；而不是 URL 地址",
+                    "type": "string",
+                    "example": "''"
+                },
+                "createdAt": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "elements": {
+                    "description": "朋友圈元素列表（JSON 序列化存储）",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Element"
+                    }
+                },
+                "id": {
+                    "description": "朋友圈 ID",
+                    "type": "integer"
+                },
+                "likeCount": {
+                    "description": "点赞数",
+                    "type": "integer"
+                },
+                "nickname": {
+                    "description": "用户中文名称，默认为 ‘’，可后期通过修改用户信息设置",
+                    "type": "string"
+                },
+                "ownerId": {
+                    "description": "朋友圈发布者 ID",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "朋友圈状态，0-正常，1-删除",
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "description": "更新时间",
+                    "type": "string"
+                },
+                "visible": {
+                    "description": "可见性，0-公开，1-好友可见，2-仅自己可见 3-部分好友可见",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.MomentVisbileStatus"
+                        }
+                    ]
                 }
             }
         },

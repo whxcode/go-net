@@ -197,7 +197,7 @@ func Start() {
 		// 点赞
 		momentsRouter.GET(controller.KMomentsLikes, execute(controller.MomentController.MomentLikes))
 		momentsRouter.POST(controller.KMomentsLikes, execute(controller.MomentController.MomentsIdLike))
-		momentsRouter.PUT(controller.KMomentsLikes, execute(controller.MomentController.MomentsIdLike))
+		momentsRouter.DELETE(controller.KMomentsLikes, execute(controller.MomentController.MomentsIdUnLike))
 
 		// 评论
 		momentsRouter.GET(controller.KMomentComments, execute(controller.MomentController.MomentComments))
