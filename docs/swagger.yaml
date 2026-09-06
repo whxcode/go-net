@@ -509,10 +509,10 @@ definitions:
     properties:
       hideMine:
         description: 不让TA看我的朋友圈，0-不屏蔽，1-屏蔽
-        type: boolean
+        type: integer
       hideTheir:
         description: 我不看TA的朋友圈，0-不屏蔽，1-屏蔽
-        type: boolean
+        type: integer
       id:
         description: 隐私设置ID
         type: integer
@@ -1382,7 +1382,7 @@ paths:
             - $ref: '#/definitions/utils.KResponse'
             - properties:
                 data:
-                  type: integer
+                  $ref: '#/definitions/model.MomentPrivacy'
               type: object
         "500":
           description: 服务器错误

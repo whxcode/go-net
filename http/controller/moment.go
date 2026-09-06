@@ -41,7 +41,7 @@ var MomentController = &momentController{}
 // @Router /moments [get]
 func (m *momentController) Moments(c *gin.Context) *utils.KResponse {
 	limit, offset := utils.ParsePageQuery(c)
-	return utils.MakeResponse[[]*model.MomentResponse](dbMoment.MomentDB.GetMoments(utils.GetUserID(c), limit, offset))
+	return utils.MakeResponse[[]*model.MomentResponse](dbMoment.MomentDB.GetMoments(utils.GetUserID(c), 0, limit, offset))
 }
 
 // @Summary 看某个人的朋友圈
@@ -49,13 +49,14 @@ func (m *momentController) Moments(c *gin.Context) *utils.KResponse {
 // @Param userID path int true "好友的 userID"
 // @Param limit query int false "限制条数" default(20)
 // @Param offset query int false "偏移量" default(0)
-// @Success 200 {object} utils.KResponse{data=[]model.Moment} "成功"
+// @Success 200 {object} utils.KResponse{data=[]model.MomentResponse} "成功"
 // @Failure 500 {object} utils.KResponse "服务器错误"
 // @Router /moments/user/:userID [get]
 func (m *momentController) MomentUserID(c *gin.Context) *utils.KResponse {
 	limit, offset := utils.ParsePageQuery(c)
+	friendID := utils.StringToUserID(c.Param("userID"))
 
-	return utils.MakeResponse([]int{limit, offset, 1000})
+	return utils.MakeResponse[[]*model.MomentResponse](dbMoment.MomentDB.GetMoments(utils.GetUserID(c), friendID, limit, offset))
 }
 
 // @Summary 发布朋友圈;仅取 Elements,Visbile 字段.
@@ -87,16 +88,16 @@ func (m *momentController) MomentDelete(c *gin.Context) *utils.KResponse {
 
 // ========================= 隐私模块 ======================
 
-// @Summary  查和某个人的屏蔽设置。传 targetId。
+// @Summary  查和某个人的屏蔽设置 userID,。
 // @Tags 朋友圈/隐私模块
 // @Param userID path int true "好友的用户ID"
-// @Success 200 {object} utils.KResponse{data=int} "成功"
+// @Success 200 {object} utils.KResponse{data=model.MomentPrivacy} "成功"
 // @Failure 500 {object} utils.KResponse "服务器错误"
 // @Router /moments/privacy/:userID [get]
 func (m *momentController) MomentPrivacyTargetID(c *gin.Context) *utils.KResponse {
 	targetId := c.Param("userID")
 
-	return utils.MakeResponse(dbMoment.PrivacyDB.MomentPrivacyTargetID(utils.GetUserID(c), utils.StringToUserID(targetId)))
+	return utils.MakeResponse[*model.MomentPrivacy](dbMoment.PrivacyDB.MomentPrivacyTargetID(utils.GetUserID(c), utils.StringToUserID(targetId)))
 }
 
 // @Summary  设置屏蔽。传 hide_their（我不看TA的）、hide_mine（不让TA看我的）。
@@ -109,9 +110,10 @@ func (m *momentController) MomentPrivacyTargetID(c *gin.Context) *utils.KRespons
 func (m *momentController) PostMomentPrivacy(c *gin.Context) *utils.KResponse {
 	data := utils.ShouldBindBodyWithJSON[*model.MomentPrivacy](c)
 	targetId := c.Param("userID")
-	data.UserID = uint(utils.StringToUserID(targetId))
+	data.UserID = uint(utils.GetUserID(c))
+	data.TargetID = utils.StringToUInt(targetId)
 
-	return utils.MakeResponse(dbMoment.PrivacyDB.SetMomentPrivacy(data))
+	return utils.MakeResponse[*model.MomentPrivacy](dbMoment.PrivacyDB.SetMomentPrivacy(data))
 }
 
 // ========================= 点赞模块 ======================

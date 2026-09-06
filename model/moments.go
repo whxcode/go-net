@@ -143,9 +143,9 @@ type MomentPrivacy struct {
 	// 目标用户ID
 	TargetID uint `gorm:"column:target_id" json:"targetId"`
 	// 我不看TA的朋友圈，0-不屏蔽，1-屏蔽
-	HideTheir bool `gorm:"column:hide_their;default:false" json:"hideTheir"`
+	HideTheir uint8 `gorm:"column:hide_their;default:0" json:"hideTheir"`
 	// 不让TA看我的朋友圈，0-不屏蔽，1-屏蔽
-	HideMine bool `gorm:"column:hide_mine;default:false" json:"hideMine"`
+	HideMine uint8 `gorm:"column:hide_mine;default:0" json:"hideMine"`
 }
 
 func (m *MomentPrivacy) TableName() string {

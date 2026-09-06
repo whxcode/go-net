@@ -1,6 +1,7 @@
 package httpServer
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -16,6 +17,7 @@ import (
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"gorm.io/gorm"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -99,6 +101,16 @@ func Start() {
 
 				switch v := r.(type) {
 				case error:
+
+					if errors.Is(v, gorm.ErrRecordNotFound) {
+						c.AbortWithStatusJSON(http.StatusOK, gin.H{
+							"code":    http.StatusNotFound,
+							"message": http.StatusText(http.StatusNotFound),
+						})
+
+						return
+					}
+
 					errMsg = v.Error()
 				case string:
 					errMsg = v
@@ -113,6 +125,7 @@ func Start() {
 				})
 			}
 		}()
+
 		c.Next()
 	})
 	// 使用默认CORS中间件，允许所有跨域请求

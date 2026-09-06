@@ -1199,7 +1199,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "type": "integer"
+                                            "$ref": "#/definitions/model.MomentPrivacy"
                                         }
                                     }
                                 }
@@ -2432,11 +2432,11 @@ const docTemplate = `{
             "properties": {
                 "hideMine": {
                     "description": "不让TA看我的朋友圈，0-不屏蔽，1-屏蔽",
-                    "type": "boolean"
+                    "type": "integer"
                 },
                 "hideTheir": {
                     "description": "我不看TA的朋友圈，0-不屏蔽，1-屏蔽",
-                    "type": "boolean"
+                    "type": "integer"
                 },
                 "id": {
                     "description": "隐私设置ID",
