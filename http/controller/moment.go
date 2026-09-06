@@ -19,6 +19,7 @@ package controller
 import (
 	"net/http"
 
+	dbMoment "go-net/db/moment"
 	"go-net/model"
 	"go-net/utils"
 
@@ -28,6 +29,8 @@ import (
 type momentController struct{}
 
 var MomentController = &momentController{}
+
+// ========================= 主体模块 ======================
 
 // @Summary 获取朋友圈列表 (首页刷的流,当前登陆用户 + 好友)
 // @Tags 朋友圈
@@ -39,7 +42,7 @@ var MomentController = &momentController{}
 func (m *momentController) Moments(c *gin.Context) *utils.KResponse {
 	limit, offset := utils.ParsePageQuery(c)
 
-	return utils.MakeResponse(model.MomentDB.GetMoments(utils.GetUserID(c), limit, offset))
+	return utils.MakeResponse(dbMoment.MomentDB.GetMoments(utils.GetUserID(c), limit, offset))
 }
 
 // @Summary 看某个人的朋友圈
@@ -65,30 +68,7 @@ func (m *momentController) PostMoments(c *gin.Context) *utils.KResponse {
 	moment := utils.ShouldBindBodyWithJSON[*model.Moment](c)
 	moment.OwnerID = uint(utils.GetUserID(c))
 
-	return utils.MakeResponse(model.MomentDB.AddMoment(moment))
-}
-
-// @Summary  POST /api/moments/:id/like —— 点赞。传 id。
-// @Tags 朋友圈
-// @Param id path int true "朋友圈ID"
-// @Success 200 {object} utils.KResponse{data=model.Moment} "成功"
-// @Failure 500 {object} utils.KResponse "服务器错误"
-// @Router /moments/:id/like [post]
-func (m *momentController) MomentsIdLike(c *gin.Context) *utils.KResponse {
-	id := c.Param("id")
-
-	return utils.MakeResponse(model.MomentDB.MomentLike(utils.GetUserID(c), utils.StringToUInt(id)))
-}
-
-// @Summary  取消点赞
-// @Tags 朋友圈
-// @Param id path int true "朋友圈ID"
-// @Success 200 {object} utils.KResponse{data=model.Moment} "成功"
-// @Failure 500 {object} utils.KResponse "服务器错误"
-// @Router /moments/:id/like [delete]
-func (m *momentController) MomentsIdUnLike(c *gin.Context) *utils.KResponse {
-	id := c.Param("id")
-	return utils.MakeResponse(model.MomentDB.MomentUnLike(utils.GetUserID(c), utils.StringToUInt(id)))
+	return utils.MakeResponse(dbMoment.MomentDB.AddMoment(moment))
 }
 
 // @Summary  删除朋友圈
@@ -100,38 +80,44 @@ func (m *momentController) MomentsIdUnLike(c *gin.Context) *utils.KResponse {
 func (m *momentController) MomentDelete(c *gin.Context) *utils.KResponse {
 	id := c.Param("id")
 
-	model.MomentDB.DeleteMoment(utils.StringToUInt(id))
+	dbMoment.MomentDB.DeleteMoment(utils.StringToUInt(id))
 
 	return utils.MakeResponse(http.StatusOK)
 }
 
+// ========================= 隐私模块 ======================
+
 // @Summary  查和某个人的屏蔽设置。传 targetId。
-// @Tags 朋友圈
-// @Param targetId path int true "用户ID"
+// @Tags 朋友圈/隐私模块
+// @Param userID path int true "好友的用户ID"
 // @Success 200 {object} utils.KResponse{data=int} "成功"
 // @Failure 500 {object} utils.KResponse "服务器错误"
-// @Router /moments/privacy/:targetId [get]
+// @Router /moments/privacy/:userID [get]
 func (m *momentController) MomentPrivacyTargetID(c *gin.Context) *utils.KResponse {
-	targetId := c.Param("targetId")
+	targetId := c.Param("userID")
 
-	return utils.MakeResponse(model.MomentDB.MomentPrivacyTargetID(utils.GetUserID(c), utils.StringToUserID(targetId)))
+	return utils.MakeResponse(dbMoment.MomentDB.MomentPrivacyTargetID(utils.GetUserID(c), utils.StringToUserID(targetId)))
 }
 
-// @Summary  设置屏蔽。传 target_id、hide_their（我不看TA的）、hide_mine（不让TA看我的）。
-// @Tags 朋友圈
+// @Summary  设置屏蔽。传 hide_their（我不看TA的）、hide_mine（不让TA看我的）。
+// @Tags 朋友圈/隐私模块
+// @Param userID path int true "好友的用户ID"
 // @Param request body model.MomentPrivacy true "请求体"
 // @Success 200 {object} utils.KResponse{data=model.MomentPrivacy} "成功"
 // @Failure 500 {object} utils.KResponse "服务器错误"
-// @Router /moments/privacy [post]
-func (m *momentController) MomentPrivacy(c *gin.Context) *utils.KResponse {
+// @Router /moments/privacy/:userID [post]
+func (m *momentController) PostMomentPrivacy(c *gin.Context) *utils.KResponse {
 	data := utils.ShouldBindBodyWithJSON[*model.MomentPrivacy](c)
-	data.UserID = uint(utils.GetUserID(c))
+	targetId := c.Param("userID")
+	data.UserID = uint(utils.StringToUserID(targetId))
 
-	return utils.MakeResponse(model.MomentDB.SetMomentPrivacy(data))
+	return utils.MakeResponse(dbMoment.MomentDB.SetMomentPrivacy(data))
 }
 
+// ========================= 点赞模块 ======================
+
 // @Summary 获取一条朋友的点赞列表
-// @Tags 朋友圈
+// @Tags 朋友圈/点赞
 // @Param id path int true "请求体"
 // @Success 200 {object} utils.KResponse{data=[]model.MomentLikeResponse} "成功"
 // @Failure 500 {object} utils.KResponse "服务器错误"
@@ -139,8 +125,33 @@ func (m *momentController) MomentPrivacy(c *gin.Context) *utils.KResponse {
 func (m *momentController) MomentLikes(c *gin.Context) *utils.KResponse {
 	id := c.Param("id")
 
-	return utils.MakeResponse(model.MomentDB.MomentLikes(utils.StringToUInt(id)))
+	return utils.MakeResponse(dbMoment.MomentDB.MomentLikes(utils.StringToUInt(id)))
 }
+
+// @Summary  POST /api/moments/:id/like —— 点赞。传 id。
+// @Tags 朋友圈/点赞
+// @Param id path int true "朋友圈ID"
+// @Success 200 {object} utils.KResponse{data=model.Moment} "成功"
+// @Failure 500 {object} utils.KResponse "服务器错误"
+// @Router /moments/likes/:id [post]
+func (m *momentController) MomentsIdLike(c *gin.Context) *utils.KResponse {
+	id := c.Param("id")
+
+	return utils.MakeResponse(dbMoment.MomentDB.MomentLike(utils.GetUserID(c), utils.StringToUInt(id)))
+}
+
+// @Summary  取消点赞
+// @Tags 朋友圈/点赞
+// @Param id path int true "朋友圈ID"
+// @Success 200 {object} utils.KResponse{data=model.Moment} "成功"
+// @Failure 500 {object} utils.KResponse "服务器错误"
+// @Router /moments/likes/:id [delete]
+func (m *momentController) MomentsIdUnLike(c *gin.Context) *utils.KResponse {
+	id := c.Param("id")
+	return utils.MakeResponse(dbMoment.MomentDB.MomentUnLike(utils.GetUserID(c), utils.StringToUInt(id)))
+}
+
+// ========================= 评论模块 ======================
 
 // @Summary 获取一条朋友的评论列表
 // @Tags 朋友圈/评论
@@ -151,7 +162,7 @@ func (m *momentController) MomentLikes(c *gin.Context) *utils.KResponse {
 func (m *momentController) MomentComments(c *gin.Context) *utils.KResponse {
 	id := c.Param("id")
 
-	return utils.MakeResponse(model.MomentDB.MomentLikes(utils.StringToUInt(id)))
+	return utils.MakeResponse(dbMoment.MomentDB.MomentLikes(utils.StringToUInt(id)))
 }
 
 // @Summary 评论一条朋友圈;只取 MomentID,UserID,Content 字段
@@ -175,7 +186,7 @@ func (m *momentController) PostMomentComment(c *gin.Context) *utils.KResponse {
 // @Param reqeust body model.MomentComments true "评论体"
 // @Success 200 {object} utils.KResponse{data=model.MomentCommentsResponse} "成功"
 // @Failure 500 {object} utils.KResponse "服务器错误"
-// @Router /moments/comments/:id [post]
+// @Router /moments/comments/:id [put]
 func (m *momentController) PutMomentComment(c *gin.Context) *utils.KResponse {
 	data := utils.ShouldBindBodyWithJSON[*model.MomentComments](c)
 	id := c.Param("id")
@@ -185,12 +196,12 @@ func (m *momentController) PutMomentComment(c *gin.Context) *utils.KResponse {
 }
 
 // @Summary 删除一条朋友圈评论
-// @Tags 朋友圈
+// @Tags 朋友圈/评论
 // @Tags 评论
 // @Param id path int true "评论ID"
 // @Success 200 {object} utils.KResponse{data=model.MomentCommentsResponse} "成功"
 // @Failure 500 {object} utils.KResponse "服务器错误"
-// @Router /moments/comments/:id [post]
+// @Router /moments/comments/:id [delete]
 func (m *momentController) DeleteMomentComment(c *gin.Context) *utils.KResponse {
 	id := c.Param("id")
 

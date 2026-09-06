@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 
+	dbMessage "go-net/db/message"
 	"go-net/model"
 	"go-net/utils"
 
@@ -48,7 +49,7 @@ func (*messageController) GetFrinedMessages(c *gin.Context) *utils.KResponse {
 	userID := utils.GetUserID(c)
 	friendID, limit, offset := parseHistoryQuery(c, "friendID")
 
-	m, t := model.MessageDB.GetFriendsHistory(userID, friendID, limit, offset)
+	m, t := dbMessage.MessageDB.GetFriendsHistory(userID, friendID, limit, offset)
 
 	return utils.MakeResponse(&GetPrivateMessagesResponse{
 		Data:  m,
@@ -66,7 +67,7 @@ func (*messageController) GetFrinedMessages(c *gin.Context) *utils.KResponse {
 func (*messageController) GetGroupMessages(c *gin.Context) *utils.KResponse {
 	groupID, limit, offset := parseHistoryQuery(c, "groupID")
 
-	m, t := model.MessageDB.GetGroupHistory(groupID, limit, offset)
+	m, t := dbMessage.MessageDB.GetGroupHistory(groupID, limit, offset)
 
 	return utils.MakeResponse(&GetPrivateMessagesResponse{
 		Data:  m,

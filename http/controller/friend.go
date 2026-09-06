@@ -3,6 +3,7 @@ package controller
 import (
 	"strconv"
 
+	dbFriend "go-net/db/friend"
 	"go-net/model"
 	"go-net/utils"
 
@@ -44,7 +45,7 @@ var FriendController *firendsControll = &firendsControll{}
 func (*firendsControll) Firends(c *gin.Context) *utils.KResponse {
 	u := utils.GetUserID(c)
 
-	return utils.MakeResponse(model.FriendDB.Firends(u))
+	return utils.MakeResponse(dbFriend.FriendDB.Firends(u))
 }
 
 type RequestResponse struct {
@@ -67,7 +68,7 @@ func (*firendsControll) Request(c *gin.Context) *utils.KResponse {
 	UserID := utils.GetUserID(c)
 	param := utils.ShouldBindBodyWithJSON[*RequestResponse](c)
 
-	f := model.FriendDB.Request(UserID, param.FriendID, param.Remark)
+	f := dbFriend.FriendDB.Request(UserID, param.FriendID, param.Remark)
 
 	return utils.MakeResponse(f)
 }
@@ -81,7 +82,7 @@ func (*firendsControll) Request(c *gin.Context) *utils.KResponse {
 func (*firendsControll) Requests(c *gin.Context) *utils.KResponse {
 	u := utils.GetUserID(c)
 
-	return utils.MakeResponse(model.FriendDB.Requests(u))
+	return utils.MakeResponse(dbFriend.FriendDB.Requests(u))
 }
 
 type PutRequesetRequestResponse struct {
@@ -102,7 +103,7 @@ func (*firendsControll) PutRequesetRequest(c *gin.Context) *utils.KResponse {
 	req := utils.ShouldBindBodyWithJSON[*PutRequesetRequestResponse](c)
 	id, _ := strconv.ParseUint(friendTableID, 10, 64)
 
-	model.FriendDB.PutRequestFriendStatus(uint(id), req.Status)
+	dbFriend.FriendDB.PutRequestFriendStatus(uint(id), req.Status)
 
 	return utils.MakeResponse(req)
 }

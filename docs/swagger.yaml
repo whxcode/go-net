@@ -1119,55 +1119,6 @@ paths:
       summary: 删除朋友圈
       tags:
       - 朋友圈
-  /moments/:id/like:
-    delete:
-      parameters:
-      - description: 朋友圈ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      responses:
-        "200":
-          description: 成功
-          schema:
-            allOf:
-            - $ref: '#/definitions/utils.KResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/model.Moment'
-              type: object
-        "500":
-          description: 服务器错误
-          schema:
-            $ref: '#/definitions/utils.KResponse'
-      summary: 取消点赞
-      tags:
-      - 朋友圈
-    post:
-      parameters:
-      - description: 朋友圈ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      responses:
-        "200":
-          description: 成功
-          schema:
-            allOf:
-            - $ref: '#/definitions/utils.KResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/model.Moment'
-              type: object
-        "500":
-          description: 服务器错误
-          schema:
-            $ref: '#/definitions/utils.KResponse'
-      summary: POST /api/moments/:id/like —— 点赞。传 id。
-      tags:
-      - 朋友圈
   /moments/:userID:
     get:
       parameters:
@@ -1201,6 +1152,31 @@ paths:
       tags:
       - 朋友圈
   /moments/comments/:id:
+    delete:
+      parameters:
+      - description: 评论ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.MomentCommentsResponse'
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 删除一条朋友圈评论
+      tags:
+      - 朋友圈/评论
+      - 评论
     get:
       parameters:
       - description: 请求体
@@ -1229,7 +1205,13 @@ paths:
       - 朋友圈/评论
     post:
       parameters:
-      - description: 评论ID
+      - description: 评论体
+        in: body
+        name: reqeust
+        required: true
+        schema:
+          $ref: '#/definitions/model.MomentComments'
+      - description: 朋友圈ID
         in: path
         name: id
         required: true
@@ -1248,11 +1230,64 @@ paths:
           description: 服务器错误
           schema:
             $ref: '#/definitions/utils.KResponse'
-      summary: 删除一条朋友圈评论
+      summary: 评论一条朋友圈;只取 MomentID,UserID,Content 字段
       tags:
-      - 朋友圈
-      - 评论
+      - 朋友圈/评论
+    put:
+      parameters:
+      - description: 评论ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 评论体
+        in: body
+        name: reqeust
+        required: true
+        schema:
+          $ref: '#/definitions/model.MomentComments'
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.MomentCommentsResponse'
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 修改一条评论列表;只取 Content 字段
+      tags:
+      - 朋友圈/评论
   /moments/likes/:id:
+    delete:
+      parameters:
+      - description: 朋友圈ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Moment'
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 取消点赞
+      tags:
+      - 朋友圈/点赞
     get:
       parameters:
       - description: 请求体
@@ -1278,10 +1313,63 @@ paths:
             $ref: '#/definitions/utils.KResponse'
       summary: 获取一条朋友的点赞列表
       tags:
-      - 朋友圈
-  /moments/privacy:
+      - 朋友圈/点赞
     post:
       parameters:
+      - description: 朋友圈ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Moment'
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: POST /api/moments/:id/like —— 点赞。传 id。
+      tags:
+      - 朋友圈/点赞
+  /moments/privacy/:userID:
+    get:
+      parameters:
+      - description: 好友的用户ID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  type: integer
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 查和某个人的屏蔽设置。传 targetId。
+      tags:
+      - 朋友圈/隐私模块
+    post:
+      parameters:
+      - description: 好友的用户ID
+        in: path
+        name: userID
+        required: true
+        type: integer
       - description: 请求体
         in: body
         name: request
@@ -1302,34 +1390,9 @@ paths:
           description: 服务器错误
           schema:
             $ref: '#/definitions/utils.KResponse'
-      summary: 设置屏蔽。传 target_id、hide_their（我不看TA的）、hide_mine（不让TA看我的）。
+      summary: 设置屏蔽。传 hide_their（我不看TA的）、hide_mine（不让TA看我的）。
       tags:
-      - 朋友圈
-  /moments/privacy/:targetId:
-    get:
-      parameters:
-      - description: 用户ID
-        in: path
-        name: targetId
-        required: true
-        type: integer
-      responses:
-        "200":
-          description: 成功
-          schema:
-            allOf:
-            - $ref: '#/definitions/utils.KResponse'
-            - properties:
-                data:
-                  type: integer
-              type: object
-        "500":
-          description: 服务器错误
-          schema:
-            $ref: '#/definitions/utils.KResponse'
-      summary: 查和某个人的屏蔽设置。传 targetId。
-      tags:
-      - 朋友圈
+      - 朋友圈/隐私模块
   /users/:id:
     get:
       parameters:

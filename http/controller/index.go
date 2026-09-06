@@ -43,13 +43,12 @@ const (
 	KPostGroupMember = "/:id/members"
 	KGroupPutMember  = "/:id/putMember"
 
-	KMoments               = "/"
-	KMomentsUser           = "/:userID"
-	KMomentsLike           = "/:id/like"
-	KMomentsLikes          = "/likes/:id"
-	KMomentsID             = "/:id"
-	KMomentPrivacyTargetID = "/privacy/:targetId"
-	KMomentsPrivacy        = "/privacy"
+	KMoments       = "/"
+	KMomentsUser   = "/:userID"
+	KMomentsID     = "/:id"
+	KMomentPrivacy = "/privacy/:userID"
+
+	KMomentsLikes = "/likes/:id"
 
 	// 朋友圈评论相关
 	KMomentComments = "/comments/:id"

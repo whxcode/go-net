@@ -3,6 +3,7 @@ package controller
 import (
 	"net/http"
 
+	dbGroup "go-net/db/group"
 	"go-net/model"
 	"go-net/utils"
 
@@ -18,7 +19,7 @@ type groupController struct{}
 // @Router /groups [get]
 func (*groupController) Groups(c *gin.Context) *utils.KResponse {
 	u := utils.GetUserID(c)
-	result := model.GroupDB.Groups(u)
+	result := dbGroup.GroupDB.Groups(u)
 
 	return utils.MakeResponse(result)
 }
@@ -31,7 +32,7 @@ func (*groupController) Groups(c *gin.Context) *utils.KResponse {
 // @Router /groups/{id} [get]
 func (*groupController) GroupID(c *gin.Context) *utils.KResponse {
 	id := utils.StringToUInt(c.Param("id"))
-	result := model.GroupDB.GroupID(id)
+	result := dbGroup.GroupDB.GroupID(id)
 
 	return utils.MakeResponse(result)
 }
@@ -49,7 +50,7 @@ func (*groupController) PutGroupID(c *gin.Context) *utils.KResponse {
 
 	group.ID = id
 
-	result := model.GroupDB.PutGroup(group)
+	result := dbGroup.GroupDB.PutGroup(group)
 
 	return utils.MakeResponse(result)
 }
@@ -69,7 +70,7 @@ func (*groupController) PostGroupMember(c *gin.Context) *utils.KResponse {
 	id := utils.StringToUInt(c.Param("id"))
 	data := utils.ShouldBindBodyWithJSON[*ReseutPostGroupMember](c)
 
-	model.GroupDB.PostGroupMembers(id, data.MemberIDs)
+	dbGroup.GroupDB.PostGroupMembers(id, data.MemberIDs)
 
 	return utils.MakeResponse(http.StatusOK)
 }
@@ -92,7 +93,7 @@ func (*groupController) PutGroupMember(c *gin.Context) *utils.KResponse {
 	m := utils.ShouldBindBodyWithJSON[*model.GroupMember](c)
 	m.UserID = uint(userID)
 
-	return utils.MakeResponse(model.GroupDB.PutGroupMember(groupID, m))
+	return utils.MakeResponse(dbGroup.GroupDB.PutGroupMember(groupID, m))
 }
 
 var GroupController = &groupController{}

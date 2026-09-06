@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	dbUser "go-net/db/user"
 	"go-net/model"
 	"go-net/redis"
 	"go-net/utils"
@@ -25,7 +26,7 @@ func (*userControll) GetUser(c *gin.Context) *utils.KResponse {
 	token := utils.GetToken(c)
 	u := utils.GetUserID(c)
 
-	user := model.UserDb.GetUserByUserID(u)
+	user := dbUser.UserDB.GetUserByUserID(u)
 
 	return utils.MakeResponse(&model.UserResponse{
 		User:  *user,
@@ -42,7 +43,7 @@ func (*userControll) GetUser(c *gin.Context) *utils.KResponse {
 func (*userControll) GetUserByID(c *gin.Context) *utils.KResponse {
 	u, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 
-	user := model.UserDb.GetUserByUserID(model.UserID(u))
+	user := dbUser.UserDB.GetUserByUserID(model.UserID(u))
 
 	return utils.MakeResponse(user)
 }
@@ -56,7 +57,7 @@ func (*userControll) GetUserByID(c *gin.Context) *utils.KResponse {
 func (*userControll) GetUsers(c *gin.Context) *utils.KResponse {
 	search := c.Query("search")
 
-	users := model.UserDb.GetUsers(search)
+	users := dbUser.UserDB.GetUsers(search)
 
 	if users == nil {
 		return utils.MakeResponseWidthCode("获取用户信息失败", http.StatusInternalServerError)
@@ -83,14 +84,14 @@ func (*userControll) Register(c *gin.Context) *utils.KResponse {
 		return utils.MakeResponseWidthCode("无效的参数", http.StatusBadRequest)
 	}
 
-	if model.UserDb.UserExists(user.Username) {
+	if dbUser.UserDB.UserExists(user.Username) {
 		return utils.MakeResponseWidthCode("用户已存在", http.StatusBadRequest)
 	}
 
 	hashed := utils.GenerateFromPasswordString(user.Password)
 	user.Password = hashed
 
-	model.UserDb.AddUser(&model.User{
+	dbUser.UserDB.AddUser(&model.User{
 		Username: user.Username,
 		Password: user.Password,
 	})
@@ -113,7 +114,7 @@ func (*userControll) Login(c *gin.Context) *utils.KResponse {
 		return utils.MakeResponseWidthCode("无效的参数", http.StatusBadRequest)
 	}
 
-	user, err := model.UserDb.GetUserByUsername(reqUser.Username)
+	user, err := dbUser.UserDB.GetUserByUsername(reqUser.Username)
 	if err != nil {
 		return utils.MakeResponseWidthCode("用户不存在", http.StatusBadRequest)
 	}
@@ -172,7 +173,7 @@ func (*userControll) UserPutPassword(c *gin.Context) *utils.KResponse {
 		return utils.MakeResponseWidthCode("无效的参数", http.StatusBadRequest)
 	}
 
-	user := model.UserDb.GetUserByUserID(userID)
+	user := dbUser.UserDB.GetUserByUserID(userID)
 
 	if !utils.CompareHashAndPassword(user.Password, data.OldPassword) {
 		return utils.MakeResponseWidthCode("旧密码错误", http.StatusBadRequest)
@@ -181,7 +182,7 @@ func (*userControll) UserPutPassword(c *gin.Context) *utils.KResponse {
 	user.Password = utils.GenerateFromPasswordString(data.NewPassword)
 	user.Nickname = "修改 passwowrd"
 
-	model.UserDb.UpdateUser(user)
+	dbUser.UserDB.UpdateUser(user)
 
 	return utils.MakeResponse(user)
 }
@@ -199,9 +200,9 @@ type UserPutAvatarRequest struct {
 func (*userControll) UserPutAvatar(c *gin.Context) *utils.KResponse {
 	userID := utils.GetUserID(c)
 	data := utils.ShouldBindBodyWithJSON[*UserPutAvatarRequest](c)
-	user := model.UserDb.GetUserByUserID(userID)
+	user := dbUser.UserDB.GetUserByUserID(userID)
 
-	model.UserDb.UpdateUserAvatar(userID, data.Avatar)
+	dbUser.UserDB.UpdateUserAvatar(userID, data.Avatar)
 
 	user.Avatar = data.Avatar
 
@@ -221,9 +222,9 @@ type UserPutNicknameRequest struct {
 func (*userControll) UserPutNickname(c *gin.Context) *utils.KResponse {
 	userID := utils.GetUserID(c)
 	data := utils.ShouldBindBodyWithJSON[*UserPutNicknameRequest](c)
-	user := model.UserDb.GetUserByUserID(userID)
+	user := dbUser.UserDB.GetUserByUserID(userID)
 
-	model.UserDb.UpdateUserNickname(userID, data.Nickname)
+	dbUser.UserDB.UpdateUserNickname(userID, data.Nickname)
 
 	user.Nickname = data.Nickname
 

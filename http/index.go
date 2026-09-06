@@ -186,13 +186,17 @@ func Start() {
 		momentsRouter.GET(controller.KMomentsUser, execute(controller.MomentController.MomentUserID))
 		momentsRouter.POST(controller.KMoments, execute(controller.MomentController.PostMoments))
 		momentsRouter.DELETE(controller.KMomentsID, execute(controller.MomentController.MomentDelete))
-		momentsRouter.GET(controller.KMomentPrivacyTargetID, execute(controller.MomentController.MomentPrivacyTargetID))
-		momentsRouter.POST(controller.KMomentsPrivacy, execute(controller.MomentController.MomentPrivacy))
 
+		// 隐私
+		momentsRouter.GET(controller.KMomentPrivacy, execute(controller.MomentController.MomentPrivacyTargetID))
+		momentsRouter.POST(controller.KMomentPrivacy, execute(controller.MomentController.PostMomentPrivacy))
+
+		// 点赞
 		momentsRouter.GET(controller.KMomentsLikes, execute(controller.MomentController.MomentLikes))
-		momentsRouter.POST(controller.KMomentsLike, execute(controller.MomentController.MomentsIdLike))
-		momentsRouter.DELETE(controller.KMomentsLike, execute(controller.MomentController.MomentsIdUnLike))
+		momentsRouter.POST(controller.KMomentsLikes, execute(controller.MomentController.MomentsIdLike))
+		momentsRouter.PUT(controller.KMomentsLikes, execute(controller.MomentController.MomentsIdLike))
 
+		// 评论
 		momentsRouter.GET(controller.KMomentComments, execute(controller.MomentController.MomentComments))
 		momentsRouter.POST(controller.KMomentComments, execute(controller.MomentController.PostMomentComment))
 		momentsRouter.PUT(controller.KMomentComments, execute(controller.MomentController.PutMomentComment))

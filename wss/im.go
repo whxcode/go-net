@@ -10,6 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 
+	dbGroup "go-net/db/group"
+	dbMessage "go-net/db/message"
 	"go-net/middleware"
 	"go-net/model"
 	"go-net/pool"
@@ -67,7 +69,7 @@ func ChannelHandle(conn *websocket.Conn, p []byte, message *model.Message) bool 
 	senderConn := pool.UserPool.GetUserConn(message.ReceiverID)
 
 	// 保存数据
-	go func() { model.MessageDB.Save(message) }()
+	go func() { dbMessage.MessageDB.Save(message) }()
 
 	// 将离线信息存入 redis 7 天时间。
 	if senderConn == nil {
@@ -100,7 +102,7 @@ func broadcastFriendMessage(message *model.Message, msg []byte) {
 }
 
 func broadcastGroupMessage(message *model.Message, msg []byte) {
-	result := model.GroupDB.GroupMembers(message.ReceiverID)
+	result := dbGroup.GroupDB.GroupMembers(message.ReceiverID)
 
 	for _, userID := range result {
 		if userID == message.SenderID {
@@ -191,7 +193,7 @@ func IM(c *gin.Context) {
 
 		switch message.Type {
 		case model.ChannelTypePING:
-			conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintln(`{"type":%v}`, model.ChannelTypePONG))) // PONG
+			conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf(`{"type":%v}`, model.ChannelTypePONG))) // PONG
 		case model.ChannelTypeFriend:
 			broadcastFriendMessage(message, msg)
 		case model.ChannelTypeGroup:
@@ -200,7 +202,7 @@ func IM(c *gin.Context) {
 
 		switch message.Type {
 		case model.ChannelTypeFriend, model.ChannelTypeGroup:
-			go func() { model.MessageDB.Save(message) }()
+			go func() { dbMessage.MessageDB.Save(message) }()
 		}
 
 		fmt.Println("-------------------------------------- end -------------------------------")

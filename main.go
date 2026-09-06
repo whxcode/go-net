@@ -19,8 +19,8 @@ GraphQL	c.GetRawData()	解析 query 字段
 // @host localhost:8080
 // @BasePath /api
 import (
+	"go-net/db"
 	httpServer "go-net/http"
-	"go-net/model"
 	"go-net/redis"
 	"go-net/utils"
 )
@@ -31,10 +31,8 @@ func main() {
 		panic("雪花法初始化失败: " + err.Error())
 	}
 
-	model.InitDB()
+	db.InitDB()
 	redis.InitRedis()
-
-	// 	model.FriendDB.GetFirends(1)
 
 	httpServer.Start()
 	// view.Test()

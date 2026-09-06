@@ -1,9 +1,7 @@
 package model
 
 import (
-	"fmt"
 	"strconv"
-	"sync"
 	"time"
 )
 
@@ -38,87 +36,4 @@ type UserResponse struct {
 	User
 	// 认证令牌
 	Token string `json:"token" validate:"required"`
-}
-
-type userDb struct {
-	users []*User
-	mutex sync.Mutex
-}
-
-var UserDb = &userDb{}
-
-func (db *userDb) AddUser(user *User) error {
-	return DB.Create(user).Error
-}
-
-func (db *userDb) GetUserByUsername(username string) (*User, error) {
-	user := &User{}
-	err := DB.Where("username = ?", username).First(user).Error
-	if err != nil {
-		return nil, err
-	}
-
-	return user, nil
-}
-
-func (db *userDb) GetUserByUserID(userID UserID) *User {
-	user := &User{}
-	err := DB.Where("id = ?", userID).First(user).Error
-
-	fmt.Println("err:", err)
-	if err != nil {
-		panic(err)
-	}
-
-	return user
-}
-
-func (db *userDb) UserExists(username string) bool {
-	result := DB.Where("username = ?", username).First(&User{})
-
-	return result.Error == nil
-}
-
-/*
-* 模糊匹配用户名称
-*
-* */
-func (db *userDb) GetUsers(username string) (result []*User) {
-	err := DB.Where("username LIKE ?", "%"+username+"%").Find(&result).Error
-	if err != nil {
-		panic(err)
-	}
-
-	return
-}
-
-func (db *userDb) UpdateUser(user *User) error {
-	err := DB.Table("users").Updates(user).Where("id = ?", user.ID).Error
-	if err != nil {
-		panic(err)
-	}
-
-	return nil
-}
-
-func (db *userDb) UpdateUserAvatar(userID UserID, avatar string) error {
-	err := DB.Table("users").Where("id = ?", userID).
-		Update("avatar", avatar).
-		Error
-	if err != nil {
-		panic(err)
-	}
-
-	return nil
-}
-
-func (db *userDb) UpdateUserNickname(userID UserID, nickname string) error {
-	err := DB.Table("users").Where("id = ?", userID).
-		Update("nickname", nickname).
-		Error
-	if err != nil {
-		panic(err)
-	}
-
-	return nil
 }
