@@ -53,6 +53,10 @@ const (
 
 	// 朋友圈评论相关
 	KMomentComments = "/comments/:id"
+
+	// 时间线相关
+	KTimeline   = "/"
+	KTimelineID = "/:id"
 )
 
 type KResponseHandle = func(c *gin.Context) *utils.KResponse

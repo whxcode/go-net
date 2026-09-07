@@ -597,6 +597,32 @@ definitions:
     - FriendStatusAccepted
     - FriendStatusRejected
     - FriendStatusDeleted
+  model.TimeLine:
+    properties:
+      created_at:
+        description: 创建时间
+        type: string
+      elements:
+        description: 时间线内容
+        items:
+          $ref: '#/definitions/model.Element'
+        type: array
+      id:
+        description: 时间线ID
+        type: integer
+      like_count:
+        description: 点赞数
+        type: integer
+      owner_id:
+        description: 时间线发布者id
+        type: integer
+      status:
+        description: 时间线状态，0-正常，1-删除,2-被举报中,3-举报成功,4-举报失败
+        type: integer
+      updated_at:
+        description: 更新时间
+        type: string
+    type: object
   model.User:
     properties:
       avatar:
@@ -1388,7 +1414,7 @@ paths:
           description: 服务器错误
           schema:
             $ref: '#/definitions/utils.KResponse'
-      summary: 查和某个人的屏蔽设置。传 targetId。
+      summary: 查和某个人的屏蔽设置 userID,。
       tags:
       - 朋友圈/隐私模块
     post:
@@ -1448,7 +1474,7 @@ paths:
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/model.Moment'
+                    $ref: '#/definitions/model.MomentResponse'
                   type: array
               type: object
         "500":
@@ -1458,6 +1484,124 @@ paths:
       summary: 看某个人的朋友圈
       tags:
       - 朋友圈
+  /timeline:
+    get:
+      parameters:
+      - default: 20
+        description: 限制条数
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: 偏移量
+        in: query
+        name: offset
+        type: integer
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.MomentResponse'
+                  type: array
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 获取时间线列表 (所有可见的)
+      tags:
+      - 时间线
+    post:
+      parameters:
+      - description: 内容主体
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.TimeLine'
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.MomentResponse'
+                  type: array
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 添加一个时间线 (仅取 Elements 字段)
+      tags:
+      - 时间线
+  /timeline/:id:
+    delete:
+      parameters:
+      - description: 时间线ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.MomentResponse'
+                  type: array
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 删除一条时间线
+      tags:
+      - 时间线
+    put:
+      parameters:
+      - description: 时间线ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 内容主体
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.TimeLine'
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.MomentResponse'
+                  type: array
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 修改一个时间线 (仅取 Elements 字段)
+      tags:
+      - 时间线
   /users/:id:
     get:
       parameters:

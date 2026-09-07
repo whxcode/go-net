@@ -9,6 +9,7 @@ import (
 
 	"go-net/config"
 	"go-net/http/controller"
+	timeLineController "go-net/http/controller/time_line"
 	"go-net/logs"
 	"go-net/middleware"
 	"go-net/oss"
@@ -217,6 +218,17 @@ func Start() {
 		momentsRouter.POST(controller.KMomentComments, execute(controller.MomentController.PostMomentComment))
 		momentsRouter.PUT(controller.KMomentComments, execute(controller.MomentController.PutMomentComment))
 		momentsRouter.DELETE(controller.KMomentComments, execute(controller.MomentController.DeleteMomentComment))
+
+	}
+
+	{
+		momentsRouter := api.Group("/timeline")
+		momentsRouter.Use(middleware.AuthorizationMiddleware())
+
+		momentsRouter.GET(controller.KTimeline, execute(timeLineController.GetTimeLines))
+		momentsRouter.POST(controller.KTimeline, execute(timeLineController.PostTimeLine))
+		momentsRouter.PUT(controller.KTimelineID, execute(timeLineController.PutTimeLine))
+		momentsRouter.DELETE(controller.KTimelineID, execute(timeLineController.DeleteTimeLine))
 
 	}
 
