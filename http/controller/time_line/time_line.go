@@ -19,6 +19,7 @@ import (
 | DELETE | /api/timeline/:postId | 任意 |
 | POST | /api/timeline/:postId/like | 任意 |
 | DELETE | /api/timeline/:postId/like | 任意 |
+
 | POST | /api/timeline/:postId/comments | 任意 |
 *
 * */

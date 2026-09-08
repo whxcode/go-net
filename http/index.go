@@ -230,6 +230,15 @@ func Start() {
 		momentsRouter.PUT(controller.KTimelineID, execute(timeLineController.PutTimeLine))
 		momentsRouter.DELETE(controller.KTimelineID, execute(timeLineController.DeleteTimeLine))
 
+		momentsRouter.GET(controller.KMomentComments, execute(timeLineController.Comments))
+		momentsRouter.POST(controller.KMomentComments, execute(timeLineController.PostComment))
+		momentsRouter.PUT(controller.KMomentComments, execute(timeLineController.PutComment))
+		momentsRouter.DELETE(controller.KMomentComments, execute(timeLineController.DeleteComment))
+
+		momentsRouter.GET(controller.KTimelineLikes, execute(timeLineController.Likes))
+		momentsRouter.POST(controller.KTimelineLikes, execute(timeLineController.PostLike))
+		momentsRouter.DELETE(controller.KTimelineLikes, execute(timeLineController.DeleteLike))
+
 	}
 
 	{

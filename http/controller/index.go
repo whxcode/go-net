@@ -6,11 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const (
-	kGET  = "GET"
-	kPOST = "POST"
-)
-
 type RouterPath string
 
 const (
@@ -57,6 +52,9 @@ const (
 	// 时间线相关
 	KTimeline   = "/"
 	KTimelineID = "/:id"
+
+	KTimelineComments = "/:id/comments"
+	KTimelineLikes    = "/:id/likes"
 )
 
 type KResponseHandle = func(c *gin.Context) *utils.KResponse
