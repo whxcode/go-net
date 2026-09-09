@@ -6,7 +6,7 @@ import (
 
 	dbUser "go-net/db/user"
 	"go-net/model"
-	"go-net/redis"
+	UserRedis "go-net/redis/user"
 	"go-net/utils"
 
 	"github.com/gin-gonic/gin"
@@ -129,7 +129,8 @@ func (*userControll) Login(c *gin.Context) *utils.KResponse {
 		return utils.MakeResponseWidthCode("生成token失败", http.StatusInternalServerError)
 	}
 
-	err = redis.User.SetToken(token, user.ID)
+	UserRedis.SetToken(c, token, user.ID)
+	UserRedis.SetUserInfo(c, user.ID, user)
 
 	return utils.MakeResponse(&model.UserResponse{
 		User:  *user,
@@ -144,7 +145,7 @@ func (*userControll) Login(c *gin.Context) *utils.KResponse {
 // @Router /users/logout [get]
 func (*userControll) Logout(c *gin.Context) *utils.KResponse {
 	token := utils.GetToken(c)
-	err := redis.User.DelToken(token)
+	err := UserRedis.DelToken(c, token)
 	if err != nil {
 		return utils.MakeResponseWidthCode("退出失败", http.StatusInternalServerError)
 	}

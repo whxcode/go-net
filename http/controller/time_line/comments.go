@@ -1,6 +1,9 @@
 package timeLineController
 
 import (
+	"net/http"
+
+	dbTimeLine "go-net/db/time_line"
 	"go-net/model"
 	"go-net/utils"
 
@@ -14,7 +17,9 @@ import (
 // @Failure 500 {object} utils.KResponse "服务器错误"
 // @Router /timeline/:id/comments [get]
 func Comments(c *gin.Context) *utils.KResponse {
-	return utils.MakeResponse("--")
+	id := utils.StringToUInt(c.Param("id"))
+
+	return utils.MakeResponse(dbTimeLine.Comments(id))
 }
 
 // @Summary 给某个时间线添加一条评论 (只取 Elements 字段)
@@ -28,7 +33,7 @@ func PostComment(c *gin.Context) *utils.KResponse {
 	data := utils.ShouldBindBodyWithJSON[*model.TimeComment](c)
 	data.OwnerID = uint(utils.GetUserID(c))
 
-	return utils.MakeResponse(data)
+	return utils.MakeResponse(dbTimeLine.PostComments(data))
 }
 
 // @Summary 修改一条评论 (只取 Elements 字段)
@@ -43,7 +48,7 @@ func PutComment(c *gin.Context) *utils.KResponse {
 	id := utils.StringToUInt(c.Param("id"))
 	data.ID = id
 
-	return utils.MakeResponse(data)
+	return utils.MakeResponse(dbTimeLine.PutComment(data))
 }
 
 // @Summary 删除一条评论 (只取 Elements 字段)
@@ -55,5 +60,7 @@ func PutComment(c *gin.Context) *utils.KResponse {
 func DeleteComment(c *gin.Context) *utils.KResponse {
 	id := utils.StringToUInt(c.Param("id"))
 
-	return utils.MakeResponse(id)
+	dbTimeLine.DeleteComment(id)
+
+	return utils.MakeResponse(http.StatusOK)
 }

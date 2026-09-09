@@ -13,7 +13,7 @@ import (
 	"go-net/logs"
 	"go-net/middleware"
 	"go-net/oss"
-	"go-net/redis"
+	RediusDB "go-net/redis"
 	"go-net/wss"
 
 	swaggerFiles "github.com/swaggo/files"
@@ -50,7 +50,7 @@ func Start() {
 	// 获取所有 Redis key:value，JSON 格式返回
 	r.GET("/redis", func(c *gin.Context) {
 		// 1. 获取所有 key
-		keys, err := redis.RedisClient.Keys(c, "*").Result()
+		keys, err := RediusDB.RedisClient.Keys(c, "*").Result()
 		if err != nil {
 			c.JSON(500, gin.H{"error": err.Error()})
 			return
@@ -60,7 +60,7 @@ func Start() {
 		result := make(map[string]interface{})
 		for _, key := range keys {
 			// 获取值（字符串类型）
-			val, err := redis.RedisClient.Get(c, key).Result()
+			val, err := RediusDB.RedisClient.Get(c, key).Result()
 			if err != nil {
 				// 如果 key 不存在或类型不对，跳过
 				continue

@@ -1,5 +1,4 @@
-// model/redis.go
-package redis
+package RediusDB
 
 import (
 	"context"
@@ -9,7 +8,7 @@ import (
 
 var (
 	RedisClient *redis.Client
-	Ctx         = context.Background()
+	_Ctx        = context.Background()
 )
 
 func InitRedis() {
@@ -17,7 +16,7 @@ func InitRedis() {
 		Addr: "localhost:6379",
 	})
 
-	if err := RedisClient.Ping(Ctx).Err(); err != nil {
+	if err := RedisClient.Ping(_Ctx).Err(); err != nil {
 		panic("Redis 连接失败: " + err.Error())
 	}
 	println("Redis 连接成功")

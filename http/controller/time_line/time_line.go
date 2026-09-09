@@ -1,28 +1,12 @@
 package timeLineController
 
 import (
+	dbTimeLine "go-net/db/time_line"
 	"go-net/model"
 	"go-net/utils"
 
 	"github.com/gin-gonic/gin"
 )
-
-/**
-*
-## 六、时间线 Timeline
-
-| 方法 | 路径 | 返回 (data) |
-|---|---|---|
-| GET | /api/timeline | 数组 `[{id, text_content, is_anonymous, images, videos, created_at}]` |
-| POST | /api/timeline | 任意（body: {text_content, is_anonymous, images}） |
-| GET | /api/timeline/:postId | 单条详情 |
-| DELETE | /api/timeline/:postId | 任意 |
-| POST | /api/timeline/:postId/like | 任意 |
-| DELETE | /api/timeline/:postId/like | 任意 |
-
-| POST | /api/timeline/:postId/comments | 任意 |
-*
-* */
 
 // @Summary 获取时间线列表 (所有可见的)
 // @Tags 时间线
@@ -32,7 +16,7 @@ import (
 // @Failure 500 {object} utils.KResponse "服务器错误"
 // @Router /timeline [get]
 func GetTimeLines(c *gin.Context) *utils.KResponse {
-	return utils.MakeResponse("--")
+	return utils.MakeResponse(dbTimeLine.GetTimeLines(utils.ParsePageQuery(c)))
 }
 
 // @Summary 添加一个时间线 (仅取 Elements 字段)
@@ -45,7 +29,7 @@ func PostTimeLine(c *gin.Context) *utils.KResponse {
 	data := utils.ShouldBindBodyWithJSON[*model.TimeLine](c)
 	data.OwnerID = uint(utils.GetUserID(c))
 
-	return utils.MakeResponse(data)
+	return utils.MakeResponse(dbTimeLine.PostTimeLines(data))
 }
 
 // @Summary 修改一个时间线 (仅取 Elements 字段)
@@ -58,19 +42,20 @@ func PostTimeLine(c *gin.Context) *utils.KResponse {
 func PutTimeLine(c *gin.Context) *utils.KResponse {
 	data := utils.ShouldBindBodyWithJSON[*model.TimeLine](c)
 	data.ID = uint(utils.StringToUserID(c.Param("id")))
-	data.OwnerID = uint(utils.GetUserID(c))
 
-	return utils.MakeResponse(data)
+	return utils.MakeResponse(dbTimeLine.PutTimeLines(data))
 }
 
-// @Summary 删除一条时间线
+// @Summary 设置时间线的状态 只取 status 字段 (status: 0-正常，1-删除,2-被举报中,3-举报成功,4-举报失败)
 // @Tags 时间线
 // @Param id path int true "时间线ID"
+// @Param request body model.TimeLine true "内容主体"
 // @Success 200 {object} utils.KResponse{data=[]model.MomentResponse} "成功"
 // @Failure 500 {object} utils.KResponse "服务器错误"
 // @Router /timeline/:id [delete]
 func DeleteTimeLine(c *gin.Context) *utils.KResponse {
-	id := uint(utils.StringToUserID(c.Param("id")))
+	data := utils.ShouldBindBodyWithJSON[*model.TimeLine](c)
+	data.ID = uint(utils.StringToUInt(c.Param("id")))
 
-	return utils.MakeResponse(id)
+	return utils.MakeResponse(dbTimeLine.DeleteTimeLines(data.ID, data.Status))
 }

@@ -56,7 +56,7 @@ func (m *Moment) TableName() string {
 
 type MomentResponse struct {
 	*Moment
-	*MomentUser
+	*UserPair
 }
 
 // swagger:model MomentPrivacy
@@ -75,18 +75,10 @@ func (m *MomentLike) TableName() string {
 	return "moments_likes"
 }
 
-type MomentUser struct {
-	// 用户中文名称，默认为 ‘’，可后期通过修改用户信息设置
-	Nickname string `gorm:"column:nickname" json:"nickname"`
-
-	// 用户头像、创建时；为空字符串;注意只是保存 文件的hash 地址；而不是 URL 地址
-	Avatar string `gorm:"column:avatar" json:"avatar" example:"''" validate:"required"`
-}
-
 // swagger:model MomentPrivacy
 type MomentLikeResponse struct {
 	*MomentLike
-	*MomentUser
+	*UserPair
 }
 
 type MomentVisible struct {
@@ -131,7 +123,7 @@ func (m *MomentComments) TableName() string {
 // swagger:model MomentCommentsResponse
 type MomentCommentsResponse struct {
 	*MomentComments
-	*MomentUser
+	*UserPair
 }
 
 // swagger:model MomentPrivacy

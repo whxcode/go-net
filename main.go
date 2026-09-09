@@ -21,7 +21,7 @@ GraphQL	c.GetRawData()	解析 query 字段
 import (
 	"go-net/db"
 	httpServer "go-net/http"
-	"go-net/redis"
+	RediusDB "go-net/redis"
 	"go-net/utils"
 )
 
@@ -32,7 +32,7 @@ func main() {
 	}
 
 	db.InitDB()
-	redis.InitRedis()
+	RediusDB.InitRedis()
 
 	httpServer.Start()
 	// view.Test()

@@ -13,11 +13,13 @@ type TimeLine struct {
 	// 点赞数
 	LikeCount int `gorm:"column:like_count;default:0;comment:点赞数" json:"like_count"`
 	// 时间线状态，0-正常，1-删除,2-被举报中,3-举报成功,4-举报失败
-	Status int8 `gorm:"column:status;default:0;comment:时间线状态，0-正常，1-删除,2-被举报中,3-举报成功,4-举报失败" json:"status"`
+	Status uint8 `gorm:"column:status;default:0;comment:时间线状态，0-正常，1-删除,2-被举报中,3-举报成功,4-举报失败" json:"status"`
 	// 创建时间
 	CreatedAt time.Time `gorm:"column:created_at;default:CURRENT_TIMESTAMP;comment:创建时间" json:"created_at"`
 	// 更新时间
 	UpdatedAt time.Time `gorm:"column:updated_at;default:CURRENT_TIMESTAMP;autoUpdateTime;comment:更新时间" json:"updated_at"`
+
+	*UserPair
 }
 
 // TableName 指定表名
@@ -41,6 +43,8 @@ type TimeComment struct {
 	CreatedAt time.Time `gorm:"column:created_at;default:CURRENT_TIMESTAMP;comment:创建时间" json:"created_at"`
 	// 更新时间
 	UpdatedAt time.Time `gorm:"column:updated_at;default:CURRENT_TIMESTAMP;autoUpdateTime;comment:更新时间" json:"updated_at"`
+
+	*UserPair
 }
 
 // TableName 指定表名
@@ -58,6 +62,8 @@ type TimeLike struct {
 	OwnerID uint `gorm:"column:owner_id;not null;comment:点赞者id;index:idx_owner_id;uniqueIndex:uk_time_line_owner" json:"owner_id"`
 	// 创建时间
 	CreatedAt time.Time `gorm:"column:created_at;default:CURRENT_TIMESTAMP;comment:创建时间" json:"created_at"`
+
+	*UserPair
 }
 
 // TableName 指定表名

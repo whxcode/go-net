@@ -15,7 +15,7 @@ import (
 	"go-net/middleware"
 	"go-net/model"
 	"go-net/pool"
-	"go-net/redis"
+	MessageRedis "go-net/redis/message"
 )
 
 func RequestWsHandle(c *gin.Context) middleware.CloseHandle {
@@ -97,7 +97,7 @@ func broadcastFriendMessage(message *model.Message, msg []byte) {
 	if senderConn != nil {
 		senderConn.WriteMessage(websocket.TextMessage, msg)
 	} else {
-		redis.Message.SaveOfflineMessage(message.ReceiverID, msg)
+		//MessageRedis.SaveOfflineMessage(message.ReceiverID, msg)
 	}
 }
 
@@ -113,7 +113,7 @@ func broadcastGroupMessage(message *model.Message, msg []byte) {
 		if senderConn != nil {
 			senderConn.WriteMessage(websocket.TextMessage, msg)
 		} else {
-			redis.Message.SaveOfflineMessage(userID, msg)
+			// redis.Message.SaveOfflineMessage(userID, msg)
 		}
 
 	}
@@ -145,7 +145,7 @@ func IM(c *gin.Context) {
 
 	pool.UserPool.AddUser(uint(userID), conn)
 
-	offlineMsg := redis.Message.GetOfflineMessage(userID)
+	offlineMsg := MessageRedis.GetOfflineMessage(c, userID)
 
 	// 推送离线消息
 	if len(offlineMsg) > 0 {
