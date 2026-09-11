@@ -11,7 +11,7 @@ func Comments(timeID uint) []*model.TimeComment {
 	err := db.DB.Table("time_comments t").
 		Select("t.*,u.nickname,u.avatar").
 		Joins("left join users u on t.owner_id = u.id").
-		Where("t.time_id = ?", timeID).
+		Where("t.time_id = ? and status = ?", timeID, 0).
 		Order("t.created_at desc").
 		Find(&result).Error
 	if err != nil {
@@ -28,8 +28,7 @@ func PostComments(comment *model.TimeComment) *model.TimeComment {
 	}
 
 	err := db.DB.Create(m).Error
-
-	if err == nil {
+	if err != nil {
 		panic(err)
 	}
 
@@ -37,8 +36,23 @@ func PostComments(comment *model.TimeComment) *model.TimeComment {
 }
 
 func PutComment(comment *model.TimeComment) *model.TimeComment {
+	err := db.DB.Table("time_comments").
+		Where("id = ?", comment.ID).
+		Update("elements = ?", comment.Elements).
+		Error
+	if err != nil {
+		panic(err)
+	}
+
 	return nil
 }
 
 func DeleteComment(commentID uint) {
+	err := db.DB.Table("time_comments").
+		Where("id = ?", commentID).
+		Update("status = ?", 1).
+		Error
+	if err != nil {
+		panic(err)
+	}
 }

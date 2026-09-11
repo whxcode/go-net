@@ -5,6 +5,7 @@ import (
 
 	dbTimeLine "go-net/db/time_line"
 	"go-net/model"
+	"go-net/response"
 	"go-net/utils"
 
 	"github.com/gin-gonic/gin"
@@ -26,14 +27,14 @@ func Comments(c *gin.Context) *utils.KResponse {
 // @Tags 时间线/评论
 // @Param id path int true "时间线ID"
 // @Param request body model.TimeComment true "评论体"
-// @Success 200 {object} utils.KResponse{data=model.TimeComment} "成功"
-// @Failure 500 {object} utils.KResponse "服务器错误"
+// @Success 200 {object} response.KResponse{data=model.TimeComment} "成功"
+// @Failure 500 {object} response.KResponse "服务器错误"
 // @Router /timeline/:id/comments [post]
-func PostComment(c *gin.Context) *utils.KResponse {
+func PostComment(c *gin.Context) *response.KResponse {
 	data := utils.ShouldBindBodyWithJSON[*model.TimeComment](c)
 	data.OwnerID = uint(utils.GetUserID(c))
 
-	return utils.MakeResponse(dbTimeLine.PostComments(data))
+	return response.MakeResponseWithUserInfo(dbTimeLine.PostComments(data))
 }
 
 // @Summary 修改一条评论 (只取 Elements 字段)

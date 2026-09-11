@@ -35,7 +35,8 @@ func PostTimeLines(data *model.TimeLine) (result *model.TimeLine) {
 	}
 
 	err := db.DB.
-		Create(t).
+		Raw("INSERT INTO time_lines (owner_id, elements) VALUES (?, ?)", t.OwnerID, t.Elements).
+		Scan(&t).
 		Error
 	if err != nil {
 		panic(err)

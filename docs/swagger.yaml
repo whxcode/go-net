@@ -597,8 +597,71 @@ definitions:
     - FriendStatusAccepted
     - FriendStatusRejected
     - FriendStatusDeleted
+  model.TimeComment:
+    properties:
+      avatar:
+        description: 用户头像、创建时；为空字符串;注意只是保存 文件的hash 地址；而不是 URL 地址
+        example: ''''''
+        type: string
+      created_at:
+        description: 创建时间
+        type: string
+      elements:
+        description: 评论内容
+        items:
+          $ref: '#/definitions/model.Element'
+        type: array
+      id:
+        description: 评论id
+        type: integer
+      nickname:
+        description: 用户中文名称，默认为 ‘’，可后期通过修改用户信息设置
+        type: string
+      owner_id:
+        description: 评论者id
+        type: integer
+      status:
+        description: 评论状态，0-正常，1-删除
+        type: integer
+      time_line_id:
+        description: 时间线id
+        type: integer
+      updated_at:
+        description: 更新时间
+        type: string
+    required:
+    - avatar
+    type: object
+  model.TimeLike:
+    properties:
+      avatar:
+        description: 用户头像、创建时；为空字符串;注意只是保存 文件的hash 地址；而不是 URL 地址
+        example: ''''''
+        type: string
+      created_at:
+        description: 创建时间
+        type: string
+      id:
+        description: 点赞id
+        type: integer
+      nickname:
+        description: 用户中文名称，默认为 ‘’，可后期通过修改用户信息设置
+        type: string
+      owner_id:
+        description: 点赞者id
+        type: integer
+      time_line_id:
+        description: 时间线id
+        type: integer
+    required:
+    - avatar
+    type: object
   model.TimeLine:
     properties:
+      avatar:
+        description: 用户头像、创建时；为空字符串;注意只是保存 文件的hash 地址；而不是 URL 地址
+        example: ''''''
+        type: string
       created_at:
         description: 创建时间
         type: string
@@ -613,6 +676,9 @@ definitions:
       like_count:
         description: 点赞数
         type: integer
+      nickname:
+        description: 用户中文名称，默认为 ‘’，可后期通过修改用户信息设置
+        type: string
       owner_id:
         description: 时间线发布者id
         type: integer
@@ -622,6 +688,8 @@ definitions:
       updated_at:
         description: 更新时间
         type: string
+    required:
+    - avatar
     type: object
   model.User:
     properties:
@@ -676,6 +744,14 @@ definitions:
     - id
     - token
     - username
+    type: object
+  response.KResponse:
+    properties:
+      code:
+        type: integer
+      data: {}
+      message:
+        type: string
     type: object
   utils.KResponse:
     properties:
@@ -1551,6 +1627,12 @@ paths:
         name: id
         required: true
         type: integer
+      - description: 内容主体
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.TimeLine'
       responses:
         "200":
           description: 成功
@@ -1567,7 +1649,7 @@ paths:
           description: 服务器错误
           schema:
             $ref: '#/definitions/utils.KResponse'
-      summary: 删除一条时间线
+      summary: '设置时间线的状态 只取 status 字段 (status: 0-正常，1-删除,2-被举报中,3-举报成功,4-举报失败)'
       tags:
       - 时间线
     put:
@@ -1602,6 +1684,186 @@ paths:
       summary: 修改一个时间线 (仅取 Elements 字段)
       tags:
       - 时间线
+  /timeline/:id/comments:
+    delete:
+      parameters:
+      - description: 评论ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  type: integer
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 删除一条评论 (只取 Elements 字段)
+      tags:
+      - 时间线/评论
+    get:
+      parameters:
+      - description: 时间线ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.TimeComment'
+                  type: array
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 获取该时间线的评论列表
+      tags:
+      - 时间线/评论
+    post:
+      parameters:
+      - description: 时间线ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 评论体
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.TimeComment'
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.KResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.TimeComment'
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/response.KResponse'
+      summary: 给某个时间线添加一条评论 (只取 Elements 字段)
+      tags:
+      - 时间线/评论
+    put:
+      parameters:
+      - description: 评论ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 评论体
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.TimeComment'
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.TimeComment'
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 修改一条评论 (只取 Elements 字段)
+      tags:
+      - 时间线/评论
+  /timeline/:id/likes:
+    delete:
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Moment'
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 取消点赞
+      tags:
+      - 时间线/点赞
+    get:
+      parameters:
+      - description: 时间线ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.TimeLike'
+                  type: array
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 获取该时间线的点赞列表
+      tags:
+      - 时间线/点赞
+    post:
+      parameters:
+      - description: 时间线ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.KResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Moment'
+              type: object
+        "500":
+          description: 服务器错误
+          schema:
+            $ref: '#/definitions/utils.KResponse'
+      summary: 给某个时间线点赞
+      tags:
+      - 时间线/点赞
   /users/:id:
     get:
       parameters:
