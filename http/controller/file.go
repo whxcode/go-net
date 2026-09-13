@@ -6,7 +6,7 @@ import (
 
 	"go-net/config"
 	"go-net/oss"
-	"go-net/utils"
+	"go-net/response"
 
 	"github.com/gin-gonic/gin"
 )
@@ -28,10 +28,10 @@ type UploadResponse struct {
 // @Tags 文件
 // @Accept multipart/form-data
 // @Param files formData []file true "文件列表"
-// @Success 200 {object} utils.KResponse{data=[]UploadResponse} "成功"
-// @Failure 500 {object} utils.KResponse "服务器错误"
+// @Success 200 {object} response.KResponse{data=[]UploadResponse} "成功"
+// @Failure 500 {object} response.KResponse "服务器错误"
 // @Router /file/upload [post]
-func (*fileController) Upload(c *gin.Context) *utils.KResponse {
+func (*fileController) Upload(c *gin.Context) *response.KResponse {
 	form, err := c.MultipartForm()
 	if err != nil {
 		panic(err)
@@ -49,7 +49,7 @@ func (*fileController) Upload(c *gin.Context) *utils.KResponse {
 		})
 	}
 
-	return utils.MakeResponse(result)
+	return response.MakeResponse(result)
 }
 
 type GetFileRequest struct {
@@ -65,10 +65,10 @@ type GetFileResponse struct {
 // @Description 此接口生成的 url 地址；含有时效性；不建议作为长时间显示。
 // @Tags 文件
 // @Param request body GetFileRequest true "文件的hash列表"
-// @Success 200 {object} utils.KResponse{data=[]GetFileResponse} "成功"
-// @Failure 500 {object} utils.KResponse "服务器错误"
+// @Success 200 {object} response.KResponse{data=[]GetFileResponse} "成功"
+// @Failure 500 {object} response.KResponse "服务器错误"
 // @Router /file/getfile [post]
-func (*fileController) GetFile(c *gin.Context) *utils.KResponse {
+func (*fileController) GetFile(c *gin.Context) *response.KResponse {
 	parmas := &GetFileRequest{}
 
 	err := c.ShouldBindJSON(parmas)
@@ -89,7 +89,7 @@ func (*fileController) GetFile(c *gin.Context) *utils.KResponse {
 
 	}
 
-	return utils.MakeResponse(result)
+	return response.MakeResponse(result)
 }
 
 // PreviewFile 根据 hash 直接返回文件
@@ -99,7 +99,7 @@ func (*fileController) GetFile(c *gin.Context) *utils.KResponse {
 // @Produce application/octet-stream
 // @Param hash path string true "哈希地址"
 // @Success 200 {array} byte "文件二进制数据"
-// @Failure 404 {object} utils.KResponse "文件不存在"
+// @Failure 404 {object} response.KResponse "文件不存在"
 // @Router /file/{hash} [get]
 func (*fileController) PreviewFile(c *gin.Context) {
 	hash := c.Param("hash")
@@ -140,7 +140,7 @@ func (*fileController) DownloadMiddleware() gin.HandlerFunc {
 // @Param expred query string true "过期时间"
 // @Param signature query string true "签名"
 // @Success 200 {array} byte "文件二进制数据"
-// @Failure 500 {object} utils.KResponse "服务器错误"
+// @Failure 500 {object} response.KResponse "服务器错误"
 // @Router /file/getfile/:hash [get]
 func (*fileController) DowloadFile(c *gin.Context) {
 	hash := c.Param("hash")

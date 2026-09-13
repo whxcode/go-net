@@ -5,6 +5,7 @@ import (
 
 	dbFriend "go-net/db/friend"
 	"go-net/model"
+	"go-net/response"
 	"go-net/utils"
 
 	"github.com/gin-gonic/gin"
@@ -39,13 +40,13 @@ var FriendController *firendsControll = &firendsControll{}
 
 // @Summary 获取好友列表
 // @Tags 好友模块
-// @Success 200 {object} utils.KResponse{data=[]model.FriendResponse} "成功"
-// @Failure 500 {object} utils.KResponse "服务器错误"
+// @Success 200 {object} response.KResponse{data=[]model.FriendResponse} "成功"
+// @Failure 500 {object} response.KResponse "服务器错误"
 // @Router /friends/friends [get]
-func (*firendsControll) Firends(c *gin.Context) *utils.KResponse {
+func (*firendsControll) Firends(c *gin.Context) *response.KResponse {
 	u := utils.GetUserID(c)
 
-	return utils.MakeResponse(dbFriend.FriendDB.Firends(u))
+	return response.MakeResponse(dbFriend.FriendDB.Firends(u))
 }
 
 type RequestResponse struct {
@@ -61,28 +62,28 @@ type RequestResponse struct {
 // @Description 好友表中已经存在；且 status == 1 或 = 0时；不会有任何变化；返回成功
 // @Tags 好友模块
 // @Param request body RequestResponse true "发起好友申请"
-// @Success 200 {object} utils.KResponse{data=model.Friend} "成功"
-// @Failure 500 {object} utils.KResponse "服务器错误"
+// @Success 200 {object} response.KResponse{data=model.Friend} "成功"
+// @Failure 500 {object} response.KResponse "服务器错误"
 // @Router /friends/request [post]
-func (*firendsControll) Request(c *gin.Context) *utils.KResponse {
+func (*firendsControll) Request(c *gin.Context) *response.KResponse {
 	UserID := utils.GetUserID(c)
 	param := utils.ShouldBindBodyWithJSON[*RequestResponse](c)
 
 	f := dbFriend.FriendDB.Request(UserID, param.FriendID, param.Remark)
 
-	return utils.MakeResponse(f)
+	return response.MakeResponse(f)
 }
 
 // @Summary 获取申请列表
 // @Description user_id = 当前登录的代表主动发起申请(等待别人反馈)；否则；是其他用户(friend_id)向当前用户发起生气 [同意，拒绝]
 // @Tags 好友模块
-// @Success 200 {object} utils.KResponse{data=[]model.FriendResponse} "成功"
-// @Failure 500 {object} utils.KResponse "服务器错误"
+// @Success 200 {object} response.KResponse{data=[]model.FriendResponse} "成功"
+// @Failure 500 {object} response.KResponse "服务器错误"
 // @Router /friends/requests [get]
-func (*firendsControll) Requests(c *gin.Context) *utils.KResponse {
+func (*firendsControll) Requests(c *gin.Context) *response.KResponse {
 	u := utils.GetUserID(c)
 
-	return utils.MakeResponse(dbFriend.FriendDB.Requests(u))
+	return response.MakeResponse(dbFriend.FriendDB.Requests(u))
 }
 
 type PutRequesetRequestResponse struct {
@@ -95,15 +96,15 @@ type PutRequesetRequestResponse struct {
 // @Tags 好友模块
 // @Param id path int true "修改好友申请状态;好友列表（表的 ID）"
 // @Param request body PutRequesetRequestResponse true "修改好友申请状态"
-// @Success 200 {object} utils.KResponse{data=PutRequesetRequestResponse} "成功"
-// @Failure 500 {object} utils.KResponse "服务器错误"
+// @Success 200 {object} response.KResponse{data=PutRequesetRequestResponse} "成功"
+// @Failure 500 {object} response.KResponse "服务器错误"
 // @Router /friends/{id} [put]
-func (*firendsControll) PutRequesetRequest(c *gin.Context) *utils.KResponse {
+func (*firendsControll) PutRequesetRequest(c *gin.Context) *response.KResponse {
 	friendTableID := c.Param("id")
 	req := utils.ShouldBindBodyWithJSON[*PutRequesetRequestResponse](c)
 	id, _ := strconv.ParseUint(friendTableID, 10, 64)
 
 	dbFriend.FriendDB.PutRequestFriendStatus(uint(id), req.Status)
 
-	return utils.MakeResponse(req)
+	return response.MakeResponse(req)
 }

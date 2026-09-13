@@ -6,6 +6,7 @@ import (
 
 	"go-net/model"
 	UserRedis "go-net/redis/user"
+	"go-net/response"
 	"go-net/utils"
 
 	"github.com/gin-gonic/gin"
@@ -20,19 +21,19 @@ func AuthorizationMiddleware() gin.HandlerFunc {
 		}
 
 		if token == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, utils.MakeResponseWidthCode("未登录", http.StatusUnauthorized))
+			c.AbortWithStatusJSON(http.StatusUnauthorized, response.MakeResponseWidthCode("未登录", http.StatusUnauthorized))
 			return
 		}
 
 		userIdStr, err := UserRedis.GetToken(c, token)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, utils.MakeResponseWidthCode("登录已过期", http.StatusUnauthorized))
+			c.AbortWithStatusJSON(http.StatusUnauthorized, response.MakeResponseWidthCode("登录已过期", http.StatusUnauthorized))
 			return
 		}
 
 		userId, err := strconv.ParseUint(userIdStr, 10, 64)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, utils.MakeResponseWidthCode("无效的用户ID", http.StatusUnauthorized))
+			c.AbortWithStatusJSON(http.StatusUnauthorized, response.MakeResponseWidthCode("无效的用户ID", http.StatusUnauthorized))
 			return
 		}
 

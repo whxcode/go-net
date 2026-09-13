@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"go-net/utils"
+	"go-net/response"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,7 +19,7 @@ func ResponseMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		s, ok := data.(*utils.KResponse)
+		s, ok := data.(*response.KResponse)
 
 		if ok {
 			fmt.Println(s) // hello

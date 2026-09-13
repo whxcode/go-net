@@ -26,6 +26,14 @@ type UserPair struct {
 	Avatar string `gorm:"column:avatar" json:"avatar" example:"''" validate:"required"`
 }
 
+func (u *UserPair) SetNickName(v string) {
+	u.Nickname = v
+}
+
+func (u *UserPair) SetAvatar(v string) {
+	u.Avatar = v
+}
+
 type User struct {
 	// 用户 ID;其类型是一个 uint 类型
 	ID UserID `gorm:"primarykey" json:"id" validate:"required" swaggertype:"integer"`

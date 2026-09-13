@@ -5,6 +5,7 @@ import (
 
 	dbMessage "go-net/db/message"
 	"go-net/model"
+	"go-net/response"
 	"go-net/utils"
 
 	"github.com/gin-gonic/gin"
@@ -42,16 +43,16 @@ type GetPrivateMessagesResponse struct {
 // @Tags 消息
 // @Param limit query int false "限制条数" default(20)
 // @Param offset query int false "偏移量" default(0)
-// @Success 200 {object} utils.KResponse{data=GetPrivateMessagesResponse} "成功"
-// @Failure 500 {object} utils.KResponse "服务器错误"
+// @Success 200 {object} response.KResponse{data=GetPrivateMessagesResponse} "成功"
+// @Failure 500 {object} response.KResponse "服务器错误"
 // @Router /messages/friend/:friendID [get]
-func (*messageController) GetFrinedMessages(c *gin.Context) *utils.KResponse {
+func (*messageController) GetFrinedMessages(c *gin.Context) *response.KResponse {
 	userID := utils.GetUserID(c)
 	friendID, limit, offset := parseHistoryQuery(c, "friendID")
 
 	m, t := dbMessage.MessageDB.GetFriendsHistory(userID, friendID, limit, offset)
 
-	return utils.MakeResponse(&GetPrivateMessagesResponse{
+	return response.MakeResponse(&GetPrivateMessagesResponse{
 		Data:  m,
 		Total: t,
 	})
@@ -61,15 +62,15 @@ func (*messageController) GetFrinedMessages(c *gin.Context) *utils.KResponse {
 // @Tags 消息
 // @Param limit query int false "限制条数" default(20)
 // @Param offset query int false "偏移量" default(0)
-// @Success 200 {object} utils.KResponse{data=GetPrivateMessagesResponse} "成功"
-// @Failure 500 {object} utils.KResponse "服务器错误"
+// @Success 200 {object} response.KResponse{data=GetPrivateMessagesResponse} "成功"
+// @Failure 500 {object} response.KResponse "服务器错误"
 // @Router /messages/group/:groupID [get]
-func (*messageController) GetGroupMessages(c *gin.Context) *utils.KResponse {
+func (*messageController) GetGroupMessages(c *gin.Context) *response.KResponse {
 	groupID, limit, offset := parseHistoryQuery(c, "groupID")
 
 	m, t := dbMessage.MessageDB.GetGroupHistory(groupID, limit, offset)
 
-	return utils.MakeResponse(&GetPrivateMessagesResponse{
+	return response.MakeResponse(&GetPrivateMessagesResponse{
 		Data:  m,
 		Total: t,
 	})

@@ -2,33 +2,12 @@ package utils
 
 import (
 	"fmt"
-	"net/http"
 	"strconv"
 
 	"go-net/model"
 
 	"github.com/gin-gonic/gin"
 )
-
-type KResponse struct {
-	Message string `json:"message"`
-	Data    any    `json:"data"`
-	Code    int    `json:"code"`
-}
-
-func MakeResponse[T any](data T) *KResponse {
-	return &KResponse{
-		Data: data,
-		Code: http.StatusOK,
-	}
-}
-
-func MakeResponseWidthCode(data any, code int) *KResponse {
-	return &KResponse{
-		Data: data,
-		Code: code,
-	}
-}
 
 func GetUserID(c *gin.Context) model.UserID {
 	userID, exists := c.Get("userID")
@@ -64,7 +43,7 @@ func ShouldBindBodyWithJSON[T any](c *gin.Context) T {
 	var data T
 
 	if err := c.ShouldBindBodyWithJSON(&data); err != nil {
-		panic(err)
+		panic(fmt.Sprintf("Failed to bind JSON: %v", err))
 	}
 
 	return data

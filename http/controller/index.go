@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"go-net/utils"
+	"go-net/response"
 
 	"github.com/gin-gonic/gin"
 )
@@ -47,7 +47,7 @@ const (
 	KMomentsLikes = "/likes/:id"
 
 	// 朋友圈评论相关
-	KMomentComments = "/comments/:id"
+	KMomentComments = "/:id/comments"
 
 	// 时间线相关
 	KTimeline   = "/"
@@ -57,4 +57,4 @@ const (
 	KTimelineLikes    = "/:id/likes"
 )
 
-type KResponseHandle = func(c *gin.Context) *utils.KResponse
+type KResponseHandle = func(c *gin.Context) *response.KResponse
