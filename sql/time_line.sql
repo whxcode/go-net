@@ -59,6 +59,8 @@ create table time_likes (
   index idx_time_line_id (time_line_id),
   index idx_owner_id (owner_id),
 
+  unique key uk_time_line_id_owner_id (time_line_id,owner_id),
+
   constraint fk_likes_time_line
   foreign key (time_line_id)
   references time_lines(id)

@@ -16,7 +16,7 @@ func Likes(timeID uint) []*model.TimeLike {
 		Joins(`left join users u on
 			t.owner_id = u.id
 		`).
-		Where("time_id = ?", timeID).
+		Where("time_line_id = ?", timeID).
 		Find(&result).
 		Error
 	if err != nil {
@@ -26,27 +26,31 @@ func Likes(timeID uint) []*model.TimeLike {
 	return result
 }
 
-func PostLikes(timeID uint, userID uint) *model.Moment {
-	var m *model.Moment
+func PostLikes(timeID uint, userID uint) *model.TimeLine {
+	var m *model.TimeLine
 
 	err := db.DB.Transaction(func(tx *gorm.DB) error {
-		var result *model.TimeLike = &model.TimeLike{
-			TimeLineID: timeID,
-			OwnerID:    userID,
-		}
-
-		err := tx.
-			Create(result).
+		err := tx.Debug().
+			Exec("insert into time_likes (time_line_id,owner_id) values (?,?)", timeID, userID).
 			Error
 		if err != nil {
 			return err
 		}
 
-		return tx.
-			Table("time_likes").
+		err = tx.
+			Debug().
+			Table("time_lines").
+			Where("id = ?", timeID).
 			Update("like_count", gorm.Expr("like_count + ?", 1)).
-			Find(&m).
 			Error
+		if err != nil {
+			return err
+		}
+
+		return tx.Debug().
+			Table("time_lines").
+			Where("id = ?", timeID).
+			First(&m).Error
 	})
 	if err != nil {
 		panic(err)
@@ -55,22 +59,26 @@ func PostLikes(timeID uint, userID uint) *model.Moment {
 	return m
 }
 
-func DeleteLikes(timeID uint, userID uint) *model.Moment {
-	var m *model.Moment
+func DeleteLikes(timeID uint, userID uint) *model.TimeLine {
+	var m *model.TimeLine
 
 	err := db.DB.Transaction(func(tx *gorm.DB) error {
-		err := tx.Raw(`delete from time_likes where id = ? and owner_id`, timeID, userID).
-			Scan(nil).
+		err := tx.Exec(`delete from time_likes where id = ? and owner_id = ?`, timeID, userID).
+			Error
+		if err != nil {
+			panic(err)
+		}
+		err = tx.Model(&model.TimeLine{}).
+			Where("id = ?", timeID).
+			Update("like_count", gorm.Expr("like_count - ?", 1)).
 			Error
 		if err != nil {
 			panic(err)
 		}
 
-		return tx.Model(&model.Moment{}).
+		return tx.Debug().
 			Where("id = ?", timeID).
-			Update("like_count", gorm.Expr("like_count - ?", 1)).
-			Find(&m).
-			Error
+			First(&m).Error
 	})
 	if err != nil {
 		panic(err)

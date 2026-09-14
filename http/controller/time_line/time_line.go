@@ -13,7 +13,7 @@ import (
 // @Tags 时间线
 // @Param limit query int false "限制条数" default(20)
 // @Param offset query int false "偏移量" default(0)
-// @Success 200 {object} response.KResponse{data=[]model.MomentResponse} "成功"
+// @Success 200 {object} response.KResponse{data=[]model.TimeLine} "成功"
 // @Failure 500 {object} response.KResponse "服务器错误"
 // @Router /timeline [get]
 func GetTimeLines(c *gin.Context) *response.KResponse {
@@ -23,7 +23,7 @@ func GetTimeLines(c *gin.Context) *response.KResponse {
 // @Summary 添加一个时间线 (仅取 Elements 字段)
 // @Tags 时间线
 // @Param request body model.TimeLine true "内容主体"
-// @Success 200 {object} response.KResponse{data=[]model.MomentResponse} "成功"
+// @Success 200 {object} response.KResponse{data=model.TimeLine} "成功"
 // @Failure 500 {object} response.KResponse "服务器错误"
 // @Router /timeline [post]
 func PostTimeLine(c *gin.Context) *response.KResponse {
@@ -37,7 +37,7 @@ func PostTimeLine(c *gin.Context) *response.KResponse {
 // @Tags 时间线
 // @Param id path int true "时间线ID"
 // @Param request body model.TimeLine true "内容主体"
-// @Success 200 {object} response.KResponse{data=[]model.MomentResponse} "成功"
+// @Success 200 {object} response.KResponse{data=model.TimeLine} "成功"
 // @Failure 500 {object} response.KResponse "服务器错误"
 // @Router /timeline/:id [put]
 func PutTimeLine(c *gin.Context) *response.KResponse {
@@ -51,7 +51,7 @@ func PutTimeLine(c *gin.Context) *response.KResponse {
 // @Tags 时间线
 // @Param id path int true "时间线ID"
 // @Param request body model.TimeLine true "内容主体"
-// @Success 200 {object} response.KResponse{data=[]model.MomentResponse} "成功"
+// @Success 200 {object} response.KResponse{data=model.TimeLine} "成功"
 // @Failure 500 {object} response.KResponse "服务器错误"
 // @Router /timeline/:id [delete]
 func DeleteTimeLine(c *gin.Context) *response.KResponse {

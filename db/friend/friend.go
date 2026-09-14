@@ -69,23 +69,6 @@ func (*friendDB) Request(userId, friendId model.UserID, remark string) *model.Fr
 		Status:   model.FriendStatusPending,
 		Remark:   remark,
 	}
-	/*
-		// First
-		err := DB.First(&user, id).Error
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-		    // 查不到
-		} else if err != nil {
-		    // 报错
-		}
-
-		// Find
-		err := DB.Find(&users).Error
-		if err != nil {
-		    // 报错
-		} else if len(users) == 0 {
-		    // 查不到
-		}
-	*/
 
 	var existingFriend *model.Friend
 

@@ -72,7 +72,7 @@ and y.hide_their = 1
 
 -- select * from friend_ids;
 
-select m.id,m.owner_id, 
+select m.*,
 u.nickname,
 u.avatar
 from moments m

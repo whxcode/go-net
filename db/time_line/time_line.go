@@ -28,19 +28,13 @@ func GetTimeLines(limit, offset int) (result []*model.TimeLine) {
 	return
 }
 
-func PostTimeLines(data *model.TimeLine) (result *model.TimeLine) {
+func PostTimeLines(data *model.TimeLine) *model.TimeLine {
 	t := &model.TimeLine{
 		OwnerID:  data.OwnerID,
 		Elements: data.Elements,
 	}
 
-	err := db.DB.
-		Raw("INSERT INTO time_lines (owner_id, elements) VALUES (?, ?)", t.OwnerID, t.Elements).
-		Scan(&t).
-		Error
-	if err != nil {
-		panic(err)
-	}
+	db.DB.Create(t)
 
 	return t
 }
@@ -52,8 +46,8 @@ func PutTimeLines(data *model.TimeLine) (result *model.TimeLine) {
 	}
 
 	err := db.DB.Table("time_lines").
-		Update("elements", data.Elements).
 		Where("id = ?", data.ID).
+		Update("elements", data.Elements).
 		Error
 	if err != nil {
 		panic(err)
@@ -63,16 +57,11 @@ func PutTimeLines(data *model.TimeLine) (result *model.TimeLine) {
 }
 
 func DeleteTimeLines(id uint, status uint8) (result *model.TimeLine) {
-	t := &model.TimeLine{}
-
-	err := db.DB.Table("time_lines").
-		Update("status", status).
+	db.DB.Table("time_lines").
 		Where("id = ?", id).
-		Find(t).
-		Error
-	if err != nil {
-		panic(err)
-	}
+		Update("status", status)
 
-	return t
+	db.DB.Raw("select * from time_lines where id = ?", id).Scan(&result)
+
+	return
 }

@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 
 	"go-net/model"
@@ -43,7 +44,8 @@ func ShouldBindBodyWithJSON[T any](c *gin.Context) T {
 	var data T
 
 	if err := c.ShouldBindBodyWithJSON(&data); err != nil {
-		panic(fmt.Sprintf("Failed to bind JSON: %v", err))
+		expectedTypeName := reflect.TypeOf((*T)(nil)).Elem().String()
+		panic(fmt.Sprintf("Parmas Error exceept [%v];Actual [%v]", expectedTypeName, err))
 	}
 
 	return data

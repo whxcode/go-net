@@ -39,7 +39,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -58,7 +58,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -110,7 +110,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -144,7 +144,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -163,7 +163,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -202,7 +202,7 @@ const docTemplate = `{
                     "404": {
                         "description": "文件不存在",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -220,7 +220,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -239,7 +239,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -269,7 +269,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -285,7 +285,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -304,7 +304,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -323,7 +323,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -360,7 +360,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -376,7 +376,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -394,7 +394,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -413,7 +413,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -449,7 +449,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -465,7 +465,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -502,7 +502,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -518,7 +518,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -545,7 +545,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -561,7 +561,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -595,7 +595,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -611,7 +611,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -645,7 +645,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -661,7 +661,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -695,7 +695,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -711,7 +711,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -745,7 +745,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -764,7 +764,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -791,7 +791,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -807,7 +807,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -834,7 +834,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -850,7 +850,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -877,7 +877,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -896,7 +896,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -930,7 +930,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -946,7 +946,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -980,7 +980,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -996,7 +996,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -1022,7 +1022,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -1038,7 +1038,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -1065,7 +1065,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -1084,7 +1084,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -1109,7 +1109,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -1125,7 +1125,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -1150,7 +1150,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -1166,7 +1166,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -1193,7 +1193,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -1209,7 +1209,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -1243,7 +1243,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -1259,7 +1259,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -1300,7 +1300,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -1319,7 +1319,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -1353,7 +1353,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -1361,7 +1361,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/model.MomentResponse"
+                                                "$ref": "#/definitions/model.TimeLine"
                                             }
                                         }
                                     }
@@ -1372,7 +1372,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -1399,16 +1399,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/model.MomentResponse"
-                                            }
+                                            "$ref": "#/definitions/model.TimeLine"
                                         }
                                     }
                                 }
@@ -1418,7 +1415,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -1454,16 +1451,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/model.MomentResponse"
-                                            }
+                                            "$ref": "#/definitions/model.TimeLine"
                                         }
                                     }
                                 }
@@ -1473,7 +1467,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -1507,16 +1501,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/model.MomentResponse"
-                                            }
+                                            "$ref": "#/definitions/model.TimeLine"
                                         }
                                     }
                                 }
@@ -1526,7 +1517,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -1553,7 +1544,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -1572,7 +1563,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -1606,7 +1597,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -1622,7 +1613,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -1697,7 +1688,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -1713,7 +1704,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -1740,7 +1731,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -1759,7 +1750,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -1784,13 +1775,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/model.Moment"
+                                            "$ref": "#/definitions/model.TimeLine"
                                         }
                                     }
                                 }
@@ -1800,7 +1791,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -1816,13 +1807,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/model.Moment"
+                                            "$ref": "#/definitions/model.TimeLine"
                                         }
                                     }
                                 }
@@ -1832,7 +1823,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -1859,7 +1850,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -1875,7 +1866,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -1904,7 +1895,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -1920,7 +1911,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -1938,7 +1929,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -1954,7 +1945,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -1983,7 +1974,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -2002,7 +1993,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -2020,7 +2011,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -2036,7 +2027,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -2065,7 +2056,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -2081,7 +2072,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -2111,7 +2102,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -2127,7 +2118,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -2156,7 +2147,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -2175,7 +2166,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -2202,7 +2193,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/utils.KResponse"
+                                    "$ref": "#/definitions/response.KResponse"
                                 },
                                 {
                                     "type": "object",
@@ -2221,7 +2212,7 @@ const docTemplate = `{
                     "500": {
                         "description": "服务器错误",
                         "schema": {
-                            "$ref": "#/definitions/utils.KResponse"
+                            "$ref": "#/definitions/response.KResponse"
                         }
                     }
                 }
@@ -3267,18 +3258,6 @@ const docTemplate = `{
             }
         },
         "response.KResponse": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "integer"
-                },
-                "data": {},
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "utils.KResponse": {
             "type": "object",
             "properties": {
                 "code": {

@@ -23,7 +23,7 @@ func Likes(c *gin.Context) *response.KResponse {
 // @Summary 给某个时间线点赞
 // @Tags 时间线/点赞
 // @Param id path int true "时间线ID"
-// @Success 200 {object} response.KResponse{data=model.Moment} "成功"
+// @Success 200 {object} response.KResponse{data=model.TimeLine} "成功"
 // @Failure 500 {object} response.KResponse "服务器错误"
 // @Router /timeline/:id/likes [post]
 func PostLike(c *gin.Context) *response.KResponse {
@@ -36,7 +36,7 @@ func PostLike(c *gin.Context) *response.KResponse {
 // @Summary 取消点赞
 // @Tags 时间线/点赞
 // @Parma id path int true "点赞 ID"
-// @Success 200 {object} response.KResponse{data=model.Moment} "成功"
+// @Success 200 {object} response.KResponse{data=model.TimeLine} "成功"
 // @Failure 500 {object} response.KResponse "服务器错误"
 // @Router /timeline/:id/likes [delete]
 func DeleteLike(c *gin.Context) *response.KResponse {

@@ -15,8 +15,8 @@ func (m *privacyDB) MomentPrivacyTargetID(userID model.UserID, targetID model.Us
 	var reuslt *model.MomentPrivacy
 	res := db.DB.Debug().Where("user_id = ? AND target_id = ?", userID, targetID).First(&reuslt)
 
-	if res.Error != nil {
-		panic(res.Error)
+	if res.Error == gorm.ErrRecordNotFound {
+		return nil
 	}
 
 	return reuslt
@@ -24,10 +24,9 @@ func (m *privacyDB) MomentPrivacyTargetID(userID model.UserID, targetID model.Us
 
 func (m *privacyDB) SetMomentPrivacy(privacy *model.MomentPrivacy) *model.MomentPrivacy {
 	var result *model.MomentPrivacy = &model.MomentPrivacy{}
-	var res *gorm.DB
 
 	if privacy.ID != 0 {
-		res = db.DB.Model(&model.MomentPrivacy{}).
+		db.DB.Model(&model.MomentPrivacy{}).
 			Where("id = ?", privacy.ID).
 			Updates(map[string]interface{}{
 				"hide_their": privacy.HideTheir,
@@ -40,11 +39,7 @@ func (m *privacyDB) SetMomentPrivacy(privacy *model.MomentPrivacy) *model.Moment
 		result.HideTheir = privacy.HideTheir
 		result.HideMine = privacy.HideMine
 
-		res = db.DB.Debug().Create(&result)
-	}
-
-	if res.Error != nil {
-		panic(res.Error)
+		db.DB.Debug().Create(&result)
 	}
 
 	return result
