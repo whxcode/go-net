@@ -12,23 +12,43 @@ type IUserPair interface {
 	SetAvatar(avatar string)
 }
 
+type IResponse interface {
+	SetMessage(message string)
+	GetData() any
+	GetCode() int
+}
+
 type KResponse struct {
 	Message string `json:"message"`
 	Data    any    `json:"data"`
 	Code    int    `json:"code"`
 }
 
+func (r *KResponse) SetMessage(message string) {
+	r.Message = message
+}
+
+func (r *KResponse) GetData() any {
+	return r.Data
+}
+
+func (r *KResponse) GetCode() int {
+	return r.Code
+}
+
 func MakeResponse[T any](data T) *KResponse {
 	return &KResponse{
-		Data: data,
-		Code: http.StatusOK,
+		Data:    data,
+		Code:    http.StatusOK,
+		Message: http.StatusText(http.StatusOK),
 	}
 }
 
 func MakeResponseWidthCode(data any, code int) *KResponse {
 	return &KResponse{
-		Data: data,
-		Code: code,
+		Data:    data,
+		Code:    code,
+		Message: http.StatusText(code),
 	}
 }
 

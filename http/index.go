@@ -1,12 +1,7 @@
 package httpServer
 
 import (
-	"errors"
-	"fmt"
 	"log"
-	"net/http"
-	"runtime"
-	"strings"
 
 	"go-net/config"
 	"go-net/http/controller"
@@ -14,12 +9,10 @@ import (
 	"go-net/logs"
 	"go-net/middleware"
 	"go-net/oss"
-	RediusDB "go-net/redis"
 	"go-net/wss"
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"gorm.io/gorm"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -46,123 +39,28 @@ func Start() {
 
 	// Swagger 路由
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
-	// 获取所有redis key:value 及json格式化的形式返回给前端调式
-	// 获取所有 Redis key:value，JSON 格式返回
-	r.GET("/redis", func(c *gin.Context) {
-		// 1. 获取所有 key
-		keys, err := RediusDB.RedisClient.Keys(c, "*").Result()
-		if err != nil {
-			c.JSON(500, gin.H{"error": err.Error()})
-			return
-		}
-
-		// 2. 遍历获取每个 key 的值
-		result := make(map[string]interface{})
-		for _, key := range keys {
-			// 获取值（字符串类型）
-			val, err := RediusDB.RedisClient.Get(c, key).Result()
-			if err != nil {
-				// 如果 key 不存在或类型不对，跳过
-				continue
-			}
-			result[key] = val
-		}
-
-		// 3. 返回 JSON
-		c.JSON(200, gin.H{
-			"total": len(result),
-			"data":  result,
-		})
-	})
+	r.GET("/redis", controller.GetRedis)
 
 	api := r.Group("/api")
 	api.Use(logs.LoggerMiddleware()) // 自定义日志中间件
-	// ✅ 自定义 Recovery 中间件
-	api.Use(func(c *gin.Context) {
-		defer func() {
-			if r := recover(); r != nil {
-				var errMsg string
-				var funcName string
-				var file string
-				var line int
 
-				// 遍历调用栈，找到第一个非 runtime/gin 的帧
-				pcs := make([]uintptr, 20)
-				n := runtime.Callers(2, pcs)
-				frames := runtime.CallersFrames(pcs[:n])
-
-				for {
-					frame, more := frames.Next()
-
-					// 跳过 runtime 和 gin 框架
-					if strings.Contains(frame.File, "runtime/") ||
-						strings.Contains(frame.File, "gin@") ||
-						strings.Contains(frame.File, "net/http") {
-						if !more {
-							break
-						}
-						continue
-					}
-
-					// 找到你自己的代码
-					funcName = frame.Function
-					file = frame.File
-					line = frame.Line
-
-					// 只保留文件名
-					for i := len(file) - 1; i >= 0; i-- {
-						if file[i] == '/' {
-							file = file[i+1:]
-							break
-						}
-					}
-					break
-				}
-
-				switch v := r.(type) {
-				case error:
-					if errors.Is(v, gorm.ErrRecordNotFound) {
-						c.AbortWithStatusJSON(http.StatusOK, gin.H{
-							"code":    http.StatusNotFound,
-							"message": http.StatusText(http.StatusNotFound),
-						})
-						return
-					}
-					errMsg = v.Error()
-				case string:
-					errMsg = v
-				default:
-					errMsg = fmt.Sprintf("%v", v)
-				}
-
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-					"code":    http.StatusInternalServerError,
-					"message": fmt.Sprintf("[%s:%d] %s", file, line, errMsg),
-					"func":    funcName,
-				})
-			}
-		}()
-
-		c.Next()
-	})
-	// 使用默认CORS中间件，允许所有跨域请求
+	api.Use(middleware.RecoverMiddleware())
 	api.Use(cors.Default())
+	api.Use(middleware.ResponseMiddleware())
 
-	api.Use(middleware.ResponseMiddleware()) // 使用自定义响应中间件
+	{
 
-	// r.Static("/asset", "/home/whx/study/go-net/im/pages/asset/")
+		// 文件上传和下载路由
+		fileRouter := api.Group("/file")
 
-	// 文件上传和下载路由
-	fileRouter := api.Group("/file")
+		fileRouter.POST(controller.KUpload, execute(controller.FileController.Upload))
+		fileRouter.POST(controller.KGetfile, execute(controller.FileController.GetFile))
+		fileRouter.GET(controller.KPreviewFile, controller.FileController.PreviewFile)
 
-	fileRouter.POST(controller.KUpload, execute(controller.FileController.Upload))
-	fileRouter.POST(controller.KGetfile, execute(controller.FileController.GetFile))
-	fileRouter.GET(controller.KPreviewFile, controller.FileController.PreviewFile)
-
-	fileDowloadRouter := api.Group("/file")
-	fileDowloadRouter.Use(controller.FileController.DownloadMiddleware()) // 使用自定义响应中间件
-	fileDowloadRouter.GET(controller.KGetfileHash, controller.FileController.DowloadFile)
+		fileDowloadRouter := api.Group("/file")
+		fileDowloadRouter.Use(controller.FileController.DownloadMiddleware()) // 使用自定义响应中间件
+		fileDowloadRouter.GET(controller.KGetfileHash, controller.FileController.DowloadFile)
+	}
 
 	{
 
@@ -260,10 +158,7 @@ func Start() {
 
 	{
 		wssRouter := api.Group("/ws")
-		// wssRouter.Use(middleware.AuthorizationMiddleware())
-		// wssRouter.Use(middleware.BeatMiddleware())
-		//wssRouter.GET("/im", middleware.BeatExecute(wss.RequestWsHandle, wss.ChannelHandle)) // WebSocket路由
-		wssRouter.GET("/im", wss.IM) // WebSocket路由
+		wssRouter.GET("/im", wss.IM)
 	}
 
 	// Start server on port 8080 (default)

@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 
 	"go-net/response"
@@ -19,17 +18,7 @@ func ResponseMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		s, ok := data.(*response.KResponse)
-
-		if ok {
-			fmt.Println(s) // hello
-		}
-
-		s.Message = "success"
-
-		if s.Code != http.StatusOK {
-			s.Message = "failed"
-		}
+		s, _ := data.(response.IResponse)
 
 		// 统一格式化
 		c.JSON(http.StatusOK, s)
