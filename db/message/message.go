@@ -1,22 +1,60 @@
 package dbMessage
 
 import (
+	"fmt"
+	"sync"
+	"time"
+
 	"go-net/db"
 	"go-net/model"
 )
 
-type messageDB struct{}
+type messageDB struct {
+	mutex sync.RWMutex
+	msgs  []*model.Message
+}
 
-var MessageDB = &messageDB{}
+var MessageDB *messageDB
 
-// 保存单条
-func (*messageDB) Save(msg *model.Message) error {
-	err := db.DB.Create(msg).Error
-	if err != nil {
-		panic(err)
+func init() {
+	MessageDB = &messageDB{
+		msgs: make([]*model.Message, 0),
 	}
 
-	return nil
+	go func() {
+		ticker := time.NewTicker(30 * time.Minute)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				{
+					if len(MessageDB.msgs) == 0 {
+						continue
+					}
+					MessageDB.mutex.RLock()
+					db.DB.Create(MessageDB.msgs)
+					MessageDB.msgs = make([]*model.Message, 0)
+					MessageDB.mutex.RUnlock()
+					fmt.Printf("---------------------将数据写入数据库--------------")
+
+				}
+			}
+		}
+	}()
+}
+
+// 保存单条
+func (m *messageDB) Save(msg *model.Message) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	m.msgs = append(m.msgs, msg)
+
+	if len(m.msgs) > 1000 {
+		db.DB.Create(m.msgs)
+		m.msgs = make([]*model.Message, 0)
+	}
 }
 
 // 批量保存
