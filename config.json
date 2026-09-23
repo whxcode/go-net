@@ -1,11 +1,19 @@
 {
   "server": {
     "port": ":8080",
-    "templatePath": "./pages/*.html",
     "fileOss": "./fileStoragePath"
   },
   "log": {
     "pathDir": "./log",
     "level": 3
+  },
+  "database": {
+    "host": "mysql:3306",
+    "user": "root",
+    "password": "123456",
+    "name": "go-net"
+  },
+  "redis": {
+    "addr": "redis:6379"
   }
 }

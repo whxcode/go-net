@@ -3,6 +3,8 @@ package RediusDB
 import (
 	"context"
 
+	"go-net/config"
+
 	"github.com/redis/go-redis/v9"
 )
 
@@ -13,7 +15,7 @@ var (
 
 func InitRedis() {
 	RedisClient = redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
+		Addr: config.ConfigData.Redis.Addr,
 	})
 
 	if err := RedisClient.Ping(_Ctx).Err(); err != nil {

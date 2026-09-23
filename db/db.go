@@ -3,6 +3,8 @@ package db
 import (
 	"fmt"
 
+	"go-net/config"
+
 	"gorm.io/gorm"
 
 	"gorm.io/driver/mysql"
@@ -53,7 +55,14 @@ var DB *gorm.DB
 
 func InitDB() {
 	// ✅ 正确（用 @tcp）
-	dsn := "root:123456@tcp(127.0.0.1:3306)/go-net?charset=utf8mb4&parseTime=True&loc=Local"
+	// dsn := "root:123456@tcp(127.0.0.1:3306)/go-net?charset=utf8mb4&parseTime=True&loc=Local"
+	database := config.ConfigData.Database
+	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", database.User, database.Password,
+		database.Host,
+		database.Name,
+	)
+
+	fmt.Println("dns:::", dsn)
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {

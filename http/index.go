@@ -35,7 +35,6 @@ func Start() {
 	oss.Init()
 
 	r := gin.New()
-	r.LoadHTMLGlob(config.ConfigData.Server.TemplatePath)
 
 	// Swagger 路由
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

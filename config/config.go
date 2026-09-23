@@ -17,21 +17,30 @@ const (
 
 type Config struct {
 	Server struct {
-		Port         string `json:"port"`         // 端口
-		TemplatePath string `json:"templatePath"` // 前端模版路径
-		FileOss      string `json:"fileOss"`      // 文件oss路径
+		Port    string `json:"port"`    // 端口
+		FileOss string `json:"fileOss"` // 文件oss路径
 	} `json:"server"`
 
 	Log struct {
 		PathDir string `json:"pathDir"` // 日志目录
 		Level   Level  `json:"level"`   // 日志级别
 	} `json:"log"`
+
+	Database struct {
+		Host     string `json:"host"`
+		User     string `json:"user"`
+		Password string `json:"password"`
+		Name     string `json:"name"`
+	} `json:"database"`
+
+	Redis struct {
+		Addr string `json:"addr"`
+	} `json:"redis"`
 }
 
 func (c *Config) Dump() {
 	fmt.Println("============ config ==================")
 	fmt.Printf("Server Port: %s\n", c.Server.Port)
-	fmt.Printf("Server Template Path: %s\n", c.Server.TemplatePath)
 	fmt.Printf("Server FileOss Path: %s\n", c.Server.FileOss)
 
 	fmt.Printf("Log PathDir: %s\n", c.Log.PathDir)
