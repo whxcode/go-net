@@ -15,21 +15,140 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/file/getfile": {
-            "post": {
-                "description": "此接口生成的 url 地址；含有时效性；不建议作为长时间显示。",
+        "/file/download/{hash}": {
+            "get": {
+                "description": "需要 SignURLs 接口生成的 expred + signature，缺一不可；校验失败返回 400/403，body 是 {\"error\":\"...\"}。",
+                "produces": [
+                    "application/octet-stream"
+                ],
                 "tags": [
                     "文件"
                 ],
-                "summary": "根据 hash 获取文件的 url 地址",
+                "summary": "通过临时签名地址下载文件",
                 "parameters": [
                     {
-                        "description": "文件的hash列表",
+                        "type": "string",
+                        "description": "文件 hash",
+                        "name": "hash",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "过期时间（unix 秒）",
+                        "name": "expred",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "签名",
+                        "name": "signature",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "文件二进制数据",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "404": {
+                        "description": "文件不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.KResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/file/preview/{hash}": {
+            "get": {
+                "description": "注意该接口没有做任何权限验证；慎用；只给站内展示用，需要对外分享请走 SignURLs 换临时地址。",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "文件"
+                ],
+                "summary": "预览文件（按 hash 直出）",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "文件 hash",
+                        "name": "hash",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "文件二进制数据",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "404": {
+                        "description": "文件不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.KResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/file/preview/{hash}/meta": {
+            "get": {
+                "description": "返回 filename/size/hash 三个字段；无鉴权，主要给开发排查用；前端展示不需要调它。",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "文件"
+                ],
+                "summary": "预览文件元信息（JSON）",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "文件 hash",
+                        "name": "hash",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "文件元信息",
+                        "schema": {
+                            "$ref": "#/definitions/oss.FileMeta"
+                        }
+                    },
+                    "404": {
+                        "description": "元信息不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.KResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/file/signurls": {
+            "post": {
+                "description": "返回的 url 含时效性（默认 1 小时），过期或签名不符会返回 403；不建议作为长期显示地址。",
+                "tags": [
+                    "文件"
+                ],
+                "summary": "批量获取文件的临时下载地址",
+                "parameters": [
+                    {
+                        "description": "文件的 hash 列表",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controller.GetFileRequest"
+                            "$ref": "#/definitions/controller.SignURLsRequest"
                         }
                     }
                 ],
@@ -47,64 +166,12 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/controller.GetFileResponse"
+                                                "$ref": "#/definitions/controller.SignURLsResponse"
                                             }
                                         }
                                     }
                                 }
                             ]
-                        }
-                    },
-                    "500": {
-                        "description": "服务器错误",
-                        "schema": {
-                            "$ref": "#/definitions/response.KResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/file/getfile/:hash": {
-            "get": {
-                "produces": [
-                    "application/octet-stream"
-                ],
-                "tags": [
-                    "文件"
-                ],
-                "summary": "根据 url 地址；下载文件;",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "哈希地址",
-                        "name": "hash",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "过期时间",
-                        "name": "expred",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "签名",
-                        "name": "signature",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "文件二进制数据",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "integer",
-                                "format": "int32"
-                            }
                         }
                     },
                     "500": {
@@ -124,7 +191,7 @@ const docTemplate = `{
                 "tags": [
                     "文件"
                 ],
-                "summary": "保存用户上传的文件",
+                "summary": "上传文件（可多选）",
                 "parameters": [
                     {
                         "type": "array",
@@ -140,7 +207,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "成功",
+                        "description": "成功，data 是文件 hash 列表",
                         "schema": {
                             "allOf": [
                                 {
@@ -152,7 +219,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/controller.UploadResponse"
+                                                "type": "string"
                                             }
                                         }
                                     }
@@ -162,45 +229,6 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "服务器错误",
-                        "schema": {
-                            "$ref": "#/definitions/response.KResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/file/{hash}": {
-            "get": {
-                "description": "注意该接口没有做任何权限验证；慎用；请使用 GetFile 接口获取带有时效性的 url 地址。",
-                "produces": [
-                    "application/octet-stream"
-                ],
-                "tags": [
-                    "文件"
-                ],
-                "summary": "根据 hash 直接返回文件",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "哈希地址",
-                        "name": "hash",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "文件二进制数据",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "integer",
-                                "format": "int32"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "文件不存在",
                         "schema": {
                             "$ref": "#/definitions/response.KResponse"
                         }
@@ -2220,28 +2248,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "controller.GetFileRequest": {
-            "type": "object",
-            "properties": {
-                "files": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "controller.GetFileResponse": {
-            "type": "object",
-            "properties": {
-                "hash": {
-                    "type": "string"
-                },
-                "url": {
-                    "type": "string"
-                }
-            }
-        },
         "controller.GetPrivateMessagesResponse": {
             "type": "object",
             "properties": {
@@ -2307,20 +2313,25 @@ const docTemplate = `{
                 }
             }
         },
-        "controller.UploadResponse": {
+        "controller.SignURLsRequest": {
             "type": "object",
             "properties": {
-                "filename": {
-                    "description": "文件名称",
-                    "type": "string"
-                },
+                "files": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "controller.SignURLsResponse": {
+            "type": "object",
+            "properties": {
                 "hash": {
-                    "description": "文件 hash 地址",
                     "type": "string"
                 },
-                "size": {
-                    "description": "文件大小 字节",
-                    "type": "integer"
+                "url": {
+                    "type": "string"
                 }
             }
         },
@@ -3205,7 +3216,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "nickname": {
-                    "description": "用户中文名称，默认为 ‘’，可后期通过修改用户信息设置",
+                    "description": "用户头像、创建时；为空字符串;注意只是保存 文件的hash 地址；而不是 URL 地址\n用户中文名称，默认为 ‘’，可后期通过修改用户信息设置",
                     "type": "string"
                 },
                 "updateAt": {
@@ -3240,7 +3251,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "nickname": {
-                    "description": "用户中文名称，默认为 ‘’，可后期通过修改用户信息设置",
+                    "description": "用户头像、创建时；为空字符串;注意只是保存 文件的hash 地址；而不是 URL 地址\n用户中文名称，默认为 ‘’，可后期通过修改用户信息设置",
                     "type": "string"
                 },
                 "token": {
@@ -3254,6 +3265,20 @@ const docTemplate = `{
                     "description": "用户账户；创建时使用；后期不可修改。",
                     "type": "string",
                     "example": "whx"
+                }
+            }
+        },
+        "oss.FileMeta": {
+            "type": "object",
+            "properties": {
+                "filename": {
+                    "type": "string"
+                },
+                "hash": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
                 }
             }
         },

@@ -34,7 +34,7 @@ func MakeOssStorageFilePath(hash string) (dir string, filepath string) {
 	dir = fmt.Sprintf("%s/%s", config.ConfigData.Server.FileOss, hash[:2])
 	filepath = fmt.Sprintf("%s/%s", dir, hash)
 
-	return
+	return dir, filepath
 }
 
 /**
@@ -45,7 +45,7 @@ func MakeOssStorageMetaFilePath(hash string) (dir string, filepath string) {
 	dir = fmt.Sprintf("%s/%s", config.ConfigData.Server.FileOss, hash[:2])
 	filepath = fmt.Sprintf("%s/%smeta.json", dir, hash)
 
-	return
+	return dir, filepath
 }
 
 func IsHashExits(hash string) bool {
@@ -62,6 +62,16 @@ func IsHashExits(hash string) bool {
 * */
 func createFile(hash string) (*os.File, error) {
 	dir, filepath := MakeOssStorageFilePath(hash)
+
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		panic(err)
+	}
+
+	return os.Create(filepath)
+}
+
+func CreateMetaFile(hash string) (*os.File, error) {
+	dir, filepath := MakeOssStorageMetaFilePath(hash)
 
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		panic(err)

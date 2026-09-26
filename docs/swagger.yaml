@@ -1,19 +1,5 @@
 basePath: /api
 definitions:
-  controller.GetFileRequest:
-    properties:
-      files:
-        items:
-          type: string
-        type: array
-    type: object
-  controller.GetFileResponse:
-    properties:
-      hash:
-        type: string
-      url:
-        type: string
-    type: object
   controller.GetPrivateMessagesResponse:
     properties:
       data:
@@ -58,17 +44,19 @@ definitions:
           type: integer
         type: array
     type: object
-  controller.UploadResponse:
+  controller.SignURLsRequest:
     properties:
-      filename:
-        description: 文件名称
-        type: string
+      files:
+        items:
+          type: string
+        type: array
+    type: object
+  controller.SignURLsResponse:
+    properties:
       hash:
-        description: 文件 hash 地址
         type: string
-      size:
-        description: 文件大小 字节
-        type: integer
+      url:
+        type: string
     type: object
   controller.UserPutAvatarRequest:
     properties:
@@ -703,7 +691,9 @@ definitions:
         description: 用户 ID;其类型是一个 uint 类型
         type: integer
       nickname:
-        description: 用户中文名称，默认为 ‘’，可后期通过修改用户信息设置
+        description: |-
+          用户头像、创建时；为空字符串;注意只是保存 文件的hash 地址；而不是 URL 地址
+          用户中文名称，默认为 ‘’，可后期通过修改用户信息设置
         type: string
       updateAt:
         type: string
@@ -728,7 +718,9 @@ definitions:
         description: 用户 ID;其类型是一个 uint 类型
         type: integer
       nickname:
-        description: 用户中文名称，默认为 ‘’，可后期通过修改用户信息设置
+        description: |-
+          用户头像、创建时；为空字符串;注意只是保存 文件的hash 地址；而不是 URL 地址
+          用户中文名称，默认为 ‘’，可后期通过修改用户信息设置
         type: string
       token:
         description: 认证令牌
@@ -744,6 +736,15 @@ definitions:
     - id
     - token
     - username
+    type: object
+  oss.FileMeta:
+    properties:
+      filename:
+        type: string
+      hash:
+        type: string
+      size:
+        type: integer
     type: object
   response.KResponse:
     properties:
@@ -765,70 +766,17 @@ info:
   title: go-net
   version: "1.0"
 paths:
-  /file/{hash}:
+  /file/download/{hash}:
     get:
-      description: 注意该接口没有做任何权限验证；慎用；请使用 GetFile 接口获取带有时效性的 url 地址。
+      description: 需要 SignURLs 接口生成的 expred + signature，缺一不可；校验失败返回 400/403，body 是
+        {"error":"..."}。
       parameters:
-      - description: 哈希地址
+      - description: 文件 hash
         in: path
         name: hash
         required: true
         type: string
-      produces:
-      - application/octet-stream
-      responses:
-        "200":
-          description: 文件二进制数据
-          schema:
-            items:
-              format: int32
-              type: integer
-            type: array
-        "404":
-          description: 文件不存在
-          schema:
-            $ref: '#/definitions/response.KResponse'
-      summary: 根据 hash 直接返回文件
-      tags:
-      - 文件
-  /file/getfile:
-    post:
-      description: 此接口生成的 url 地址；含有时效性；不建议作为长时间显示。
-      parameters:
-      - description: 文件的hash列表
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/controller.GetFileRequest'
-      responses:
-        "200":
-          description: 成功
-          schema:
-            allOf:
-            - $ref: '#/definitions/response.KResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/controller.GetFileResponse'
-                  type: array
-              type: object
-        "500":
-          description: 服务器错误
-          schema:
-            $ref: '#/definitions/response.KResponse'
-      summary: 根据 hash 获取文件的 url 地址
-      tags:
-      - 文件
-  /file/getfile/:hash:
-    get:
-      parameters:
-      - description: 哈希地址
-        in: path
-        name: hash
-        required: true
-        type: string
-      - description: 过期时间
+      - description: 过期时间（unix 秒）
         in: query
         name: expred
         required: true
@@ -844,15 +792,87 @@ paths:
         "200":
           description: 文件二进制数据
           schema:
-            items:
-              format: int32
-              type: integer
-            type: array
+            type: file
+        "404":
+          description: 文件不存在
+          schema:
+            $ref: '#/definitions/response.KResponse'
+      summary: 通过临时签名地址下载文件
+      tags:
+      - 文件
+  /file/preview/{hash}:
+    get:
+      description: 注意该接口没有做任何权限验证；慎用；只给站内展示用，需要对外分享请走 SignURLs 换临时地址。
+      parameters:
+      - description: 文件 hash
+        in: path
+        name: hash
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: 文件二进制数据
+          schema:
+            type: file
+        "404":
+          description: 文件不存在
+          schema:
+            $ref: '#/definitions/response.KResponse'
+      summary: 预览文件（按 hash 直出）
+      tags:
+      - 文件
+  /file/preview/{hash}/meta:
+    get:
+      description: 返回 filename/size/hash 三个字段；无鉴权，主要给开发排查用；前端展示不需要调它。
+      parameters:
+      - description: 文件 hash
+        in: path
+        name: hash
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 文件元信息
+          schema:
+            $ref: '#/definitions/oss.FileMeta'
+        "404":
+          description: 元信息不存在
+          schema:
+            $ref: '#/definitions/response.KResponse'
+      summary: 预览文件元信息（JSON）
+      tags:
+      - 文件
+  /file/signurls:
+    post:
+      description: 返回的 url 含时效性（默认 1 小时），过期或签名不符会返回 403；不建议作为长期显示地址。
+      parameters:
+      - description: 文件的 hash 列表
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.SignURLsRequest'
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.KResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/controller.SignURLsResponse'
+                  type: array
+              type: object
         "500":
           description: 服务器错误
           schema:
             $ref: '#/definitions/response.KResponse'
-      summary: 根据 url 地址；下载文件;
+      summary: 批量获取文件的临时下载地址
       tags:
       - 文件
   /file/upload:
@@ -870,21 +890,21 @@ paths:
         type: array
       responses:
         "200":
-          description: 成功
+          description: 成功，data 是文件 hash 列表
           schema:
             allOf:
             - $ref: '#/definitions/response.KResponse'
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/controller.UploadResponse'
+                    type: string
                   type: array
               type: object
         "500":
           description: 服务器错误
           schema:
             $ref: '#/definitions/response.KResponse'
-      summary: 保存用户上传的文件
+      summary: 上传文件（可多选）
       tags:
       - 文件
   /friends/{id}:

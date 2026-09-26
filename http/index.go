@@ -47,17 +47,24 @@ func Start() {
 
 	{
 
-		// 文件上传和下载路由
+		// 文件接口 /api/file/*：路径和常量见 controller/index.go 里的 KFile* 常量
+		// 三类接口的返回体不一样，读代码时先看这里：
+		//   1. upload / signurls 返回 JSON，走 execute + ResponseMiddleware 统一包装成 KResponse
+		//   2. preview / preview meta 直接返回文件本体（图片、视频、meta.json），没有包装
+		//   3. download 返回文件本体，但必须先通过临时地址上的签名校验
 		fileRouter := api.Group("/file")
 
-		fileRouter.POST(controller.KUpload, execute(controller.FileController.Upload))
-		fileRouter.POST(controller.KGetfile, execute(controller.FileController.GetFile))
-		fileRouter.GET(controller.KPreviewFile, controller.FileController.PreviewFile)
-		fileRouter.GET(controller.KPreviewMetaFile, controller.FileController.PreviewMetaFile)
+		fileRouter.POST(controller.KFileUpload, execute(controller.FileController.Upload))
+		fileRouter.POST(controller.KFileSignURLs, execute(controller.FileController.SignURLs))
 
-		fileDowloadRouter := api.Group("/file")
-		fileDowloadRouter.Use(controller.FileController.DownloadMiddleware()) // 使用自定义响应中间件
-		fileDowloadRouter.GET(controller.KGetfileHash, controller.FileController.DowloadFile)
+		// 预览：按 hash 直出，无鉴权；前端 <img src>、<video src> 直接引用这两个地址
+		fileRouter.GET(controller.KFilePreview, controller.FileController.PreviewFile)
+		fileRouter.GET(controller.KFilePreviewMeta, controller.FileController.PreviewMetaFile)
+
+		// 下载：需要临时地址上的 expred + signature，所以只给这一条路由挂签名校验中间件
+		fileRouter.GET(controller.KFileDownload,
+			controller.FileController.DownloadMiddleware(),
+			controller.FileController.DownloadFile)
 	}
 
 	{

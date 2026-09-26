@@ -38,8 +38,8 @@ func StorageFile(filename string, fd multipart.File) string {
 	return filename
 }
 
-func StorageByte(filename string, data []byte) string {
-	file, err := createFile(filename)
+func StorageMetaFile(filename string, data []byte) string {
+	file, err := CreateMetaFile(filename)
 	if err != nil {
 		panic(err)
 	}
@@ -103,8 +103,7 @@ func StorageFiles(fileHeaderies []*multipart.FileHeader) []string {
 					Hash:     key,
 				})
 
-				_, meta := MakeOssStorageMetaFilePath(key)
-				StorageByte(meta, data)
+				StorageMetaFile(key, data)
 			})
 		}
 
@@ -128,7 +127,11 @@ func Signature(message string) string {
 	return base64.URLEncoding.EncodeToString(h.Sum(nil))
 }
 
-// 根据 hash 生成一个临时的url 地址
+// 根据 hash 生成一个带时效的临时下载地址
+//
+// 地址指向下载路由 /api/file/download/:hash（常量 controller.KFileDownload），
+// 路径里带 expred + signature，由 DownloadMiddleware 校验。
+// 注意：这里拼的是本机地址，部署到服务器/域名后要改成对外可访问的地址（域名或 IP:端口）。
 func GenerateSignedURL(hash string, expred time.Duration) string {
 	expredAt := time.Now().Add(expred).Unix()
 	expredAtStr := strconv.FormatInt(expredAt, 10)
@@ -137,7 +140,7 @@ func GenerateSignedURL(hash string, expred time.Duration) string {
 
 	signature := Signature(message)
 
-	baseURL := "http://localhost:8080/api/file/getfile"
+	baseURL := fmt.Sprintf("http://localhost%s/api/file/download", config.ConfigData.Server.Port)
 
 	signatureURL := fmt.Sprintf("%s/%s?expred=%s&signature=%s", baseURL, hash, expredAtStr, signature)
 

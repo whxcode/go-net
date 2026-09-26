@@ -6,15 +6,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type RouterPath string
-
+// 路由路径常量：路径都是各分组下的相对路径，分组前缀写在 http/index.go 里
 const (
-	KRegister        RouterPath = "/register"
-	KUpload                     = "/upload"
-	KGetfile                    = "/getfile"
-	KGetfileHash                = "/getfile/:hash"
-	KPreviewFile                = "/:hash"
-	KPreviewMetaFile            = "/:hash/meta"
+	// 文件模块：挂在 /api/file 分组下（见 http/index.go）
+	// 预览/下载都按文件 hash 定位，hash 是文件内容的 sha256，也是落盘文件名。
+	KFileUpload      = "/upload"             // 上传文件（multipart，字段名 files）
+	KFileSignURLs    = "/signurls"           // 批量把 hash 换成带签名的临时下载地址
+	KFilePreview     = "/preview/:hash"      // 按 hash 直出文件内容（无鉴权）
+	KFilePreviewMeta = "/preview/:hash/meta" // 按 hash 直出文件元信息 JSON（无鉴权）
+	KFileDownload    = "/download/:hash"     // 带签名下载（expred + signature）
 
 	KUserGetUser     = "/get"
 	KUserGetUserByID = "/:id"
