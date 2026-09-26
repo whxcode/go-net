@@ -9,11 +9,12 @@ import (
 type RouterPath string
 
 const (
-	KRegister    RouterPath = "/register"
-	KUpload                 = "/upload"
-	KGetfile                = "/getfile"
-	KGetfileHash            = "/getfile/:hash"
-	KPreviewFile            = "/:hash"
+	KRegister        RouterPath = "/register"
+	KUpload                     = "/upload"
+	KGetfile                    = "/getfile"
+	KGetfileHash                = "/getfile/:hash"
+	KPreviewFile                = "/:hash"
+	KPreviewMetaFile            = "/:hash/meta"
 
 	KUserGetUser     = "/get"
 	KUserGetUserByID = "/:id"

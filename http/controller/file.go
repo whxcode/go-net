@@ -4,7 +4,6 @@ import (
 	"strconv"
 	"time"
 
-	"go-net/config"
 	"go-net/oss"
 	"go-net/response"
 
@@ -28,7 +27,7 @@ type UploadResponse struct {
 // @Tags 文件
 // @Accept multipart/form-data
 // @Param files formData []file true "文件列表"
-// @Success 200 {object} response.KResponse{data=[]UploadResponse} "成功"
+// @Success 200 {object} response.KResponse{data=[]string} "成功"
 // @Failure 500 {object} response.KResponse "服务器错误"
 // @Router /file/upload [post]
 func (*fileController) Upload(c *gin.Context) *response.KResponse {
@@ -38,16 +37,7 @@ func (*fileController) Upload(c *gin.Context) *response.KResponse {
 	}
 
 	files := form.File["files"]
-
-	result := []*UploadResponse{}
-
-	for _, v := range files {
-		result = append(result, &UploadResponse{
-			Hash:     oss.StorageFile(v),
-			Filename: v.Filename,
-			Size:     v.Size,
-		})
-	}
+	result := oss.StorageFiles(files)
 
 	return response.MakeResponse(result)
 }
@@ -104,7 +94,26 @@ func (*fileController) GetFile(c *gin.Context) *response.KResponse {
 func (*fileController) PreviewFile(c *gin.Context) {
 	hash := c.Param("hash")
 
-	c.File(config.ConfigData.Server.FileOss + "/" + hash)
+	_, filepath := oss.MakeOssStorageFilePath(hash)
+
+	c.File(filepath)
+}
+
+// PreviewFile 根据 hash 直接返回文件元信息
+// @Summary 根据 hash 直接返回文件
+// @Description 注意该接口没有做任何权限验证；慎用；请使用 GetFile 接口获取带有时效性的 url 地址。
+// @Tags 文件
+// @Produce application/octet-stream
+// @Param hash path string true "哈希地址"
+// @Success 200 {array} byte "文件二进制数据"
+// @Failure 404 {object} response.KResponse "文件不存在"
+// @Router /file/{hash}/meta [get]
+func (*fileController) PreviewMetaFile(c *gin.Context) {
+	hash := c.Param("hash")
+
+	_, filepath := oss.MakeOssStorageMetaFilePath(hash)
+
+	c.File(filepath)
 }
 
 func (*fileController) DownloadMiddleware() gin.HandlerFunc {
@@ -144,6 +153,7 @@ func (*fileController) DownloadMiddleware() gin.HandlerFunc {
 // @Router /file/getfile/:hash [get]
 func (*fileController) DowloadFile(c *gin.Context) {
 	hash := c.Param("hash")
+	_, filepath := oss.MakeOssStorageFilePath(hash)
 
-	c.File(config.ConfigData.Server.FileOss + "/" + hash)
+	c.File(filepath)
 }

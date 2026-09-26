@@ -8,7 +8,6 @@ import (
 	timeLineController "go-net/http/controller/time_line"
 	"go-net/logs"
 	"go-net/middleware"
-	"go-net/oss"
 	"go-net/wss"
 
 	swaggerFiles "github.com/swaggo/files"
@@ -32,7 +31,6 @@ func execute(handle controller.KResponseHandle) gin.HandlerFunc {
 
 func Start() {
 	config.ConfigData.Dump()
-	oss.Init()
 
 	r := gin.New()
 
@@ -55,6 +53,7 @@ func Start() {
 		fileRouter.POST(controller.KUpload, execute(controller.FileController.Upload))
 		fileRouter.POST(controller.KGetfile, execute(controller.FileController.GetFile))
 		fileRouter.GET(controller.KPreviewFile, controller.FileController.PreviewFile)
+		fileRouter.GET(controller.KPreviewMetaFile, controller.FileController.PreviewMetaFile)
 
 		fileDowloadRouter := api.Group("/file")
 		fileDowloadRouter.Use(controller.FileController.DownloadMiddleware()) // 使用自定义响应中间件

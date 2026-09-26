@@ -2,10 +2,11 @@
 package oss
 
 import (
+	"bytes"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
-	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -14,48 +15,18 @@ import (
 	"time"
 
 	"go-net/config"
+	"go-net/pool"
+	"go-net/std"
 )
 
-func Init() {
+type FileMeta struct {
+	Filename string `json:"filename"`
+	Size     int64  `json:"size"`
+	Hash     string `json:"hash"`
 }
 
-func makeFile(filename string) (*os.File, error) {
-	file := fmt.Sprintf("%s/%s", config.ConfigData.Server.FileOss, filename)
-	return os.Create(file)
-}
-
-func HashBytes(data []byte) string {
-	hash := sha256.Sum256(data)
-
-	return hex.EncodeToString(hash[:])
-}
-
-func HashFile(data multipart.File) string {
-	hash := sha256.New()
-
-	if _, err := io.Copy(hash, data); err != nil {
-		return ""
-	}
-
-	return hex.EncodeToString(hash.Sum(nil))
-}
-
-func StorageFile(f *multipart.FileHeader) string {
-	fd, err := f.Open()
-	if err != nil {
-		panic(err)
-	}
-
-	defer fd.Close()
-
-	filename := HashFile(fd)
-
-	// 2. 回到开头
-	if _, err := fd.Seek(0, io.SeekStart); err != nil {
-		panic(err)
-	}
-
-	file, err := makeFile(filename)
+func StorageFile(filename string, fd multipart.File) string {
+	file, err := createFile(filename)
 	if err != nil {
 		panic(err)
 	}
@@ -65,6 +36,83 @@ func StorageFile(f *multipart.FileHeader) string {
 	io.Copy(file, fd)
 
 	return filename
+}
+
+func StorageByte(filename string, data []byte) string {
+	file, err := createFile(filename)
+	if err != nil {
+		panic(err)
+	}
+
+	defer file.Close()
+
+	io.Copy(file, bytes.NewReader(data))
+
+	return filename
+}
+
+func StorageFiles(fileHeaderies []*multipart.FileHeader) []string {
+	hashWorker := pool.NewWorkers(len(fileHeaderies))
+	type FileObj struct {
+		file multipart.File
+		meta *multipart.FileHeader
+	}
+
+	fileMap := std.NewHash[FileObj]()
+
+	result := std.NewQueue[string]()
+
+	for _, head := range fileHeaderies {
+		v, _ := head.Open()
+		defer v.Close()
+
+		hashWorker.Post(func(args ...interface{}) {
+			hash := getHashWithFile(v)
+			result.Push(hash)
+
+			if !IsHashExits(hash) {
+				fmt.Println("--- 文件已经存在---")
+				return
+			}
+
+			// 2. 回到开头
+			if _, err := v.Seek(0, io.SeekStart); err != nil {
+				panic(err)
+			}
+
+			fileMap.Set(hash, FileObj{
+				file: v,
+				meta: args[0].(*multipart.FileHeader),
+			})
+		}, head)
+	}
+
+	hashWorker.Wait()
+
+	if !fileMap.IsEmpty() {
+
+		storageWorker := pool.NewWorkers(len(fileHeaderies))
+
+		for key, obj := range fileMap.Raw() {
+			storageWorker.Post(func(args ...interface{}) {
+				StorageFile(key, obj.file)
+
+				data, _ := json.Marshal(FileMeta{
+					Filename: obj.meta.Filename,
+					Size:     obj.meta.Size,
+					Hash:     key,
+				})
+
+				_, meta := MakeOssStorageMetaFilePath(key)
+				StorageByte(meta, data)
+			})
+		}
+
+		storageWorker.Wait()
+
+	}
+
+	return result.Raw()
 }
 
 const tsecretKey = "your_secret_key_here"
